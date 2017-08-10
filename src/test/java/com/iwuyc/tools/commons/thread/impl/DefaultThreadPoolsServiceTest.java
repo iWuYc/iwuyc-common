@@ -1,6 +1,5 @@
 package com.iwuyc.tools.commons.thread.impl;
 
-import java.io.File;
 import java.io.InputStream;
 import java.util.concurrent.ExecutorService;
 
