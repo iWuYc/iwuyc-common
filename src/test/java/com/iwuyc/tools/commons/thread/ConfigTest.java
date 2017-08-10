@@ -33,7 +33,5 @@ public class ConfigTest
         Properties properties = new Properties();
         properties.load(in);
 
-        in = Config.class.getResourceAsStream("/thread/thread2.properties");
-        properties.load(in);
     }
 }
