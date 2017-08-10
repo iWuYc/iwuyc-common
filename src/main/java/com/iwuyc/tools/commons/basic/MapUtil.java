@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * @Auth iWuYc
@@ -45,10 +46,19 @@ public abstract class MapUtil
         return result;
     }
 
-    public static <K, V> Map<K, V> findEntryByPrefixKey(Map<K, V> map, String prefixKey)
+    /**
+     * 根据key的前缀进行搜索。key按string类型进行转换。
+     * 
+     * @param source
+     *            数据源
+     * @param prefixKey
+     *            前缀
+     * @return key带有 prefixKey前缀的数据
+     */
+    public static <K, V> Map<K, V> findEntryByPrefixKey(Map<K, V> source, String prefixKey)
     {
         final Map<K, V> result = new HashMap<>();
-        map.entrySet().stream().filter((item) ->
+        source.entrySet().stream().filter((item) ->
         {
             return String.valueOf(item.getKey()).startsWith(prefixKey);
         }).forEach((item) ->

@@ -1,5 +1,7 @@
 package com.iwuyc.tools.commons.thread;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
@@ -7,6 +9,9 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.iwuyc.tools.commons.basic.MapUtil;
 import com.iwuyc.tools.commons.basic.MultiMap;
@@ -17,9 +22,11 @@ import com.iwuyc.tools.commons.thread.conf.ConfigConstant;
 import com.iwuyc.tools.commons.thread.conf.ThreadPoolConfig;
 import com.iwuyc.tools.commons.thread.conf.UsingConfig;
 import com.iwuyc.tools.commons.thread.conf.typeconverter.String2TimeTupleConverter;
+import com.iwuyc.tools.commons.thread.impl.DefaultThreadPoolsService;
 
 public class Config
 {
+    private static final Logger LOG = LoggerFactory.getLogger(Config.class);
 
     private static final MultiMap<Class<? extends Object>, TypeConverter<? extends Object, ? extends Object>> typeConverters = new MultiMap<>();
 
@@ -44,10 +51,27 @@ public class Config
     {
     }
 
+    /**
+     * 可以重复调用多次，增加新的配置项，或者修改配置项
+     * 
+     * @param in
+     * @throws IOException
+     */
     public void load(InputStream in) throws IOException
     {
-        this.propertis = new Properties();
-        propertis.load(in);
+        if (null == this.propertis)
+        {
+            this.propertis = new Properties();
+
+            // 加载默认配置。
+            InputStream defaultSettings = DefaultThreadPoolsService.class
+                    .getResourceAsStream("/thread/thread.properties");
+            this.propertis.load(defaultSettings);
+        }
+        if (null != in)
+        {
+            propertis.load(in);
+        }
 
         Map<Object, Object> configInfo = MapUtil.findEntryByPrefixKey(this.propertis,
                 ConfigConstant.THREAD_CONFIG_PRENAME);
@@ -161,6 +185,33 @@ public class Config
             config = this.threadConfigCache.get("default");
         }
         return config;
+    }
+
+    /**
+     * 提供配置文件，直接返回默认的 ThreadPoolsService 实例。
+     * 
+     * @param file
+     *            可以为空，空则取classpath中/thread/thread.properties的默认配置
+     * @return
+     */
+    public static ThreadPoolsService config(File file)
+    {
+        Config config = new Config();
+        try
+        {
+            InputStream in = null;
+            if (null != file)
+            {
+                in = new FileInputStream(file);
+            }
+            config.load(in);
+            return new DefaultThreadPoolsService(config);
+        }
+        catch (IOException e)
+        {
+            LOG.error("Config thread pool service raise an error:{}", e);
+        }
+        return null;
     }
 
 }

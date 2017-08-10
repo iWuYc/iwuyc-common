@@ -1,8 +1,8 @@
 package com.iwuyc.tools.commons.thread.conf;
 
+import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
-
 import com.iwuyc.tools.commons.basic.StringUtils;
 
 /**
@@ -49,12 +49,12 @@ public class ThreadPoolConfig
     /**
      * 线程最小线程数
      */
-    private int corePoolSize;
+    private int corePoolSize = 2;
 
     /**
      * 最大线程数
      */
-    private int maximumPoolSize;
+    private int maximumPoolSize = 4;
     /**
      * 线程存活时间
      */
@@ -62,7 +62,7 @@ public class ThreadPoolConfig
     /**
      * 任务队列最大值
      */
-    private int maxQueueSize;
+    private int maxQueueSize = 1800;
 
     private Map<Object, Object> otherSetting;
 
@@ -115,6 +115,10 @@ public class ThreadPoolConfig
 
     public TimeTuple getKeepAliveTime()
     {
+        if (null == keepAliveTime)
+        {
+            this.keepAliveTime = TimeTuple.create(10, TimeUnit.MINUTES);
+        }
         return keepAliveTime;
     }
 
@@ -140,6 +144,10 @@ public class ThreadPoolConfig
 
     public Map<Object, Object> getOtherSetting()
     {
+        if (null == this.otherSetting)
+        {
+            this.otherSetting = Collections.emptyMap();
+        }
         return otherSetting;
     }
 

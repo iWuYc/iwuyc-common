@@ -107,7 +107,10 @@ public abstract class ClassUtils
             {
                 return false;
             }
-            field.setAccessible(true);
+            if (!field.isAccessible())
+            {
+                field.setAccessible(true);
+            }
             field.set(instance, rejectVal);
             return true;
         }

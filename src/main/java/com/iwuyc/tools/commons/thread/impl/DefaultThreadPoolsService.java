@@ -1,9 +1,5 @@
 package com.iwuyc.tools.commons.thread.impl;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
@@ -39,7 +35,16 @@ public class DefaultThreadPoolsService implements ThreadPoolsService
     public ExecutorService getExecutorService(Class<?> clazz)
     {
 
-        String domain = clazz.getName();
+        String domain = null;
+        if (null == clazz)
+        {
+            domain = "root";
+        }
+        else
+        {
+            domain = clazz.getName();
+        }
+        LOG.debug("Get executor service for :{}.domain is:{}", clazz, domain);
         ExecutorService executorSer = executorServiceCache.get(domain);
         if (null == executorSer)
         {
@@ -83,28 +88,10 @@ public class DefaultThreadPoolsService implements ThreadPoolsService
         return factory.create(threadPoolConfig);
     }
 
-    public static ThreadPoolsService config(File file)
+    @Override
+    public Config getConfig()
     {
-        Config config = new Config();
-        try
-        {
-            InputStream in = null;
-            if (null == file)
-            {
-                in = DefaultThreadPoolsService.class.getResourceAsStream("/thread/thread.properties");
-            }
-            else
-            {
-                in = new FileInputStream(file);
-            }
-            config.load(in);
-            return new DefaultThreadPoolsService(config);
-        }
-        catch (IOException e)
-        {
-            LOG.error("Config thread pool service raise an error:{}", e);
-        }
-        return null;
+        return this.config;
     }
 
 }
