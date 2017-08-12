@@ -60,14 +60,12 @@ com.iwuyc.tools.commons.thread.impl.ThreadPoolExecutorFactory
 ### 默认配置
 ```properties
 ##################################################### Summary ######################################################
-# thread.conf 以这个开头的，表示线程池的配置项，后面接的第一个单词表示线程池的名字，用于构建线程池中线程的名字。            #
-#   线程池名字之后的则是配置项名字现在有[corePoolSize,factory,keepAliveTime,maximumPoolSize,maxQueueSize],            #
-#    如果是这些项之外的额外配置，则会统一以键值的形式存储在otherSetting中，以方便使用第三方线程池的时候有额外配置。         #
-#                                                                                                                  #
-# thread.using 以这个开头，则是表示配置域下面所使用的线程池实例，值为线程池实例的名字。该规则跟log4j类似，就不再赘了。      #
-#                                                                                                                  #
-#                                                                                                                  #
-#                                                                                                                  #
+# thread.conf 以这个开头的，表示线程池的配置项，后面接的第一个单词表示线程池的名字，用于构建线程池中线程的名字。            
+#   线程池名字之后的则是配置项名字现在有[corePoolSize,factory,keepAliveTime,maximumPoolSize,maxQueueSize],            
+#    如果是这些项之外的额外配置，则会统一以键值的形式存储在otherSetting中，以方便使用第三方线程池的时候有额外配置。         
+#                                                                                                                  
+# thread.using 以这个开头，则是表示配置域下面所使用的线程池实例，值为线程池实例的名字。该规则跟log4j类似，就不再赘了。      
+#                      
 ####################################################################################################################
 thread.conf.default.corePoolSize=2
 thread.conf.default.factory=com.iwuyc.tools.commons.thread.impl.ThreadPoolExecutorFactory
