@@ -54,9 +54,8 @@ public class Range
             return "Range [min=" + min + ", max=" + max + ", flag=" + flag + "]";
         }
 
-        private boolean judg(Number num)
+        private boolean judg(BigDecimal number)
         {
-            BigDecimal number = new BigDecimal(String.valueOf(num));
             int compareMin = this.min.compareTo(number);
             if (compareMin > 0)
             {
@@ -153,11 +152,31 @@ public class Range
         return new BigDecimal(numStr);
     }
 
+    /**
+     * 判断一个数字是否在范围内。
+     * 
+     * @param num
+     *            待判断的数字
+     * @return 如果在范围内，则返回true，否则返回false。
+     */
     public boolean inRange(Number num)
+    {
+        BigDecimal number = new BigDecimal(String.valueOf(num));
+        return this.inRange(number);
+    }
+
+    /**
+     * 判断一个数字是否在范围内。
+     * 
+     * @param number
+     *            待判断的数字
+     * @return 如果在范围内，则返回true，否则返回false。
+     */
+    public boolean inRange(BigDecimal number)
     {
         for (RangeItem range : ranges)
         {
-            if (range.judg(num))
+            if (range.judg(number))
             {
                 return true;
             }

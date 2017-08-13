@@ -2,6 +2,9 @@ package com.iwuyc.tools.commons.math;
 
 import static org.junit.Assert.*;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
+
 import org.junit.Test;
 
 public class RangeTest
@@ -50,6 +53,25 @@ public class RangeTest
         assertTrue(range.inRange(41));
         assertTrue(range.inRange(50));
         assertFalse(range.inRange(51));
+
+    }
+
+    @Test
+    public void testBigNum()
+    {
+        Range range = Range.compiler("[0,10)|[20,30]|(40,50]");
+        assertNotNull(range);
+        assertFalse(range.inRange(new BigDecimal("-1")));
+        assertTrue(range.inRange(new BigInteger("0")));
+        assertFalse(range.inRange(new BigInteger("10")));
+        assertFalse(range.inRange(new BigInteger("11")));
+        assertTrue(range.inRange(new BigInteger("20")));
+        assertTrue(range.inRange(new BigInteger("30")));
+        assertFalse(range.inRange(new BigInteger("31")));
+        assertFalse(range.inRange(new BigInteger("40")));
+        assertTrue(range.inRange(new BigInteger("41")));
+        assertTrue(range.inRange(new BigInteger("50")));
+        assertFalse(range.inRange(new BigInteger("51")));
 
     }
 
