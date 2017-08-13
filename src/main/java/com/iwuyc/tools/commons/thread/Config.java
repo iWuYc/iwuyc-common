@@ -142,7 +142,6 @@ public class Config
         config.setOtherSetting(otherSetting);
 
         threadConfigCache.put(config.getThreadPoolsName(), config);
-        System.out.println("");
     }
 
     private String findThreadNameIncludePrefix(String key)

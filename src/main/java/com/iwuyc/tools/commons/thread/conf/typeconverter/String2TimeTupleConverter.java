@@ -5,10 +5,10 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import com.iwuyc.tools.commons.basic.StringUtils;
-import com.iwuyc.tools.commons.classtools.typeconverter.TypeConverter;
+import com.iwuyc.tools.commons.classtools.typeconverter.AbstractStringConverter;
 import com.iwuyc.tools.commons.thread.conf.ThreadPoolConfig.TimeTuple;
 
-public class String2TimeTupleConverter implements TypeConverter<String, TimeTuple>
+public class String2TimeTupleConverter extends AbstractStringConverter<TimeTuple>
 {
     public static final Map<String, TimeUnit> MAPPING = new HashMap<>();
 
@@ -22,7 +22,7 @@ public class String2TimeTupleConverter implements TypeConverter<String, TimeTupl
     }
 
     @Override
-    public TimeTuple convert(String from)
+    protected TimeTuple converterData(String from)
     {
         from = from.trim();
 
@@ -47,7 +47,7 @@ public class String2TimeTupleConverter implements TypeConverter<String, TimeTupl
     }
 
     @Override
-    public boolean support(Class<?> target)
+    protected boolean isSupport(Class<?> target)
     {
         return TimeTuple.class.equals(target);
     }
