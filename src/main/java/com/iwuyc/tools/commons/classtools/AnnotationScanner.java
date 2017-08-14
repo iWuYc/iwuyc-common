@@ -11,14 +11,12 @@ import java.util.Collection;
 import java.util.Enumeration;
 import java.util.Optional;
 import java.util.Stack;
-import java.util.concurrent.Future;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.util.concurrent.SettableFuture;
 import com.iwuyc.tools.commons.basic.StringUtils;
 
 /**
@@ -34,10 +32,9 @@ public class AnnotationScanner implements Runnable
     private static final Logger LOG = LoggerFactory.getLogger(AnnotationScanner.class);
 
     private final Stack<String> packages = new Stack<>();
+    private final Stack<Annotation> annotationStack = new Stack<>();
     private final Collection<Class<?>> result;
     private final Class<? extends Annotation> annotation;
-
-    private final SettableFuture<Collection<Class<?>>> resultFuture = SettableFuture.create();
 
     public AnnotationScanner(Class<? extends Annotation> annotation, String... packages)
     {
@@ -62,12 +59,10 @@ public class AnnotationScanner implements Runnable
             {
                 packageScanner(packages.pop());
             }
-            resultFuture.set(this.result);
         }
         catch (Exception e)
         {
             LOG.warn("Raise an error when scanning package.", e);
-            resultFuture.setException(e);
         }
     }
 
@@ -193,18 +188,54 @@ public class AnnotationScanner implements Runnable
         {
             return;
         }
-        Optional<Class<?>> clazzOpt = ClassUtils.loadClass(className);
+        Optional<Class<?>> clazzOpt = ClassUtils.loadClass(className, true, null);
         if (!clazzOpt.isPresent())
         {
             return;
         }
         Class<?> clazz = clazzOpt.get();
         Annotation an = clazz.getAnnotation(this.annotation);
+        // 当前类中没有该注解
         if (null == an)
         {
-            return;
+            // 尝试在注解中寻找该注解，如果不存在则直接返回
+            if (!tryGetFromAnnotation(clazz))
+            {
+                return;
+            }
+            this.annotationStack.clear();
         }
         this.result.add(clazz);
+    }
+
+    private boolean tryGetFromAnnotation(Class<?> clazz)
+    {
+        pushAnnotation2Stack(clazz);
+        Annotation item = null;
+        Annotation result = null;
+        Class<?> nextScannerAnnotation = null;
+
+        while (!annotationStack.isEmpty())
+        {
+            item = annotationStack.pop();
+            result = item.annotationType().getAnnotation(this.annotation);
+            if (null != result)
+            {
+                return true;
+            }
+            nextScannerAnnotation = item.annotationType();
+            pushAnnotation2Stack(nextScannerAnnotation);
+        }
+        return false;
+    }
+
+    private void pushAnnotation2Stack(Class<?> clazz)
+    {
+        Annotation[] annos = clazz.getAnnotations();
+        for (Annotation annotation : annos)
+        {
+            annotationStack.push(annotation);
+        }
     }
 
     private String toClassFullName(String packageName, String className)
@@ -213,9 +244,9 @@ public class AnnotationScanner implements Runnable
         return String.format(CLASS_TEMPLATE, packageName, className);
     }
 
-    public Future<Collection<Class<?>>> getResult()
+    public Collection<Class<?>> getResult()
     {
-        return resultFuture;
+        return result;
     }
 
 }

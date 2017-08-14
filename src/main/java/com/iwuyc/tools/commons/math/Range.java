@@ -94,9 +94,11 @@ public class Range
     /**
      * 编译表达式。表达式以区间表示，多个区间以"|"隔开，最大值以max表示，最小值以min表示
      * 
-     * @param rangeStr 表达式字符串。
-     * @exception IllegalArgumentException 如果表达式有问题，则会抛出这个错误。
-     * @return
+     * @param rangeStr
+     *            表达式字符串。
+     * @exception IllegalArgumentException
+     *                如果表达式有问题，则会抛出这个错误。
+     * @return range 实例
      */
     public static Range compiler(String rangeStr) throws IllegalArgumentException
     {
