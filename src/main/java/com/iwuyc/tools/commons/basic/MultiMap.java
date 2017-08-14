@@ -3,12 +3,19 @@ package com.iwuyc.tools.commons.basic;
 import java.util.HashMap;
 import java.util.LinkedList;
 
+/**
+ * Non Thread-Safe.复合map。
+ * 
+ * @author iWuYc
+ *
+ * @param <K>
+ *            key
+ * @param <V>
+ *            value
+ */
 public class MultiMap<K, V> extends HashMap<K, LinkedList<V>>
 {
 
-    /**
-     * 
-     */
     private static final long serialVersionUID = 889155975950159878L;
 
     public void add(K key, V val)

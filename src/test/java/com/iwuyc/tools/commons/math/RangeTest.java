@@ -75,4 +75,41 @@ public class RangeTest
 
     }
 
+    @Test
+    public void test2()
+    {
+        Range range = Range.compiler("[0,10)||[20,30]|||(40,50]||");
+        assertNotNull(range);
+        assertFalse(range.inRange(-1));
+        assertTrue(range.inRange(0));
+        assertFalse(range.inRange(10));
+        assertFalse(range.inRange(11));
+        assertTrue(range.inRange(20));
+        assertTrue(range.inRange(30));
+        assertFalse(range.inRange(31));
+        assertFalse(range.inRange(40));
+        assertTrue(range.inRange(41));
+        assertTrue(range.inRange(50));
+        assertFalse(range.inRange(51));
+
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void test3()
+    {
+        Range range = Range.compiler("[100,10)||[20,30]|||(40,50]||(min,max)|[10,min)");
+        assertNotNull(range);
+        assertFalse(range.inRange(-1));
+        assertTrue(range.inRange(0));
+        assertFalse(range.inRange(10));
+        assertFalse(range.inRange(11));
+        assertTrue(range.inRange(20));
+        assertTrue(range.inRange(30));
+        assertFalse(range.inRange(31));
+        assertFalse(range.inRange(40));
+        assertTrue(range.inRange(41));
+        assertTrue(range.inRange(50));
+        assertFalse(range.inRange(51));
+
+    }
 }

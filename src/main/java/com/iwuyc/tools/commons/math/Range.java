@@ -76,17 +76,32 @@ public class Range
             }
             return true;
         }
+
+        private boolean verify()
+        {
+            return this.max.compareTo(this.min) >= 0;
+        }
     }
 
-    private final static byte CONTAIN_LEAF = 2;// 10
-    private final static byte CONTAIN_RIGHT = 1;// 01
+    private static final byte CONTAIN_LEAF = 2;// 10
+    private static final byte CONTAIN_RIGHT = 1;// 01
+
     private static final BigDecimal MAX = new BoundaryNumber("max", true);
     private static final BigDecimal MIN = new BoundaryNumber("min", false);
 
-    public static Range compiler(String rangeStr)
+    private Collection<RangeItem> ranges = new ArrayList<>();
+
+    /**
+     * 编译表达式。表达式以区间表示，多个区间以"|"隔开，最大值以max表示，最小值以min表示
+     * 
+     * @param rangeStr 表达式字符串。
+     * @exception IllegalArgumentException 如果表达式有问题，则会抛出这个错误。
+     * @return
+     */
+    public static Range compiler(String rangeStr) throws IllegalArgumentException
     {
         Range rootRange = new Range();
-        String[] rangeStrArr = rangeStr.split("[|]{1}");
+        String[] rangeStrArr = rangeStr.split("[|]+");
         RangeItem rangeItem = null;
         for (String rangeStrItem : rangeStrArr)
         {
@@ -96,12 +111,15 @@ public class Range
                 continue;
             }
             rangeItem = itemCompiler(rangeStrItem);
+            if (!rangeItem.verify())
+            {
+                throw new IllegalArgumentException("The expression was wrong.Expression:" + rangeStrItem);
+            }
+
             rootRange.ranges.add(rangeItem);
         }
         return rootRange;
     }
-
-    private Collection<RangeItem> ranges = new ArrayList<>();
 
     private static RangeItem itemCompiler(String rangeStr)
     {
@@ -150,6 +168,10 @@ public class Range
             return MIN;
         }
         return new BigDecimal(numStr);
+    }
+
+    private Range()
+    {
     }
 
     /**
