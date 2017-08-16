@@ -33,10 +33,7 @@ public class AnnotationScanner implements Runnable
 
     private static final Logger LOG = LoggerFactory.getLogger(AnnotationScanner.class);
 
-    // FIXME 包重复扫描，导致内存溢出。
     private final Stack<String> packages = new Stack<>();
-    // FIXME 注解的重复扫描
-    // private final Stack<Annotation> annotationStack = new Stack<>();
     private final Collection<Class<?>> result;
     private final Class<? extends Annotation> annotation;
 
