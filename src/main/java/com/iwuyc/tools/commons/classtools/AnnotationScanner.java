@@ -9,7 +9,9 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Enumeration;
+import java.util.HashSet;
 import java.util.Optional;
+import java.util.Set;
 import java.util.Stack;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
@@ -31,8 +33,10 @@ public class AnnotationScanner implements Runnable
 
     private static final Logger LOG = LoggerFactory.getLogger(AnnotationScanner.class);
 
+    // FIXME 包重复扫描，导致内存溢出。
     private final Stack<String> packages = new Stack<>();
-    private final Stack<Annotation> annotationStack = new Stack<>();
+    // FIXME 注解的重复扫描
+    // private final Stack<Annotation> annotationStack = new Stack<>();
     private final Collection<Class<?>> result;
     private final Class<? extends Annotation> annotation;
 
@@ -55,14 +59,29 @@ public class AnnotationScanner implements Runnable
     {
         try
         {
+            String nextPackage = null;
             while (!packages.isEmpty())
             {
-                packageScanner(packages.pop());
+                nextPackage = packages.pop();
+                removeParentPackage(nextPackage);
+                packageScanner(nextPackage);
             }
         }
         catch (Exception e)
         {
             LOG.warn("Raise an error when scanning package.", e);
+        }
+    }
+
+    private void removeParentPackage(String nextPackage)
+    {
+        if (!packages.isEmpty())
+        {
+            boolean isParent = nextPackage.startsWith(packages.peek());
+            if (isParent)
+            {
+                packages.pop();
+            }
         }
     }
 
@@ -194,6 +213,12 @@ public class AnnotationScanner implements Runnable
             return;
         }
         Class<?> clazz = clazzOpt.get();
+        // 排除注解使用在annotation中的情况。
+        if (Annotation.class.isAssignableFrom(clazz))
+        {
+            return;
+        }
+
         Annotation an = clazz.getAnnotation(this.annotation);
         // 当前类中没有该注解
         if (null == an)
@@ -203,33 +228,46 @@ public class AnnotationScanner implements Runnable
             {
                 return;
             }
-            this.annotationStack.clear();
+            // this.annotationStack.clear();
         }
         this.result.add(clazz);
     }
 
     private boolean tryGetFromAnnotation(Class<?> clazz)
     {
-        pushAnnotation2Stack(clazz);
+        // 用于防止重复扫描同一个annotation陷入死循环。
+        Stack<Annotation> annotationStack = new Stack<>();
+        Set<Annotation> scannerAlready = new HashSet<>();
+
+        pushAnnotation2Stack(clazz, annotationStack);
         Annotation item = null;
-        Annotation result = null;
+        Annotation annotation = null;
         Class<?> nextScannerAnnotation = null;
 
+        boolean result = false;
         while (!annotationStack.isEmpty())
         {
             item = annotationStack.pop();
-            result = item.annotationType().getAnnotation(this.annotation);
-            if (null != result)
+            if (scannerAlready.contains(item))
             {
-                return true;
+                break;
             }
+            annotation = item.annotationType().getAnnotation(this.annotation);
+            if (null != annotation)
+            {
+                result = true;
+                break;
+            }
+            scannerAlready.add(item);
+
             nextScannerAnnotation = item.annotationType();
-            pushAnnotation2Stack(nextScannerAnnotation);
+            pushAnnotation2Stack(nextScannerAnnotation, annotationStack);
         }
-        return false;
+        annotationStack.clear();
+        return result;
     }
 
-    private void pushAnnotation2Stack(Class<?> clazz)
+    private void pushAnnotation2Stack(Class<?> clazz, Stack<Annotation> annotationStack)
     {
         Annotation[] annos = clazz.getAnnotations();
         for (Annotation annotation : annos)
