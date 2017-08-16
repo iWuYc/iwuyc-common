@@ -4,7 +4,7 @@ public class Object2String implements TypeConverter<Object, String>
 {
 
     @Override
-    public String convert(Object from)
+    public String convert(Object from, Class<? extends String> target)
     {
         return String.valueOf(from);
     }

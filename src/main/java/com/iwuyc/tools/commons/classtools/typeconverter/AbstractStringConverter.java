@@ -9,7 +9,7 @@ public abstract class AbstractStringConverter<T> implements TypeConverter<String
 {
     protected static final Logger LOG = LoggerFactory.getLogger(AbstractStringConverter.class);
 
-    protected abstract T converterData(String data);
+    protected abstract T converterData(String data, Class<? extends T> targetType);
 
     protected abstract boolean isSupport(Class<?> target);
 
@@ -20,13 +20,13 @@ public abstract class AbstractStringConverter<T> implements TypeConverter<String
     }
 
     @Override
-    public T convert(String from)
+    public T convert(String from, Class<? extends T> targetType)
     {
         if (StringUtils.isEmpty(from))
         {
             throw new IllegalArgumentException("Argument can't be null.");
         }
-        return converterData(from);
+        return converterData(from, targetType);
     }
 
 }

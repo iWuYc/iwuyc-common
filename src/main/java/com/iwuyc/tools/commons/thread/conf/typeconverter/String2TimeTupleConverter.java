@@ -5,8 +5,8 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import com.iwuyc.tools.commons.basic.StringUtils;
+import com.iwuyc.tools.commons.basic.type.TimeTuple;
 import com.iwuyc.tools.commons.classtools.typeconverter.AbstractStringConverter;
-import com.iwuyc.tools.commons.thread.conf.ThreadPoolConfig.TimeTuple;
 
 public class String2TimeTupleConverter extends AbstractStringConverter<TimeTuple>
 {
@@ -22,7 +22,7 @@ public class String2TimeTupleConverter extends AbstractStringConverter<TimeTuple
     }
 
     @Override
-    protected TimeTuple converterData(String from)
+    protected TimeTuple converterData(String from, Class<? extends TimeTuple> targetType)
     {
         from = from.trim();
 

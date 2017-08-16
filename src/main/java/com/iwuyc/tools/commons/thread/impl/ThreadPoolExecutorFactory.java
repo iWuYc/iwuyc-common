@@ -5,9 +5,9 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ThreadFactory;
 
+import com.iwuyc.tools.commons.basic.type.TimeTuple;
 import com.iwuyc.tools.commons.thread.ExecutorServiceFactory;
 import com.iwuyc.tools.commons.thread.conf.ThreadPoolConfig;
-import com.iwuyc.tools.commons.thread.conf.ThreadPoolConfig.TimeTuple;
 
 public class ThreadPoolExecutorFactory implements ExecutorServiceFactory
 {

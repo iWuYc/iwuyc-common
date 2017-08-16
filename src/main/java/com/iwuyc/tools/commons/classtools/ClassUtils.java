@@ -22,6 +22,7 @@ import org.slf4j.LoggerFactory;
 import com.iwuyc.tools.commons.basic.ArrayUtil;
 import com.iwuyc.tools.commons.basic.MultiMap;
 import com.iwuyc.tools.commons.classtools.typeconverter.TypeConverter;
+import com.iwuyc.tools.commons.classtools.typeconverter.TypeConverterConstant;
 
 /**
  * @Auth iWuYc
@@ -67,13 +68,13 @@ public abstract class ClassUtils
     {
 
         private Class<I> targetClass;
-        private String clazzName;
+        private Class<?> clazz;
         private Object[] args;
 
-        public InstancePrivilegedAction(Class<I> targetClass, String clazzName, Object[] args)
+        public InstancePrivilegedAction(Class<I> targetClass, Class<?> clazz, Object[] args)
         {
             this.targetClass = targetClass;
-            this.clazzName = clazzName;
+            this.clazz = clazz;
             this.args = args;
         }
 
@@ -83,13 +84,13 @@ public abstract class ClassUtils
         {
             try
             {
-                Optional<Class<?>> clazzOpt = loadClass(clazzName);
-                if (!clazzOpt.isPresent())
-                {
-                    return null;
-                }
+                // Optional<Class<?>> clazzOpt = loadClass(clazzName);
+                // if (!clazzOpt.isPresent())
+                // {
+                // return null;
+                // }
 
-                Class<?> clazz = clazzOpt.get();
+                // Class<?> clazz = clazzOpt.get();
 
                 if (!targetClass.isAssignableFrom(clazz))
                 {
@@ -103,7 +104,7 @@ public abstract class ClassUtils
             catch (Exception e)
             {
                 LOG.debug("error:{}", e);
-                LOG.error("Can't init class[{}]", clazzName);
+                LOG.error("Can't init class[{}]", clazz);
             }
             return null;
         }
@@ -182,6 +183,11 @@ public abstract class ClassUtils
             loader = ClassUtils.class.getClassLoader();
         }
         return AccessController.doPrivileged(new ClassLoadPrivilegedAction(classPath, isInitialize, loader));
+    }
+
+    public static Map<Object, Object> injectFields(Object instance, Map<String, Object> fieldAndVal)
+    {
+        return injectFields(instance, fieldAndVal, null);
     }
 
     /**
@@ -297,13 +303,18 @@ public abstract class ClassUtils
      *            类型转换器集合
      * @return
      */
-    @SuppressWarnings("unchecked")
-    private static Object convert(Class<? extends Object> sourceType, Class<?> targetType, Object val,
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    private static Object convert(Class<? extends Object> sourceType, Class targetType, Object val,
             MultiMap<Class<? extends Object>, TypeConverter<? extends Object, ? extends Object>> typeConverters)
     {
         if (sourceType == targetType)
         {
             return val;
+        }
+
+        if (null == typeConverters)
+        {
+            typeConverters = TypeConverterConstant.DEFAULT_CONVERTERS;
         }
 
         Object rejectVal = null;
@@ -320,7 +331,7 @@ public abstract class ClassUtils
             LOG.warn("Can't find any convert for this type[{}]", targetType);
             return val;
         }
-        rejectVal = ((TypeConverter<Object, Object>) supportConverterOpt.get()).convert(val);
+        rejectVal = ((TypeConverter<Object, Object>) supportConverterOpt.get()).convert(val, targetType);
         return rejectVal;
     }
 
@@ -337,7 +348,17 @@ public abstract class ClassUtils
      */
     public static <I> I instance(Class<I> targetClass, String clazzName, Object... args)
     {
-        return AccessController.doPrivileged(new InstancePrivilegedAction<I>(targetClass, clazzName, args));
+        Optional<Class<?>> clazzOpt = loadClass(clazzName);
+        if (!clazzOpt.isPresent())
+        {
+            return null;
+        }
+        return instance(targetClass, clazzOpt.get(), args);
+    }
+
+    public static <I> I instance(Class<I> targetClass, Class<?> clazz, Object... args)
+    {
+        return AccessController.doPrivileged(new InstancePrivilegedAction<I>(targetClass, clazz, args));
     }
 
     /**

@@ -14,27 +14,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.iwuyc.tools.commons.basic.MapUtil;
-import com.iwuyc.tools.commons.basic.MultiMap;
 import com.iwuyc.tools.commons.classtools.ClassUtils;
-import com.iwuyc.tools.commons.classtools.typeconverter.String2Int;
-import com.iwuyc.tools.commons.classtools.typeconverter.TypeConverter;
 import com.iwuyc.tools.commons.thread.conf.ConfigConstant;
 import com.iwuyc.tools.commons.thread.conf.ThreadPoolConfig;
 import com.iwuyc.tools.commons.thread.conf.UsingConfig;
-import com.iwuyc.tools.commons.thread.conf.typeconverter.String2TimeTupleConverter;
 import com.iwuyc.tools.commons.thread.impl.DefaultThreadPoolsService;
 
 public class Config
 {
     private static final Logger LOG = LoggerFactory.getLogger(Config.class);
 
-    private static final MultiMap<Class<? extends Object>, TypeConverter<? extends Object, ? extends Object>> typeConverters = new MultiMap<>();
-
-    static
-    {
-        typeConverters.add(String.class, new String2Int());
-        typeConverters.add(String.class, new String2TimeTupleConverter());
-    }
     /**
      * 线程池配置缓存。key是线程池的名字，val为线程池的配置实例。
      */
@@ -138,7 +127,7 @@ public class Config
         injectFieldVal.put("threadPoolsName", threadPoolsName);
 
         ThreadPoolConfig config = new ThreadPoolConfig();
-        Map<Object, Object> otherSetting = ClassUtils.injectFields(config, injectFieldVal, typeConverters);
+        Map<Object, Object> otherSetting = ClassUtils.injectFields(config, injectFieldVal);
         config.setOtherSetting(otherSetting);
 
         threadConfigCache.put(config.getThreadPoolsName(), config);
