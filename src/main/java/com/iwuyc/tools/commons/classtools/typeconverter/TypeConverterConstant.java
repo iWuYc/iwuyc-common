@@ -10,6 +10,7 @@ public class TypeConverterConstant
     {
         DEFAULT_CONVERTERS.add(String.class, new String2Number());
         DEFAULT_CONVERTERS.add(String.class, new String2TimeTupleConverter());
+        DEFAULT_CONVERTERS.add(String.class, new String2Date());
         DEFAULT_CONVERTERS.add(Object.class, new Object2String());
     }
 }

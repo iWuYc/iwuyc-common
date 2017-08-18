@@ -84,14 +84,6 @@ public abstract class ClassUtils
         {
             try
             {
-                // Optional<Class<?>> clazzOpt = loadClass(clazzName);
-                // if (!clazzOpt.isPresent())
-                // {
-                // return null;
-                // }
-
-                // Class<?> clazz = clazzOpt.get();
-
                 if (!targetClass.isAssignableFrom(clazz))
                 {
                     return null;
