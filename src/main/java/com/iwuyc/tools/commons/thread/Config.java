@@ -20,8 +20,7 @@ import com.iwuyc.tools.commons.thread.conf.ThreadPoolConfig;
 import com.iwuyc.tools.commons.thread.conf.UsingConfig;
 import com.iwuyc.tools.commons.thread.impl.DefaultThreadPoolsService;
 
-public class Config
-{
+public class Config {
     private static final Logger LOG = LoggerFactory.getLogger(Config.class);
 
     /**
@@ -36,8 +35,7 @@ public class Config
 
     private Properties propertis;
 
-    public Config()
-    {
+    public Config() {
     }
 
     /**
@@ -46,19 +44,16 @@ public class Config
      * @param in
      * @throws IOException
      */
-    public void load(InputStream in) throws IOException
-    {
-        if (null == this.propertis)
-        {
+    public void load(InputStream in) throws IOException {
+        if (null == this.propertis) {
             this.propertis = new Properties();
 
             // 加载默认配置。
-            InputStream defaultSettings = DefaultThreadPoolsService.class
-                    .getResourceAsStream("/thread/thread.properties");
+            InputStream defaultSettings = DefaultThreadPoolsService.class.getResourceAsStream(
+                    "/thread/thread.properties");
             this.propertis.load(defaultSettings);
         }
-        if (null != in)
-        {
+        if (null != in) {
             propertis.load(in);
         }
 
@@ -71,14 +66,12 @@ public class Config
         usingConfig(usingInfo);
     }
 
-    private void usingConfig(Map<Object, Object> usingInfo)
-    {
+    private void usingConfig(Map<Object, Object> usingInfo) {
         String key = null;
         String prefixUsingDomain = null;
         String config = null;
         UsingConfig usingConfig = null;
-        for (Entry<Object, Object> item : usingInfo.entrySet())
-        {
+        for (Entry<Object, Object> item : usingInfo.entrySet()) {
             key = String.valueOf(item.getKey());
             prefixUsingDomain = key.substring(ConfigConstant.THREAD_USING_PRENAME.length() + 1);
 
@@ -89,8 +82,7 @@ public class Config
 
     }
 
-    private void config(Map<Object, Object> configInfo)
-    {
+    private void config(Map<Object, Object> configInfo) {
 
         Set<Object> keys = configInfo.keySet();
 
@@ -98,14 +90,12 @@ public class Config
         String key = null;
         Map<Object, Object> threadPoolFacotryConfig = null;
 
-        while (!keys.isEmpty())
-        {
+        while (!keys.isEmpty()) {
             key = String.valueOf(keys.iterator().next());
             threadPoolsNamePrefix = findThreadNameIncludePrefix(key);
             threadPoolFacotryConfig = MapUtil.findEntryByPrefixKey(configInfo, threadPoolsNamePrefix);
 
-            threadPoolFacotryConfig.forEach((K, V) ->
-            {
+            threadPoolFacotryConfig.forEach((K, V) -> {
                 configInfo.remove(K);
             });
 
@@ -115,11 +105,9 @@ public class Config
         }
     }
 
-    private void threadPoolFactoryConfig(String prefix, Map<Object, Object> threadPoolConfig)
-    {
+    private void threadPoolFactoryConfig(String prefix, Map<Object, Object> threadPoolConfig) {
         final Map<String, Object> injectFieldVal = new HashMap<>();
-        threadPoolConfig.forEach((K, V) ->
-        {
+        threadPoolConfig.forEach((K, V) -> {
             String newKey = String.valueOf(K).substring(prefix.length() + 1);
             injectFieldVal.put(newKey, V);
         });
@@ -133,43 +121,33 @@ public class Config
         threadConfigCache.put(config.getThreadPoolsName(), config);
     }
 
-    private String findThreadNameIncludePrefix(String key)
-    {
+    private String findThreadNameIncludePrefix(String key) {
         int prefixLength = ConfigConstant.THREAD_CONFIG_PRENAME.length();
         int endIndex = key.indexOf('.', prefixLength + 1);
         return key.substring(0, endIndex);
     }
 
-    public UsingConfig findUsingSetting(String domain)
-    {
+    public UsingConfig findUsingSetting(String domain) {
         UsingConfig config = null;
         int lastDotIndex = -1;
-        do
-        {
+        do {
             config = usingConfigCache.get(domain);
-            if (null != config)
-            {
-                return config;
-            }
+            if (null != config) { return config; }
             lastDotIndex = domain.lastIndexOf('.');
-            if (lastDotIndex < 0)
-            {
+            if (lastDotIndex < 0) {
                 break;
             }
             domain = domain.substring(0, lastDotIndex);
-        }
-        while (true);
+        } while (true);
 
         config = usingConfigCache.get("root");
 
         return config;
     }
 
-    public ThreadPoolConfig findThreadPoolConfig(String threadPoolsName)
-    {
+    public ThreadPoolConfig findThreadPoolConfig(String threadPoolsName) {
         ThreadPoolConfig config = this.threadConfigCache.get(threadPoolsName);
-        if (null == config)
-        {
+        if (null == config) {
             config = this.threadConfigCache.get("default");
         }
         return config;
@@ -182,21 +160,17 @@ public class Config
      *            可以为空，空则取classpath中/thread/thread.properties的默认配置
      * @return
      */
-    public static ThreadPoolsService config(File file)
-    {
+    public static ThreadPoolsService config(File file) {
         Config config = new Config();
-        try
-        {
+        try {
             InputStream in = null;
-            if (null != file)
-            {
+            if (null != file) {
                 in = new FileInputStream(file);
             }
             config.load(in);
             return new DefaultThreadPoolsService(config);
         }
-        catch (IOException e)
-        {
+        catch (IOException e) {
             LOG.error("Config thread pool service raise an error:{}", e);
         }
         return null;

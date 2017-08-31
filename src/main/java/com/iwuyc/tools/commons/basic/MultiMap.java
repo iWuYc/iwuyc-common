@@ -13,28 +13,23 @@ import java.util.LinkedList;
  * @param <V>
  *            value
  */
-public class MultiMap<K, V> extends HashMap<K, LinkedList<V>>
-{
+public class MultiMap<K, V> extends HashMap<K, LinkedList<V>> {
 
     private static final long serialVersionUID = 889155975950159878L;
 
-    public void add(K key, V val)
-    {
+    public void add(K key, V val) {
         LinkedList<V> valContainer = getCollection(key);
         valContainer.add(val);
     }
 
-    public void addFirst(K key, V val)
-    {
+    public void addFirst(K key, V val) {
         LinkedList<V> valContainer = getCollection(key);
         valContainer.addFirst(val);
     }
 
-    private LinkedList<V> getCollection(K key)
-    {
+    private LinkedList<V> getCollection(K key) {
         LinkedList<V> result = this.get(key);
-        if (null == result)
-        {
+        if (null == result) {
             result = new LinkedList<>();
             this.put(key, result);
         }

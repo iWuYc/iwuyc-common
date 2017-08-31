@@ -2,8 +2,7 @@ package com.iwuyc.tools.commons.thread;
 
 import java.util.concurrent.ExecutorService;
 
-public interface ThreadPoolsService
-{
+public interface ThreadPoolsService {
     /**
      * 通过类进行获取相应的线程池实例。
      * 

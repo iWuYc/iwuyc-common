@@ -1,7 +1,6 @@
 package com.iwuyc.tools.commons.thread.conf;
 
-public interface ConfigConstant
-{
+public interface ConfigConstant {
     /**
      * 配置中以这个开头的，表示是线程池的创建配置
      */

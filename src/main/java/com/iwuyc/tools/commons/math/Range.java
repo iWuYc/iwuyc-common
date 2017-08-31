@@ -6,42 +6,33 @@ import java.util.Collection;
 
 import com.iwuyc.tools.commons.basic.StringUtils;
 
-public class Range
-{
-    private static class BoundaryNumber extends BigDecimal
-    {
+public class Range {
+    private static class BoundaryNumber extends BigDecimal {
 
         private static final long serialVersionUID = 2910914454149571890L;
         private boolean isMax;
         private String name;
 
-        public BoundaryNumber(String val, boolean isMax)
-        {
+        public BoundaryNumber(String val, boolean isMax) {
             super("0");
             this.name = val;
             this.isMax = isMax;
         }
 
         @Override
-        public int compareTo(BigDecimal val)
-        {
-            if (isMax)
-            {
-                return 1;
-            }
+        public int compareTo(BigDecimal val) {
+            if (isMax) { return 1; }
             return -1;
         }
 
         @Override
-        public String toString()
-        {
+        public String toString() {
             return "BoundaryNumber [name=" + name + "]";
         }
 
     }
 
-    private static class RangeItem
-    {
+    private static class RangeItem {
 
         private BigDecimal min;
         private BigDecimal max;
@@ -49,36 +40,25 @@ public class Range
         private byte flag = 0;
 
         @Override
-        public String toString()
-        {
+        public String toString() {
             return "Range [min=" + min + ", max=" + max + ", flag=" + flag + "]";
         }
 
-        private boolean judg(BigDecimal number)
-        {
+        private boolean judg(BigDecimal number) {
             int compareMin = this.min.compareTo(number);
-            if (compareMin > 0)
-            {
+            if (compareMin > 0) {
                 return false;
             }
-            else if (0 == compareMin)
-            {
-                return 0 != (this.flag & CONTAIN_LEAF);
-            }
+            else if (0 == compareMin) { return 0 != (this.flag & CONTAIN_LEAF); }
             int compareMax = this.max.compareTo(number);
-            if (compareMax < 0)
-            {
+            if (compareMax < 0) {
                 return false;
             }
-            else if (0 == compareMax)
-            {
-                return 0 != (this.flag & CONTAIN_RIGHT);
-            }
+            else if (0 == compareMax) { return 0 != (this.flag & CONTAIN_RIGHT); }
             return true;
         }
 
-        private boolean verify()
-        {
+        private boolean verify() {
             return this.max.compareTo(this.min) >= 0;
         }
     }
@@ -100,54 +80,44 @@ public class Range
      *                如果表达式有问题，则会抛出这个错误。
      * @return range 实例
      */
-    public static Range compiler(String rangeStr) throws IllegalArgumentException
-    {
+    public static Range compiler(String rangeStr) throws IllegalArgumentException {
         Range rootRange = new Range();
         String[] rangeStrArr = rangeStr.split("[|]+");
         RangeItem rangeItem = null;
-        for (String rangeStrItem : rangeStrArr)
-        {
+        for (String rangeStrItem : rangeStrArr) {
             rangeStrItem = rangeStrItem.trim();
-            if (StringUtils.isEmpty(rangeStrItem))
-            {
+            if (StringUtils.isEmpty(rangeStrItem)) {
                 continue;
             }
             rangeItem = itemCompiler(rangeStrItem);
-            if (!rangeItem.verify())
-            {
-                throw new IllegalArgumentException("The expression was wrong.Expression:" + rangeStrItem);
-            }
+            if (!rangeItem.verify()) { throw new IllegalArgumentException("The expression was wrong.Expression:"
+                    + rangeStrItem); }
 
             rootRange.ranges.add(rangeItem);
         }
         return rootRange;
     }
 
-    private static RangeItem itemCompiler(String rangeStr)
-    {
+    private static RangeItem itemCompiler(String rangeStr) {
         RangeItem range = new RangeItem();
 
         StringBuilder sb = new StringBuilder(rangeStr);
 
         int firstStartIndex = sb.indexOf("[");
-        if (firstStartIndex < 0)
-        {
+        if (firstStartIndex < 0) {
             firstStartIndex = sb.indexOf("(");
         }
-        else
-        {
+        else {
             range.flag |= Range.CONTAIN_LEAF;
         }
 
         int splitFlagIndex = sb.indexOf(",");
 
         int secondEndIndex = sb.indexOf("]");
-        if (secondEndIndex < 0)
-        {
+        if (secondEndIndex < 0) {
             secondEndIndex = sb.indexOf(")");
         }
-        else
-        {
+        else {
             range.flag |= Range.CONTAIN_RIGHT;
         }
 
@@ -159,21 +129,15 @@ public class Range
         return range;
     }
 
-    private static BigDecimal builderBigDecimal(String numStr)
-    {
-        if ("max".equals(numStr))
-        {
+    private static BigDecimal builderBigDecimal(String numStr) {
+        if ("max".equals(numStr)) {
             return MAX;
         }
-        else if ("min".equals(numStr))
-        {
-            return MIN;
-        }
+        else if ("min".equals(numStr)) { return MIN; }
         return new BigDecimal(numStr);
     }
 
-    private Range()
-    {
+    private Range() {
     }
 
     /**
@@ -183,8 +147,7 @@ public class Range
      *            待判断的数字
      * @return 如果在范围内，则返回true，否则返回false。
      */
-    public boolean inRange(Number num)
-    {
+    public boolean inRange(Number num) {
         BigDecimal number = new BigDecimal(String.valueOf(num));
         return this.inRange(number);
     }
@@ -196,21 +159,15 @@ public class Range
      *            待判断的数字
      * @return 如果在范围内，则返回true，否则返回false。
      */
-    public boolean inRange(BigDecimal number)
-    {
-        for (RangeItem range : ranges)
-        {
-            if (range.judg(number))
-            {
-                return true;
-            }
+    public boolean inRange(BigDecimal number) {
+        for (RangeItem range : ranges) {
+            if (range.judg(number)) { return true; }
         }
         return false;
     }
 
     @Override
-    public String toString()
-    {
+    public String toString() {
         return "Range [ranges=" + ranges + "]";
     }
 }

@@ -4,18 +4,15 @@ import java.util.Date;
 
 import com.iwuyc.tools.commons.util.TimeUtil;
 
-public class String2Date extends AbstractStringConverter<Date>
-{
+public class String2Date extends AbstractStringConverter<Date> {
 
     @Override
-    protected Date converterData(String data, Class<? extends Date> targetType)
-    {
+    protected Date converterData(String data, Class<? extends Date> targetType) {
         return TimeUtil.parser(data);
     }
 
     @Override
-    protected boolean isSupport(Class<?> target)
-    {
+    protected boolean isSupport(Class<?> target) {
         return target.isAssignableFrom(Date.class);
     }
 

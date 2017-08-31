@@ -17,8 +17,7 @@ import com.iwuyc.tools.commons.thread.ThreadPoolsService;
 import com.iwuyc.tools.commons.thread.conf.ThreadPoolConfig;
 import com.iwuyc.tools.commons.thread.conf.UsingConfig;
 
-public class DefaultThreadPoolsService implements ThreadPoolsService
-{
+public class DefaultThreadPoolsService implements ThreadPoolsService {
 
     private static final Logger LOG = LoggerFactory.getLogger(DefaultThreadPoolsService.class);
 
@@ -26,48 +25,39 @@ public class DefaultThreadPoolsService implements ThreadPoolsService
     private ReadWriteLock lock = new ReentrantReadWriteLock(true);
     private Config config;
 
-    public DefaultThreadPoolsService(Config config)
-    {
+    public DefaultThreadPoolsService(Config config) {
         this.config = config;
     }
 
     @Override
-    public ExecutorService getExecutorService(Class<?> clazz)
-    {
+    public ExecutorService getExecutorService(Class<?> clazz) {
 
         String domain = null;
-        if (null == clazz)
-        {
+        if (null == clazz) {
             domain = "root";
         }
-        else
-        {
+        else {
             domain = clazz.getName();
         }
         LOG.debug("Get executor service for :{}.domain is:{}", clazz, domain);
         ExecutorService executorSer = executorServiceCache.get(domain);
-        if (null == executorSer)
-        {
+        if (null == executorSer) {
             Lock writeLock = lock.writeLock();
-            try
-            {
+            try {
                 writeLock.lock();
                 executorSer = findThreadPoolOrCreate(domain);
             }
-            finally
-            {
+            finally {
                 writeLock.unlock();
             }
         }
         return executorSer;
     }
 
-    private ExecutorService findThreadPoolOrCreate(String domain)
-    {
+    private ExecutorService findThreadPoolOrCreate(String domain) {
         UsingConfig usingConfig = config.findUsingSetting(domain);
         ExecutorService executorService = executorServiceCache.get(usingConfig.getDomain());
-        if (null != executorService)
-        {
+        if (null != executorService) {
             this.executorServiceCache.put(domain, executorService);
             return executorService;
         }
@@ -81,16 +71,14 @@ public class DefaultThreadPoolsService implements ThreadPoolsService
         return executorService;
     }
 
-    private ExecutorService createNewThreadPoolFactory(ThreadPoolConfig threadPoolConfig)
-    {
-        ExecutorServiceFactory factory = ClassUtils.instance(ExecutorServiceFactory.class,
-                threadPoolConfig.getFactory());
+    private ExecutorService createNewThreadPoolFactory(ThreadPoolConfig threadPoolConfig) {
+        ExecutorServiceFactory factory = ClassUtils.instance(ExecutorServiceFactory.class, threadPoolConfig
+                .getFactory());
         return factory.create(threadPoolConfig);
     }
 
     @Override
-    public Config getConfig()
-    {
+    public Config getConfig() {
         return this.config;
     }
 

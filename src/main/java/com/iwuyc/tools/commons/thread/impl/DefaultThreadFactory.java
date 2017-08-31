@@ -5,8 +5,7 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import com.iwuyc.tools.commons.basic.StringUtils;
 
-public class DefaultThreadFactory implements ThreadFactory
-{
+public class DefaultThreadFactory implements ThreadFactory {
     /**
      * 线程名字前缀
      */
@@ -23,24 +22,20 @@ public class DefaultThreadFactory implements ThreadFactory
      * @param threadPreName
      *            线程名前缀
      */
-    public DefaultThreadFactory(String threadPreName)
-    {
-        if (StringUtils.isEmpty(threadPreName))
-        {
+    public DefaultThreadFactory(String threadPreName) {
+        if (StringUtils.isEmpty(threadPreName)) {
             threadPreName = "thframe";
         }
         this.threadPreName = threadPreName;
     }
 
     @Override
-    public Thread newThread(Runnable r)
-    {
+    public Thread newThread(Runnable r) {
         String threadName = builderThreadName();
         return new Thread(r, threadName);
     }
 
-    private String builderThreadName()
-    {
+    private String builderThreadName() {
         return new StringBuilder(threadPreName).append('-').append(flag.getAndIncrement()).toString();
     }
 }

@@ -11,8 +11,7 @@ import com.iwuyc.tools.commons.basic.type.TimeTuple;
  * @author iWuYc
  *
  */
-public class ThreadPoolConfig
-{
+public class ThreadPoolConfig {
 
     /**
      * 线程池的名字
@@ -41,93 +40,75 @@ public class ThreadPoolConfig
 
     private Map<Object, Object> otherSetting;
 
-    public ThreadPoolConfig()
-    {
+    public ThreadPoolConfig() {
         this(null, null);
     }
 
-    public ThreadPoolConfig(String factory, String threadPoolsName)
-    {
+    public ThreadPoolConfig(String factory, String threadPoolsName) {
 
-        if (StringUtils.isEmpty(factory))
-        {
+        if (StringUtils.isEmpty(factory)) {
             factory = "com.iwuyc.tools.commons.thread.impl.ThreadPoolExecutor";
         }
         this.factory = factory;
 
-        if (StringUtils.isEmpty(threadPoolsName))
-        {
+        if (StringUtils.isEmpty(threadPoolsName)) {
             threadPoolsName = "thframe";
         }
         this.threadPoolsName = threadPoolsName;
 
     }
 
-    public String getThreadPoolsName()
-    {
+    public String getThreadPoolsName() {
         return threadPoolsName;
     }
 
-    public int getCorePoolSize()
-    {
+    public int getCorePoolSize() {
         return corePoolSize;
     }
 
-    public void setCorePoolSize(int corePoolSize)
-    {
+    public void setCorePoolSize(int corePoolSize) {
         this.corePoolSize = corePoolSize;
     }
 
-    public int getMaximumPoolSize()
-    {
+    public int getMaximumPoolSize() {
         return maximumPoolSize;
     }
 
-    public void setMaximumPoolSize(int maximumPoolSize)
-    {
+    public void setMaximumPoolSize(int maximumPoolSize) {
         this.maximumPoolSize = maximumPoolSize;
     }
 
-    public TimeTuple getKeepAliveTime()
-    {
-        if (null == keepAliveTime)
-        {
+    public TimeTuple getKeepAliveTime() {
+        if (null == keepAliveTime) {
             this.keepAliveTime = TimeTuple.create(10, TimeUnit.MINUTES);
         }
         return keepAliveTime;
     }
 
-    public void setKeepAliveTime(TimeTuple keepAliveTime)
-    {
+    public void setKeepAliveTime(TimeTuple keepAliveTime) {
         this.keepAliveTime = keepAliveTime;
     }
 
-    public int getMaxQueueSize()
-    {
+    public int getMaxQueueSize() {
         return maxQueueSize;
     }
 
-    public void setMaxQueueSize(int maxQueueSize)
-    {
+    public void setMaxQueueSize(int maxQueueSize) {
         this.maxQueueSize = maxQueueSize;
     }
 
-    public String getFactory()
-    {
+    public String getFactory() {
         return factory;
     }
 
-    public Map<Object, Object> getOtherSetting()
-    {
-        if (null == this.otherSetting)
-        {
+    public Map<Object, Object> getOtherSetting() {
+        if (null == this.otherSetting) {
             this.otherSetting = Collections.emptyMap();
         }
         return otherSetting;
     }
 
-    public void setOtherSetting(Map<Object, Object> otherSetting)
-    {
+    public void setOtherSetting(Map<Object, Object> otherSetting) {
         this.otherSetting = otherSetting;
     }
 }

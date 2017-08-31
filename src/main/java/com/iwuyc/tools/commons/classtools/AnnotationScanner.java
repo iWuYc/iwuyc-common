@@ -28,8 +28,7 @@ import com.iwuyc.tools.commons.basic.StringUtils;
  * @since
  * @time 2017-08-04 15:23
  */
-public class AnnotationScanner implements Runnable
-{
+public class AnnotationScanner implements Runnable {
 
     private static final Logger LOG = LoggerFactory.getLogger(AnnotationScanner.class);
 
@@ -37,13 +36,10 @@ public class AnnotationScanner implements Runnable
     private final Collection<Class<?>> result;
     private final Class<? extends Annotation> annotation;
 
-    public AnnotationScanner(Class<? extends Annotation> annotation, String... packages)
-    {
+    public AnnotationScanner(Class<? extends Annotation> annotation, String... packages) {
         this.annotation = annotation;
-        for (String packageName : packages)
-        {
-            if (StringUtils.isEmpty(packageName))
-            {
+        for (String packageName : packages) {
+            if (StringUtils.isEmpty(packageName)) {
                 continue;
             }
             this.packages.push(packageName);
@@ -52,64 +48,53 @@ public class AnnotationScanner implements Runnable
     }
 
     @Override
-    public void run()
-    {
-        try
-        {
+    public void run() {
+        try {
             String nextPackage = null;
-            while (!packages.isEmpty())
-            {
+            while (!packages.isEmpty()) {
                 nextPackage = packages.pop();
                 removeParentPackage(nextPackage);
                 packageScanner(nextPackage);
             }
         }
-        catch (Exception e)
-        {
+        catch (Exception e) {
             LOG.warn("Raise an error when scanning package.", e);
         }
     }
 
-    private void removeParentPackage(String nextPackage)
-    {
-        if (!packages.isEmpty())
-        {
+    private void removeParentPackage(String nextPackage) {
+        if (!packages.isEmpty()) {
             boolean isParent = nextPackage.startsWith(packages.peek());
-            if (isParent)
-            {
+            if (isParent) {
                 packages.pop();
             }
         }
     }
 
-    private void packageScanner(String packageName) throws Exception
-    {
+    private void packageScanner(String packageName) throws Exception {
         String packageDirName = packageName.replace('.', '/');
         Enumeration<URL> urls = Thread.currentThread().getContextClassLoader().getResources(packageDirName);
 
         URL url = null;
         String protocol = null;
 
-        while (urls.hasMoreElements())
-        {
+        while (urls.hasMoreElements()) {
             url = urls.nextElement();
             protocol = url.getProtocol();
-            switch (protocol)
-            {
-            case "file":
-                scannerAsDir(url, packageName);
-                break;
-            case "jar":
-                scannerAsJar(url, packageName, packageDirName);
-                break;
-            default:
-                throw new UnsupportedOperationException("Unsupported protocol:" + protocol);
+            switch (protocol) {
+                case "file":
+                    scannerAsDir(url, packageName);
+                    break;
+                case "jar":
+                    scannerAsJar(url, packageName, packageDirName);
+                    break;
+                default:
+                    throw new UnsupportedOperationException("Unsupported protocol:" + protocol);
             }
         }
     }
 
-    private void scannerAsJar(URL url, String packageName, String packageDirName) throws Exception
-    {
+    private void scannerAsJar(URL url, String packageName, String packageDirName) throws Exception {
         JarFile jar = ((JarURLConnection) url.openConnection()).getJarFile();
         Enumeration<JarEntry> entries = jar.entries();
 
@@ -118,26 +103,21 @@ public class AnnotationScanner implements Runnable
         String className = null;
         String classFullName = null;
 
-        while (entries.hasMoreElements())
-        {
+        while (entries.hasMoreElements()) {
             entry = entries.nextElement();
             entriesName = entry.getName();
-            if (entriesName.charAt(0) == '/')
-            {
+            if (entriesName.charAt(0) == '/') {
                 entriesName = entriesName.substring(1);
             }
 
-            if (!entriesName.startsWith(packageDirName))
-            {
+            if (!entriesName.startsWith(packageDirName)) {
                 continue;
             }
-            if (entry.isDirectory())
-            {
+            if (entry.isDirectory()) {
                 reproducePackageAndPushStack(entriesName, packageDirName);
                 continue;
             }
-            else if (entriesName.endsWith(".class"))
-            {
+            else if (entriesName.endsWith(".class")) {
                 className = extractClassName(entriesName);
                 classFullName = toClassFullName(packageName, className);
                 annotationClass(classFullName);
@@ -146,8 +126,7 @@ public class AnnotationScanner implements Runnable
         }
     }
 
-    private String extractClassName(String entriesName)
-    {
+    private String extractClassName(String entriesName) {
         String className = entriesName.substring(entriesName.lastIndexOf('/') + 1);
         return className;
     }
@@ -160,78 +139,55 @@ public class AnnotationScanner implements Runnable
      * @param packageDirName
      *            当前包名
      */
-    private void reproducePackageAndPushStack(String entriesName, String packageDirName)
-    {
+    private void reproducePackageAndPushStack(String entriesName, String packageDirName) {
         String newPackageName = entriesName.substring(0, entriesName.lastIndexOf('/'));
-        if (packageDirName.equals(newPackageName))
-        {
-            return;
-        }
+        if (packageDirName.equals(newPackageName)) { return; }
         this.packages.push(newPackageName);
     }
 
     private static final String CLASS_TEMPLATE = "%s.%s";
 
-    private void scannerAsDir(URL url, String packageName) throws Exception
-    {
+    private void scannerAsDir(URL url, String packageName) throws Exception {
         String dirPath = URLDecoder.decode(url.getFile(), StandardCharsets.UTF_8.name());
         File dir = new File(dirPath);
         File[] files = dir.listFiles();
         String newPackage = null;
         String className = null;
-        for (File file : files)
-        {
-            if (file.isDirectory())
-            {
+        for (File file : files) {
+            if (file.isDirectory()) {
                 newPackage = packageName + '.' + file.getName();
                 this.packages.push(newPackage);
                 continue;
             }
             boolean isClassFile = file.getName().endsWith(".class");
-            if (isClassFile)
-            {
+            if (isClassFile) {
                 className = toClassFullName(packageName, file.getName());
                 annotationClass(className);
             }
         }
     }
 
-    private void annotationClass(String className) throws ClassNotFoundException
-    {
+    private void annotationClass(String className) throws ClassNotFoundException {
         int anonymityClassLocation = className.lastIndexOf('$');
         // 匿名内部类，则直接跳过
-        if (anonymityClassLocation >= 0 && className.substring(anonymityClassLocation).matches("\\$[0-9]*"))
-        {
-            return;
-        }
+        if (anonymityClassLocation >= 0 && className.substring(anonymityClassLocation).matches("\\$[0-9]*")) { return; }
         Optional<Class<?>> clazzOpt = ClassUtils.loadClass(className, true, null);
-        if (!clazzOpt.isPresent())
-        {
-            return;
-        }
+        if (!clazzOpt.isPresent()) { return; }
         Class<?> clazz = clazzOpt.get();
         // 排除注解使用在annotation中的情况。
-        if (Annotation.class.isAssignableFrom(clazz))
-        {
-            return;
-        }
+        if (Annotation.class.isAssignableFrom(clazz)) { return; }
 
         Annotation an = clazz.getAnnotation(this.annotation);
         // 当前类中没有该注解
-        if (null == an)
-        {
+        if (null == an) {
             // 尝试在注解中寻找该注解，如果不存在则直接返回
-            if (!tryGetFromAnnotation(clazz))
-            {
-                return;
-            }
+            if (!tryGetFromAnnotation(clazz)) { return; }
             // this.annotationStack.clear();
         }
         this.result.add(clazz);
     }
 
-    private boolean tryGetFromAnnotation(Class<?> clazz)
-    {
+    private boolean tryGetFromAnnotation(Class<?> clazz) {
         // 用于防止重复扫描同一个annotation陷入死循环。
         Stack<Annotation> annotationStack = new Stack<>();
         Set<Annotation> scannerAlready = new HashSet<>();
@@ -242,16 +198,13 @@ public class AnnotationScanner implements Runnable
         Class<?> nextScannerAnnotation = null;
 
         boolean result = false;
-        while (!annotationStack.isEmpty())
-        {
+        while (!annotationStack.isEmpty()) {
             item = annotationStack.pop();
-            if (scannerAlready.contains(item))
-            {
+            if (scannerAlready.contains(item)) {
                 break;
             }
             annotation = item.annotationType().getAnnotation(this.annotation);
-            if (null != annotation)
-            {
+            if (null != annotation) {
                 result = true;
                 break;
             }
@@ -264,23 +217,19 @@ public class AnnotationScanner implements Runnable
         return result;
     }
 
-    private void pushAnnotation2Stack(Class<?> clazz, Stack<Annotation> annotationStack)
-    {
+    private void pushAnnotation2Stack(Class<?> clazz, Stack<Annotation> annotationStack) {
         Annotation[] annos = clazz.getAnnotations();
-        for (Annotation annotation : annos)
-        {
+        for (Annotation annotation : annos) {
             annotationStack.push(annotation);
         }
     }
 
-    private String toClassFullName(String packageName, String className)
-    {
+    private String toClassFullName(String packageName, String className) {
         className = className.substring(0, className.lastIndexOf('.'));
         return String.format(CLASS_TEMPLATE, packageName, className);
     }
 
-    public Collection<Class<?>> getResult()
-    {
+    public Collection<Class<?>> getResult() {
         return result;
     }
 

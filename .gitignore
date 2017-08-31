@@ -3,6 +3,8 @@
 */target/
 /RemoteSystemsTempFiles
 */.classpath
-.project
-*/.settings
-/target/
+*.project*
+*target*
+*.classpath*
+*.settings*
+

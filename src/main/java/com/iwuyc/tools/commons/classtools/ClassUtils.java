@@ -29,50 +29,39 @@ import com.iwuyc.tools.commons.classtools.typeconverter.TypeConverterConstant;
  * @since
  * @time 2017-08-07 16:25
  */
-public abstract class ClassUtils
-{
+public abstract class ClassUtils {
 
     private final static Field FIELD_MODIFIERS;
-    static
-    {
+    static {
         FIELD_MODIFIERS = findField(Field.class, "modifiers");
     }
 
-    private static class FieldPrivilegedAction implements PrivilegedAction<Field>
-    {
+    private static class FieldPrivilegedAction implements PrivilegedAction<Field> {
         private Class<?> clazz;
         private String fieldName;
 
-        public FieldPrivilegedAction(Class<?> clazz, String fieldName)
-        {
+        public FieldPrivilegedAction(Class<?> clazz, String fieldName) {
             this.clazz = clazz;
             this.fieldName = fieldName;
         }
 
         @Override
-        public Field run()
-        {
+        public Field run() {
             Field[] fields = clazz.getDeclaredFields();
-            for (Field field : fields)
-            {
-                if (field.getName().equals(fieldName))
-                {
-                    return field;
-                }
+            for (Field field : fields) {
+                if (field.getName().equals(fieldName)) { return field; }
             }
             return null;
         }
     }
 
-    private static class InstancePrivilegedAction<I> implements PrivilegedAction<I>
-    {
+    private static class InstancePrivilegedAction<I> implements PrivilegedAction<I> {
 
         private Class<I> targetClass;
         private Class<?> clazz;
         private Object[] args;
 
-        public InstancePrivilegedAction(Class<I> targetClass, Class<?> clazz, Object[] args)
-        {
+        public InstancePrivilegedAction(Class<I> targetClass, Class<?> clazz, Object[] args) {
             this.targetClass = targetClass;
             this.clazz = clazz;
             this.args = args;
@@ -80,36 +69,25 @@ public abstract class ClassUtils
 
         @SuppressWarnings("unchecked")
         @Override
-        public I run()
-        {
-            try
-            {
-                if (!targetClass.isAssignableFrom(clazz))
-                {
-                    return null;
-                }
+        public I run() {
+            try {
+                if (!targetClass.isAssignableFrom(clazz)) { return null; }
                 Constructor<?> constructor = getConstructor(clazz);
 
                 Object i = constructor.newInstance(args);
                 return (I) i;
             }
-            catch (Exception e)
-            {
+            catch (Exception e) {
                 LOG.debug("error:{}", e);
                 LOG.error("Can't init class[{}]", clazz);
             }
             return null;
         }
 
-        private Constructor<?> getConstructor(Class<?> clazz) throws NoSuchMethodException, SecurityException
-        {
-            if (ArrayUtil.isEmpty(args))
-            {
-                return clazz.getDeclaredConstructor();
-            }
+        private Constructor<?> getConstructor(Class<?> clazz) throws NoSuchMethodException, SecurityException {
+            if (ArrayUtil.isEmpty(args)) { return clazz.getDeclaredConstructor(); }
             Class<?>[] parameterTypes = new Class<?>[args.length];
-            for (int i = 0; i < parameterTypes.length; i++)
-            {
+            for (int i = 0; i < parameterTypes.length; i++) {
                 parameterTypes[i] = args[i].getClass();
             }
             return clazz.getDeclaredConstructor(parameterTypes);
@@ -117,31 +95,26 @@ public abstract class ClassUtils
 
     }
 
-    private static class ClassLoadPrivilegedAction implements PrivilegedAction<Optional<Class<? extends Object>>>
-    {
+    private static class ClassLoadPrivilegedAction implements PrivilegedAction<Optional<Class<? extends Object>>> {
 
         private ClassLoader loader;
         private String classPath;
         private boolean isInitialize;
 
-        public ClassLoadPrivilegedAction(String classPath, boolean isInitialize, ClassLoader loader)
-        {
+        public ClassLoadPrivilegedAction(String classPath, boolean isInitialize, ClassLoader loader) {
             this.classPath = classPath;
             this.isInitialize = isInitialize;
             this.loader = loader;
         }
 
         @Override
-        public Optional<Class<? extends Object>> run()
-        {
+        public Optional<Class<? extends Object>> run() {
 
             Class<?> result = null;
-            try
-            {
+            try {
                 result = Class.forName(this.classPath, this.isInitialize, this.loader);
             }
-            catch (ClassNotFoundException e)
-            {
+            catch (ClassNotFoundException e) {
                 LOG.error("Can't found class:[{}]", classPath);
             }
             return Optional.ofNullable(result);
@@ -155,30 +128,24 @@ public abstract class ClassUtils
      * 
      * @param classPath
      *            类的名字
-     * @return 一个 {@link Optional} 对象，如果成功加载，则返回相应的对象，否则返回一个
-     *         {@link Optional#empty()}
+     * @return 一个 {@link Optional} 对象，如果成功加载，则返回相应的对象，否则返回一个 {@link Optional#empty()}
      */
-    public static Optional<Class<?>> loadClass(String classPath)
-    {
+    public static Optional<Class<?>> loadClass(String classPath) {
         return loadClass(classPath, null);
     }
 
-    public static Optional<Class<?>> loadClass(String classPath, ClassLoader loader)
-    {
+    public static Optional<Class<?>> loadClass(String classPath, ClassLoader loader) {
         return loadClass(classPath, false, loader);
     }
 
-    public static Optional<Class<?>> loadClass(String classPath, boolean isInitialize, ClassLoader loader)
-    {
-        if (null == loader)
-        {
+    public static Optional<Class<?>> loadClass(String classPath, boolean isInitialize, ClassLoader loader) {
+        if (null == loader) {
             loader = ClassUtils.class.getClassLoader();
         }
         return AccessController.doPrivileged(new ClassLoadPrivilegedAction(classPath, isInitialize, loader));
     }
 
-    public static Map<Object, Object> injectFields(Object instance, Map<String, Object> fieldAndVal)
-    {
+    public static Map<Object, Object> injectFields(Object instance, Map<String, Object> fieldAndVal) {
         return injectFields(instance, fieldAndVal, null);
     }
 
@@ -194,12 +161,8 @@ public abstract class ClassUtils
      * @return 未注入成功的字段跟值，一般是，不存在这个字段，或者，在注入的时候出问题了
      */
     public static Map<Object, Object> injectFields(Object instance, Map<String, Object> fieldAndVal,
-            MultiMap<Class<? extends Object>, TypeConverter<? extends Object, ? extends Object>> typeConverters)
-    {
-        if (null == instance || null == fieldAndVal)
-        {
-            return Collections.emptyMap();
-        }
+            MultiMap<Class<? extends Object>, TypeConverter<? extends Object, ? extends Object>> typeConverters) {
+        if (null == instance || null == fieldAndVal) { return Collections.emptyMap(); }
 
         HashMap<Object, Object> innerMap = new HashMap<>(fieldAndVal);
 
@@ -207,16 +170,13 @@ public abstract class ClassUtils
         Field[] fields = clazz.getDeclaredFields();
         String fieldName = null;
         Object fieldVal = null;
-        for (Field field : fields)
-        {
+        for (Field field : fields) {
             fieldName = field.getName();
             fieldVal = innerMap.get(fieldName);
-            if (null == fieldVal)
-            {
+            if (null == fieldVal) {
                 continue;
             }
-            if (injectField(instance, field, fieldVal, typeConverters))
-            {
+            if (injectField(instance, field, fieldVal, typeConverters)) {
                 innerMap.remove(fieldName);
             }
         }
@@ -225,37 +185,28 @@ public abstract class ClassUtils
     }
 
     private static boolean injectField(Object instance, Field field, Object val,
-            MultiMap<Class<? extends Object>, TypeConverter<? extends Object, ? extends Object>> typeConverters)
-    {
-        try
-        {
+            MultiMap<Class<? extends Object>, TypeConverter<? extends Object, ? extends Object>> typeConverters) {
+        try {
 
             Object rejectVal = convert(val.getClass(), field.getType(), val, typeConverters);
-            if (null == rejectVal)
-            {
-                return false;
-            }
+            if (null == rejectVal) { return false; }
 
             // 字段属性修改，以便可以进行属性设置
             fieldModifier(field);
             return injectField(instance, field, rejectVal);
         }
-        catch (IllegalArgumentException e)
-        {
+        catch (IllegalArgumentException e) {
             LOG.error("Can't inject the field[{}] val[{}].cause:{}", field, val, e);
             return false;
         }
     }
 
-    private static boolean injectField(Object instance, Field field, Object rejectVal)
-    {
-        try
-        {
+    private static boolean injectField(Object instance, Field field, Object rejectVal) {
+        try {
             field.set(instance, rejectVal);
             return true;
         }
-        catch (IllegalArgumentException | IllegalAccessException e)
-        {
+        catch (IllegalArgumentException | IllegalAccessException e) {
 
             LOG.error("Can't inject the field[{}] val[{}].cause:{}", field, rejectVal, e);
             return false;
@@ -268,15 +219,12 @@ public abstract class ClassUtils
      * @param field
      *            待修改字段。
      */
-    private static void fieldModifier(Field field)
-    {
-        if (!field.isAccessible())
-        {
+    private static void fieldModifier(Field field) {
+        if (!field.isAccessible()) {
             field.setAccessible(true);
         }
         int newModifies = field.getModifiers();
-        if (Modifier.isFinal(newModifies))
-        {
+        if (Modifier.isFinal(newModifies)) {
             newModifies = newModifies & ~Modifier.FINAL;
         }
         injectField(field, FIELD_MODIFIERS, newModifies);
@@ -297,29 +245,22 @@ public abstract class ClassUtils
      */
     @SuppressWarnings({ "unchecked", "rawtypes" })
     private static Object convert(Class<? extends Object> sourceType, Class targetType, Object val,
-            MultiMap<Class<? extends Object>, TypeConverter<? extends Object, ? extends Object>> typeConverters)
-    {
-        if (sourceType == targetType)
-        {
-            return val;
-        }
+            MultiMap<Class<? extends Object>, TypeConverter<? extends Object, ? extends Object>> typeConverters) {
+        if (sourceType == targetType) { return val; }
 
-        if (null == typeConverters)
-        {
+        if (null == typeConverters) {
             typeConverters = TypeConverterConstant.DEFAULT_CONVERTERS;
         }
 
         Object rejectVal = null;
         Collection<TypeConverter<? extends Object, ? extends Object>> converters = typeConverters.get(sourceType);
         // 筛选支持转换的转换器，并且返回第一个。
-        Optional<TypeConverter<? extends Object, ? extends Object>> supportConverterOpt = converters.stream()
-                .filter((item) ->
-                {
-                    return item.support(targetType);
-                }).findFirst();
+        Optional<TypeConverter<? extends Object, ? extends Object>> supportConverterOpt = converters.stream().filter((
+                item) -> {
+            return item.support(targetType);
+        }).findFirst();
         // 如果没有找到转换器，则直接将源数据返回。
-        if (!supportConverterOpt.isPresent())
-        {
+        if (!supportConverterOpt.isPresent()) {
             LOG.warn("Can't find any convert for this type[{}]", targetType);
             return val;
         }
@@ -338,18 +279,13 @@ public abstract class ClassUtils
      *            构造函数的参数。
      * @return 实例化后的对象。
      */
-    public static <I> I instance(Class<I> targetClass, String clazzName, Object... args)
-    {
+    public static <I> I instance(Class<I> targetClass, String clazzName, Object... args) {
         Optional<Class<?>> clazzOpt = loadClass(clazzName);
-        if (!clazzOpt.isPresent())
-        {
-            return null;
-        }
+        if (!clazzOpt.isPresent()) { return null; }
         return instance(targetClass, clazzOpt.get(), args);
     }
 
-    public static <I> I instance(Class<I> targetClass, Class<?> clazz, Object... args)
-    {
+    public static <I> I instance(Class<I> targetClass, Class<?> clazz, Object... args) {
         return AccessController.doPrivileged(new InstancePrivilegedAction<I>(targetClass, clazz, args));
     }
 
@@ -360,8 +296,7 @@ public abstract class ClassUtils
      * @param fieldName
      * @return
      */
-    public static Field findField(Class<?> clazz, String fieldName)
-    {
+    public static Field findField(Class<?> clazz, String fieldName) {
         return AccessController.doPrivileged(new FieldPrivilegedAction(clazz, fieldName));
     }
 }
