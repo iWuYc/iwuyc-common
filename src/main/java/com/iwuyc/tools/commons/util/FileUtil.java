@@ -3,6 +3,7 @@ package com.iwuyc.tools.commons.util;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.OutputStream;
 
 /**
@@ -13,19 +14,20 @@ import java.io.OutputStream;
 public class FileUtil {
 
     /**
-     * 将知道长度的0字节数组写入到指定流里
+     * 将指定的byte数组以指定长度，填充到指定的流中。
      * @author @iwuyc
-     * @param out
-     * @param length
+     * @param out 指定的流。
+     * @param length 需要填充的长度，可大于bytes数组的长度。
+     * @param bytesArr bytes数组
      * @throws Exception
      */
-    private static void fillEmptyByte(OutputStream out, int length) throws Exception {
-        final byte[] EMPYT_BYTES = new byte[1024];
+    private static void fillEmptyByte(OutputStream out, int length, byte[] bytesArr) throws IOException {
+
         int cursor = 0;
-        int fillSize = 1024;
+        int fillSize = bytesArr.length;
         while (cursor < length) {
             fillSize = fillSize < length - cursor ? fillSize : length;
-            out.write(EMPYT_BYTES, 0, fillSize);
+            out.write(bytesArr, 0, fillSize);
             cursor += fillSize;
         }
     }
@@ -42,10 +44,18 @@ public class FileUtil {
             return false;
         }
         try (FileInputStream in = new FileInputStream(file); FileOutputStream out = new FileOutputStream(file);) {
+            final byte[] emptyBytes = new byte[1024];
+
             int availableSize = 0;
+            // Fill zero bytes into file.
             while ((availableSize = in.available()) != 0) {
-                fillEmptyByte(out, availableSize);
+                fillEmptyByte(out, availableSize, emptyBytes);
                 in.skip(availableSize);
+            }
+
+            // Delete file.
+            if (file.exists()) {
+                file.delete();
             }
         }
         catch (Exception e) {
