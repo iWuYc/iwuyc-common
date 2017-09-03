@@ -21,7 +21,9 @@ public class Range {
 
         @Override
         public int compareTo(BigDecimal val) {
-            if (isMax) { return 1; }
+            if (isMax) {
+                return 1;
+            }
             return -1;
         }
 
@@ -49,12 +51,16 @@ public class Range {
             if (compareMin > 0) {
                 return false;
             }
-            else if (0 == compareMin) { return 0 != (this.flag & CONTAIN_LEAF); }
+            else if (0 == compareMin) {
+                return 0 != (this.flag & CONTAIN_LEAF);
+            }
             int compareMax = this.max.compareTo(number);
             if (compareMax < 0) {
                 return false;
             }
-            else if (0 == compareMax) { return 0 != (this.flag & CONTAIN_RIGHT); }
+            else if (0 == compareMax) {
+                return 0 != (this.flag & CONTAIN_RIGHT);
+            }
             return true;
         }
 
@@ -73,11 +79,8 @@ public class Range {
 
     /**
      * 编译表达式。表达式以区间表示，多个区间以"|"隔开，最大值以max表示，最小值以min表示
-     * 
-     * @param rangeStr
-     *            表达式字符串。
-     * @exception IllegalArgumentException
-     *                如果表达式有问题，则会抛出这个错误。
+     * @param rangeStr 表达式字符串。
+     * @exception IllegalArgumentException 如果表达式有问题，则会抛出这个错误。
      * @return range 实例
      */
     public static Range compiler(String rangeStr) throws IllegalArgumentException {
@@ -90,8 +93,9 @@ public class Range {
                 continue;
             }
             rangeItem = itemCompiler(rangeStrItem);
-            if (!rangeItem.verify()) { throw new IllegalArgumentException("The expression was wrong.Expression:"
-                    + rangeStrItem); }
+            if (!rangeItem.verify()) {
+                throw new IllegalArgumentException("The expression was wrong.Expression:" + rangeStrItem);
+            }
 
             rootRange.ranges.add(rangeItem);
         }
@@ -133,7 +137,9 @@ public class Range {
         if ("max".equals(numStr)) {
             return MAX;
         }
-        else if ("min".equals(numStr)) { return MIN; }
+        else if ("min".equals(numStr)) {
+            return MIN;
+        }
         return new BigDecimal(numStr);
     }
 
@@ -142,9 +148,7 @@ public class Range {
 
     /**
      * 判断一个数字是否在范围内。
-     * 
-     * @param num
-     *            待判断的数字
+     * @param num 待判断的数字
      * @return 如果在范围内，则返回true，否则返回false。
      */
     public boolean inRange(Number num) {
@@ -154,14 +158,14 @@ public class Range {
 
     /**
      * 判断一个数字是否在范围内。
-     * 
-     * @param number
-     *            待判断的数字
+     * @param number 待判断的数字
      * @return 如果在范围内，则返回true，否则返回false。
      */
     public boolean inRange(BigDecimal number) {
         for (RangeItem range : ranges) {
-            if (range.judg(number)) { return true; }
+            if (range.judg(number)) {
+                return true;
+            }
         }
         return false;
     }

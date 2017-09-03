@@ -1,27 +1,54 @@
 package com.iwuyc.tools.commons.util;
 
 import java.text.DateFormat;
+import java.text.FieldPosition;
 import java.text.ParseException;
+import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.iwuyc.tools.commons.basic.StringUtils;
+
 /**
+ * 时间格式化工具类。由于使用了静态属性，因此一个项目只能有一个格式，如果需要有不同的格式，可以使用
+ * {@link TimeUtil#createThreadSafeDateFormat(String)}创建线程安全的DateFormat对象。
+ * 日期格式可以通过设置环境变量"timeformat"来定义，或者jvm的系统变量"timeformat"，如果都没有设置，则默认值为:"yyyy-MM-dd'T'HH:mm:ss.SSSZ"
  * @author iWuYc
- *
  */
 public class TimeUtil {
     private static final Logger LOG = LoggerFactory.getLogger(TimeUtil.class);
 
+    private static final String FORMAT_PATTERN_KEY = "timeformat";
+
     private static final String DATE_FORMATER_PATTERN;
-    private static final ThreadLocal<DateFormat> THREADLOCAL_DATE_FORMATTER;
+    private static final DateFormat THREADSAFE_DATE_FORMATTER;
+
     static {
-        DATE_FORMATER_PATTERN = System.getProperty("timeformat", "yyyy-MM-dd'T'HH:mm:ss.SSSZ");
-        THREADLOCAL_DATE_FORMATTER = createDateFormatThreadLocal(DATE_FORMATER_PATTERN);
+        DATE_FORMATER_PATTERN = getDateFormat();
+        THREADSAFE_DATE_FORMATTER = createThreadSafeDateFormat(DATE_FORMATER_PATTERN);
     }
 
+    /**
+     * 获取日期的格式
+     * @author @iwuyc
+     * @return
+     */
+    private static String getDateFormat() {
+        String result = System.getProperty(FORMAT_PATTERN_KEY);
+        result = StringUtils.isNotEmpty(result) ? result : System.getenv(FORMAT_PATTERN_KEY);
+        result = StringUtils.isNotEmpty(result) ? result : "yyyy-MM-dd'T'HH:mm:ss.SSSZ";
+        return result;
+    }
+
+    /**
+     * 创建{@link DateFormat}的{@link ThreadLocal}shi
+     * @author @iwuyc
+     * @param datePattern
+     * @return
+     */
     public static ThreadLocal<DateFormat> createDateFormatThreadLocal(final String datePattern) {
         ThreadLocal<DateFormat> threadSafe = ThreadLocal.withInitial(() -> {
             return new SimpleDateFormat(datePattern);
@@ -29,27 +56,66 @@ public class TimeUtil {
         return threadSafe;
     }
 
+    /**
+     * 将日期字符串转换为日期类型
+     * @author @iwuyc
+     * @param time 时间字符串
+     * @return 日期类型
+     */
     public static Date parser(String time) {
         try {
-            DateFormat format = THREADLOCAL_DATE_FORMATTER.get();
-            return format.parse(time);
+            return THREADSAFE_DATE_FORMATTER.parse(time);
         }
         catch (ParseException e) {
             LOG.error("Format pattern:[{}].Can't parse the time:[{}].", DATE_FORMATER_PATTERN, time);
             return null;
         }
-        finally {
-            THREADLOCAL_DATE_FORMATTER.remove();
-        }
     }
 
+    /**
+     * 创建线程安全的 {@link DateFormat} 实例
+     * @author @iwuyc
+     * @param datePattern 日期的格式
+     * @return 日期格式化实例
+     */
+    public static DateFormat createThreadSafeDateFormat(String datePattern) {
+        return new ThreadSafeDateFormat(datePattern);
+    }
+
+    /**
+     * 格式化日期
+     * @author @iwuyc
+     * @param time 格式化日期
+     * @return 格式化后的日期字符串
+     */
     public static String format(Date time) {
-        try {
-            DateFormat format = THREADLOCAL_DATE_FORMATTER.get();
-            return format.format(time);
+        return THREADSAFE_DATE_FORMATTER.format(time);
+    }
+
+    private static class ThreadSafeDateFormat extends DateFormat {
+
+        /**
+         * @author @iwuyc
+         */
+        private static final long serialVersionUID = -8321081491688772093L;
+
+        private ThreadLocal<DateFormat> dateFormatFactory;
+
+        ThreadSafeDateFormat(String datePattern) {
+            this.dateFormatFactory = createDateFormatThreadLocal(datePattern);
         }
-        finally {
-            THREADLOCAL_DATE_FORMATTER.remove();
+
+        @Override
+        public StringBuffer format(Date date, StringBuffer toAppendTo, FieldPosition fieldPosition) {
+            DateFormat simpleDateFormat = this.dateFormatFactory.get();
+            return simpleDateFormat.format(date, toAppendTo, fieldPosition);
         }
+
+        @Override
+        public Date parse(String source, ParsePosition pos) {
+            DateFormat simpleDateFormat = this.dateFormatFactory.get();
+            return simpleDateFormat.parse(source, pos);
+        }
+
     }
 }

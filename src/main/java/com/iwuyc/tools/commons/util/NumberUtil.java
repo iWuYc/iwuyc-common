@@ -25,21 +25,19 @@ public abstract class NumberUtil {
 
     /**
      * 判断类是否为数字类型
-     * 
-     * @param target
-     *            待判断的类对象
+     * @param target 待判断的类对象
      * @return 如果是数字类型，则返回true，否则返回false。
      */
     public static boolean isNumberClass(Class<?> target) {
-        if (null == target) { return false; }
+        if (null == target) {
+            return false;
+        }
         return target.isAssignableFrom(Number.class) || (target.isPrimitive() && target != Void.TYPE);
     }
 
     /**
      * 判断是否是数字。
-     * 
-     * @param object
-     *            待判断的对象。
+     * @param object 待判断的对象。
      * @return 如果是数字，则返回true，否则返回false。
      */
     public static boolean isNumber(Object object) {
@@ -48,7 +46,6 @@ public abstract class NumberUtil {
 
     /**
      * 将字符串类型转换成目标的数字类型
-     * 
      * @param numberFormat
      * @param target
      * @return
@@ -74,8 +71,8 @@ public abstract class NumberUtil {
         else {
             // 如果是其他类型，则该类型必须要有String作为入参的构造函数。如：BigDecimal、BigInteger
             result = ClassUtils.instance(Number.class, target, numberFormat);
-            if (null == result) throw new UnsupportedOperationException("The target type unsupport.Target type:"
-                    + target);
+            if (null == result)
+                throw new UnsupportedOperationException("The target type unsupport.Target type:" + target);
         }
         return (T) result;
     }
