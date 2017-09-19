@@ -19,7 +19,9 @@ public abstract class AbstractStringConverter<T> implements TypeConverter<String
 
     @Override
     public T convert(String from, Class<? extends T> targetType) {
-        if (StringUtils.isEmpty(from)) { throw new IllegalArgumentException("Argument can't be null."); }
+        if (StringUtils.isEmpty(from)) {
+            throw new IllegalArgumentException("Argument can't be null.");
+        }
         return converterData(from, targetType);
     }
 

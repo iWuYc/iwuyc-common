@@ -33,7 +33,9 @@ public class String2TimeTupleConverter extends AbstractStringConverter<TimeTuple
         }
         else {
             timeUnit = MAPPING.get(unitStr);
-            if (null == timeUnit) { throw new IllegalArgumentException("Can't find unit for [" + unitStr + "]"); }
+            if (null == timeUnit) {
+                throw new IllegalArgumentException("Can't find unit for [" + unitStr + "]");
+            }
         }
         return TimeTuple.create(num, timeUnit);
     }

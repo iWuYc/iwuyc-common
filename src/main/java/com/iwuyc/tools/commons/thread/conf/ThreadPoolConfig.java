@@ -9,7 +9,6 @@ import com.iwuyc.tools.commons.basic.type.TimeTuple;
 
 /**
  * @author iWuYc
- *
  */
 public class ThreadPoolConfig {
 

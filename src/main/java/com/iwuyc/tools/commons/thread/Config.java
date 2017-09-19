@@ -40,7 +40,6 @@ public class Config {
 
     /**
      * 可以重复调用多次，增加新的配置项，或者修改配置项
-     * 
      * @param in
      * @throws IOException
      */
@@ -132,7 +131,9 @@ public class Config {
         int lastDotIndex = -1;
         do {
             config = usingConfigCache.get(domain);
-            if (null != config) { return config; }
+            if (null != config) {
+                return config;
+            }
             lastDotIndex = domain.lastIndexOf('.');
             if (lastDotIndex < 0) {
                 break;
@@ -155,9 +156,7 @@ public class Config {
 
     /**
      * 提供配置文件，直接返回默认的 ThreadPoolsService 实例。
-     * 
-     * @param file
-     *            可以为空，空则取classpath中/thread/thread.properties的默认配置
+     * @param file 可以为空，空则取classpath中/thread/thread.properties的默认配置
      * @return
      */
     public static ThreadPoolsService config(File file) {

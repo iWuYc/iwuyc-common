@@ -49,7 +49,9 @@ public abstract class ClassUtils {
         public Field run() {
             Field[] fields = clazz.getDeclaredFields();
             for (Field field : fields) {
-                if (field.getName().equals(fieldName)) { return field; }
+                if (field.getName().equals(fieldName)) {
+                    return field;
+                }
             }
             return null;
         }
@@ -71,7 +73,9 @@ public abstract class ClassUtils {
         @Override
         public I run() {
             try {
-                if (!targetClass.isAssignableFrom(clazz)) { return null; }
+                if (!targetClass.isAssignableFrom(clazz)) {
+                    return null;
+                }
                 Constructor<?> constructor = getConstructor(clazz);
 
                 Object i = constructor.newInstance(args);
@@ -85,7 +89,9 @@ public abstract class ClassUtils {
         }
 
         private Constructor<?> getConstructor(Class<?> clazz) throws NoSuchMethodException, SecurityException {
-            if (ArrayUtil.isEmpty(args)) { return clazz.getDeclaredConstructor(); }
+            if (ArrayUtil.isEmpty(args)) {
+                return clazz.getDeclaredConstructor();
+            }
             Class<?>[] parameterTypes = new Class<?>[args.length];
             for (int i = 0; i < parameterTypes.length; i++) {
                 parameterTypes[i] = args[i].getClass();
@@ -125,9 +131,7 @@ public abstract class ClassUtils {
 
     /**
      * 获取class类对象，不做类的初始化。以屏蔽讨厌的try……catch块。
-     * 
-     * @param classPath
-     *            类的名字
+     * @param classPath 类的名字
      * @return 一个 {@link Optional} 对象，如果成功加载，则返回相应的对象，否则返回一个 {@link Optional#empty()}
      */
     public static Optional<Class<?>> loadClass(String classPath) {
@@ -151,18 +155,16 @@ public abstract class ClassUtils {
 
     /**
      * 将map中的值，按field的名字注入到instance中。
-     * 
-     * @param instance
-     *            实例
-     * @param fieldAndVal
-     *            字段跟值（这个map的键值应该是Map<String,Object>）
-     * @param typeConverters
-     *            类型转换器，用于注入前的类型转换。key是源类型，val是转换器列表。
+     * @param instance 实例
+     * @param fieldAndVal 字段跟值（这个map的键值应该是Map<String,Object>）
+     * @param typeConverters 类型转换器，用于注入前的类型转换。key是源类型，val是转换器列表。
      * @return 未注入成功的字段跟值，一般是，不存在这个字段，或者，在注入的时候出问题了
      */
     public static Map<Object, Object> injectFields(Object instance, Map<String, Object> fieldAndVal,
             MultiMap<Class<? extends Object>, TypeConverter<? extends Object, ? extends Object>> typeConverters) {
-        if (null == instance || null == fieldAndVal) { return Collections.emptyMap(); }
+        if (null == instance || null == fieldAndVal) {
+            return Collections.emptyMap();
+        }
 
         HashMap<Object, Object> innerMap = new HashMap<>(fieldAndVal);
 
@@ -189,7 +191,9 @@ public abstract class ClassUtils {
         try {
 
             Object rejectVal = convert(val.getClass(), field.getType(), val, typeConverters);
-            if (null == rejectVal) { return false; }
+            if (null == rejectVal) {
+                return false;
+            }
 
             // 字段属性修改，以便可以进行属性设置
             fieldModifier(field);
@@ -215,9 +219,7 @@ public abstract class ClassUtils {
 
     /**
      * 对一些有访问限制的字段进行修改，以便可以正常访问进行数据修改。
-     * 
-     * @param field
-     *            待修改字段。
+     * @param field 待修改字段。
      */
     private static void fieldModifier(Field field) {
         if (!field.isAccessible()) {
@@ -232,21 +234,18 @@ public abstract class ClassUtils {
 
     /**
      * 将数据转换成对应的类型。
-     * 
-     * @param sourceType
-     *            数据源类型
-     * @param targetType
-     *            目标数据类型
-     * @param val
-     *            数据
-     * @param typeConverters
-     *            类型转换器集合
+     * @param sourceType 数据源类型
+     * @param targetType 目标数据类型
+     * @param val 数据
+     * @param typeConverters 类型转换器集合
      * @return
      */
     @SuppressWarnings({ "unchecked", "rawtypes" })
     private static Object convert(Class<? extends Object> sourceType, Class targetType, Object val,
             MultiMap<Class<? extends Object>, TypeConverter<? extends Object, ? extends Object>> typeConverters) {
-        if (sourceType == targetType) { return val; }
+        if (sourceType == targetType) {
+            return val;
+        }
 
         if (null == typeConverters) {
             typeConverters = TypeConverterConstant.DEFAULT_CONVERTERS;
@@ -270,18 +269,16 @@ public abstract class ClassUtils {
 
     /**
      * 根据类名实例化一个对象。
-     * 
-     * @param targetClass
-     *            返回的目标类型。
-     * @param clazzName
-     *            类名。
-     * @param args
-     *            构造函数的参数。
+     * @param targetClass 返回的目标类型。
+     * @param clazzName 类名。
+     * @param args 构造函数的参数。
      * @return 实例化后的对象。
      */
     public static <I> I instance(Class<I> targetClass, String clazzName, Object... args) {
         Optional<Class<?>> clazzOpt = loadClass(clazzName);
-        if (!clazzOpt.isPresent()) { return null; }
+        if (!clazzOpt.isPresent()) {
+            return null;
+        }
         return instance(targetClass, clazzOpt.get(), args);
     }
 
@@ -291,7 +288,6 @@ public abstract class ClassUtils {
 
     /**
      * 获取属性对象
-     * 
      * @param clazz
      * @param fieldName
      * @return

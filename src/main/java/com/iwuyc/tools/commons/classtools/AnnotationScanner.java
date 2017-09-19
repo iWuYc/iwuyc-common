@@ -23,7 +23,6 @@ import com.iwuyc.tools.commons.basic.StringUtils;
 
 /**
  * 扫描包含指定注解的类，并返回这些类。
- * 
  * @Auth iWuYc
  * @since
  * @time 2017-08-04 15:23
@@ -133,15 +132,14 @@ public class AnnotationScanner implements Runnable {
 
     /**
      * 根据JarEntry的名字重构包名，如果JarEntry的名字跟当前包路径名相同，则不放入栈中，防止重复扫描
-     * 
-     * @param entriesName
-     *            JarEntry的名字
-     * @param packageDirName
-     *            当前包名
+     * @param entriesName JarEntry的名字
+     * @param packageDirName 当前包名
      */
     private void reproducePackageAndPushStack(String entriesName, String packageDirName) {
         String newPackageName = entriesName.substring(0, entriesName.lastIndexOf('/'));
-        if (packageDirName.equals(newPackageName)) { return; }
+        if (packageDirName.equals(newPackageName)) {
+            return;
+        }
         this.packages.push(newPackageName);
     }
 
@@ -170,18 +168,26 @@ public class AnnotationScanner implements Runnable {
     private void annotationClass(String className) throws ClassNotFoundException {
         int anonymityClassLocation = className.lastIndexOf('$');
         // 匿名内部类，则直接跳过
-        if (anonymityClassLocation >= 0 && className.substring(anonymityClassLocation).matches("\\$[0-9]*")) { return; }
+        if (anonymityClassLocation >= 0 && className.substring(anonymityClassLocation).matches("\\$[0-9]*")) {
+            return;
+        }
         Optional<Class<?>> clazzOpt = ClassUtils.loadClass(className, true, null);
-        if (!clazzOpt.isPresent()) { return; }
+        if (!clazzOpt.isPresent()) {
+            return;
+        }
         Class<?> clazz = clazzOpt.get();
         // 排除注解使用在annotation中的情况。
-        if (Annotation.class.isAssignableFrom(clazz)) { return; }
+        if (Annotation.class.isAssignableFrom(clazz)) {
+            return;
+        }
 
         Annotation an = clazz.getAnnotation(this.annotation);
         // 当前类中没有该注解
         if (null == an) {
             // 尝试在注解中寻找该注解，如果不存在则直接返回
-            if (!tryGetFromAnnotation(clazz)) { return; }
+            if (!tryGetFromAnnotation(clazz)) {
+                return;
+            }
             // this.annotationStack.clear();
         }
         this.result.add(clazz);

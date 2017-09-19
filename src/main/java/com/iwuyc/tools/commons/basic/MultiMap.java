@@ -5,13 +5,9 @@ import java.util.LinkedList;
 
 /**
  * Non Thread-Safe.复合map。
- * 
  * @author iWuYc
- *
- * @param <K>
- *            key
- * @param <V>
- *            value
+ * @param <K> key
+ * @param <V> value
  */
 public class MultiMap<K, V> extends HashMap<K, LinkedList<V>> {
 

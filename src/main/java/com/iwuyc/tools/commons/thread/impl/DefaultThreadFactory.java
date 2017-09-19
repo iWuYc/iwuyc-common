@@ -18,9 +18,7 @@ public class DefaultThreadFactory implements ThreadFactory {
 
     /**
      * 线程工厂
-     * 
-     * @param threadPreName
-     *            线程名前缀
+     * @param threadPreName 线程名前缀
      */
     public DefaultThreadFactory(String threadPreName) {
         if (StringUtils.isEmpty(threadPreName)) {

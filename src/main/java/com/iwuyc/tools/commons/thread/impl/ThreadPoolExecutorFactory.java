@@ -25,7 +25,9 @@ public class ThreadPoolExecutorFactory implements ExecutorServiceFactory {
 
     private BlockingQueue<Runnable> builderBlockingQueue(ThreadPoolConfig config) {
         int maxQueueSize = config.getMaxQueueSize();
-        if (maxQueueSize < 1) { throw new IllegalArgumentException("Queue size can't be less than 1."); }
+        if (maxQueueSize < 1) {
+            throw new IllegalArgumentException("Queue size can't be less than 1.");
+        }
         return new ArrayBlockingQueue<Runnable>(maxQueueSize, true);
     }
 }
