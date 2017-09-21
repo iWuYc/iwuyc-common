@@ -25,15 +25,40 @@ import com.iwuyc.tools.commons.classtools.typeconverter.TypeConverter;
 import com.iwuyc.tools.commons.classtools.typeconverter.TypeConverterConstant;
 
 /**
+ * 类对象的工具类。
  * @Auth iWuYc
  * @since
  * @time 2017-08-07 16:25
  */
 public abstract class ClassUtils {
 
-    private final static Field FIELD_MODIFIERS;
+    /**
+     * 基础类型 跟 包装类型 的映射关系。
+     * @author @iwuyc
+     */
+    public final static Map<Class<?>, Class<?>> PRIMITIVE_TYPES_MAPPING_WRAPPED_TYPES;
+
+    private final static Field MODIFIERS_FIELD;
+
     static {
-        FIELD_MODIFIERS = findField(Field.class, "modifiers");
+
+        MODIFIERS_FIELD = findField(Field.class, "modifiers");
+
+        Map<Class<?>, Class<?>> temp = new HashMap<>();
+        temp.put(void.class, Void.class);
+
+        temp.put(byte.class, Byte.class);
+        temp.put(short.class, Short.class);
+        temp.put(int.class, Integer.class);
+        temp.put(long.class, Long.class);
+
+        temp.put(float.class, Float.class);
+        temp.put(double.class, Double.class);
+
+        temp.put(boolean.class, Boolean.class);
+        temp.put(char.class, Character.class);
+
+        PRIMITIVE_TYPES_MAPPING_WRAPPED_TYPES = Collections.unmodifiableMap(temp);
     }
 
     private static class FieldPrivilegedAction implements PrivilegedAction<Field> {
@@ -77,7 +102,10 @@ public abstract class ClassUtils {
                     return null;
                 }
                 Constructor<?> constructor = getConstructor(clazz);
-
+                if (!constructor.isAccessible()) {
+                    LOG.debug("The constructor can't visit.Set it true for accessible.");
+                    constructor.setAccessible(true);
+                }
                 Object i = constructor.newInstance(args);
                 return (I) i;
             }
@@ -96,7 +124,31 @@ public abstract class ClassUtils {
             for (int i = 0; i < parameterTypes.length; i++) {
                 parameterTypes[i] = args[i].getClass();
             }
-            return clazz.getDeclaredConstructor(parameterTypes);
+            Constructor<?>[] constructors = clazz.getDeclaredConstructors();
+            for (Constructor<?> constructor : constructors) {
+                if (compareConstructorParameterTypes(constructor, parameterTypes)) {
+                    return constructor;
+                }
+            }
+
+            return null;
+        }
+
+        private boolean compareConstructorParameterTypes(Constructor<?> constructor, Class<?>[] parameterTypes) {
+
+            Class<?>[] constructorParameterTypes = constructor.getParameterTypes();
+
+            if (constructorParameterTypes.length != parameterTypes.length) {
+                return false;
+            }
+
+            for (int i = 0; i < constructorParameterTypes.length; i++) {
+                if (!compareClassType(constructorParameterTypes[i], parameterTypes[i])) {
+                    return false;
+                }
+            }
+
+            return true;
         }
 
     }
@@ -174,10 +226,13 @@ public abstract class ClassUtils {
         Object fieldVal = null;
         for (Field field : fields) {
             fieldName = field.getName();
-            fieldVal = innerMap.get(fieldName);
-            if (null == fieldVal) {
+
+            // continue if the field value doesn't exists.
+            if (!innerMap.containsKey(fieldName)) {
                 continue;
             }
+
+            fieldVal = innerMap.get(fieldName);
             if (injectField(instance, field, fieldVal, typeConverters)) {
                 innerMap.remove(fieldName);
             }
@@ -189,14 +244,19 @@ public abstract class ClassUtils {
     private static boolean injectField(Object instance, Field field, Object val,
             MultiMap<Class<? extends Object>, TypeConverter<? extends Object, ? extends Object>> typeConverters) {
         try {
+            // 字段属性修改，以便可以进行属性设置
+            fieldModifier(field);
 
+            if (null == val) {
+                injectField(instance, field, val);
+                return true;
+            }
             Object rejectVal = convert(val.getClass(), field.getType(), val, typeConverters);
             if (null == rejectVal) {
+                LOG.warn("Can't convert val;The val is:[{}]", val);
                 return false;
             }
 
-            // 字段属性修改，以便可以进行属性设置
-            fieldModifier(field);
             return injectField(instance, field, rejectVal);
         }
         catch (IllegalArgumentException e) {
@@ -229,7 +289,7 @@ public abstract class ClassUtils {
         if (Modifier.isFinal(newModifies)) {
             newModifies = newModifies & ~Modifier.FINAL;
         }
-        injectField(field, FIELD_MODIFIERS, newModifies);
+        injectField(field, MODIFIERS_FIELD, newModifies);
     }
 
     /**
@@ -282,8 +342,27 @@ public abstract class ClassUtils {
         return instance(targetClass, clazzOpt.get(), args);
     }
 
+    /**
+     * 根据类对象实例化一个对象
+     * @author @iwuyc
+     * @param targetClass 返回的目标类型
+     * @param clazz 类对象
+     * @param args 构造函数的参数
+     * @return 实例化后的对象
+     */
     public static <I> I instance(Class<I> targetClass, Class<?> clazz, Object... args) {
         return AccessController.doPrivileged(new InstancePrivilegedAction<I>(targetClass, clazz, args));
+    }
+
+    /**
+     * 根据类对象实例化一个对象
+     * @author @iwuyc
+     * @param clazz 类对象
+     * @param args 构造函数的参数
+     * @return 实例化后的对象
+     */
+    public static Object instance(Class<?> clazz, Object... args) {
+        return instance(Object.class, clazz, args);
     }
 
     /**
@@ -294,5 +373,28 @@ public abstract class ClassUtils {
      */
     public static Field findField(Class<?> clazz, String fieldName) {
         return AccessController.doPrivileged(new FieldPrivilegedAction(clazz, fieldName));
+    }
+
+    /**
+     * 比较两个类型是否相同，主要是解决基础类型跟包装类型不一致的情况，如果不存在基础类型跟包装类型同时存在的比较，不建议使用该方法。
+     * @author @iwuyc
+     * @param firstType 第一个类型
+     * @param another 第二个类型
+     * @return 如果是同一种类型，则返回true，否则返回false;
+     */
+    public static boolean compareClassType(Class<?> firstType, Class<?> another) {
+        if (null == firstType || null == another) {
+            return firstType == another;
+        }
+
+        if (firstType.isPrimitive()) {
+            firstType = PRIMITIVE_TYPES_MAPPING_WRAPPED_TYPES.get(firstType);
+            return firstType == null ? false : firstType.equals(another);
+        }
+        else if (another.isPrimitive()) {
+            another = PRIMITIVE_TYPES_MAPPING_WRAPPED_TYPES.get(another);
+            return another == null ? false : another.equals(firstType);
+        }
+        return firstType.equals(another);
     }
 }
