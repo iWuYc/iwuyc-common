@@ -126,30 +126,33 @@ public abstract class ClassUtils {
             }
             Constructor<?>[] constructors = clazz.getDeclaredConstructors();
             for (Constructor<?> constructor : constructors) {
-                if (compareConstructorParameterTypes(constructor, parameterTypes)) {
+                if (compareTypeList(constructor.getParameterTypes(), parameterTypes)) {
                     return constructor;
                 }
+                // if (compareConstructorParameterTypes(constructor, parameterTypes)) {
+                // return constructor;
+                // }
             }
 
             return null;
         }
 
-        private boolean compareConstructorParameterTypes(Constructor<?> constructor, Class<?>[] parameterTypes) {
-
-            Class<?>[] constructorParameterTypes = constructor.getParameterTypes();
-
-            if (constructorParameterTypes.length != parameterTypes.length) {
-                return false;
-            }
-
-            for (int i = 0; i < constructorParameterTypes.length; i++) {
-                if (!compareClassType(constructorParameterTypes[i], parameterTypes[i])) {
-                    return false;
-                }
-            }
-
-            return true;
-        }
+        // private boolean compareConstructorParameterTypes(Constructor<?> constructor, Class<?>[] parameterTypes) {
+        //
+        // Class<?>[] constructorParameterTypes = constructor.getParameterTypes();
+        //
+        // if (constructorParameterTypes.length != parameterTypes.length) {
+        // return false;
+        // }
+        //
+        // for (int i = 0; i < constructorParameterTypes.length; i++) {
+        // if (!compareClassType(constructorParameterTypes[i], parameterTypes[i])) {
+        // return false;
+        // }
+        // }
+        //
+        // return true;
+        // }
 
     }
 
@@ -396,5 +399,24 @@ public abstract class ClassUtils {
             return another == null ? false : another.equals(firstType);
         }
         return firstType.equals(another);
+    }
+
+    /**
+     * 比较两个类型的列表是否一致，包括基础类型跟包装类型。
+     * @author @iwuyc
+     * @param firstList 第一个类型列表
+     * @param anotherList 另外一个类型列表
+     * @return 如果两个列表一致，则返回true，否则返回false；
+     */
+    public static boolean compareTypeList(Class<?>[] firstList, Class<?>[] anotherList) {
+        if (firstList.length != anotherList.length) {
+            return false;
+        }
+        for (int i = 0; i < firstList.length; i++) {
+            if (!compareClassType(firstList[i], anotherList[i])) {
+                return false;
+            }
+        }
+        return true;
     }
 }
