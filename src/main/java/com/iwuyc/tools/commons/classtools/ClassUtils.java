@@ -6,7 +6,10 @@
 package com.iwuyc.tools.commons.classtools;
 
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Executable;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
@@ -124,35 +127,11 @@ public abstract class ClassUtils {
             for (int i = 0; i < parameterTypes.length; i++) {
                 parameterTypes[i] = args[i].getClass();
             }
-            Constructor<?>[] constructors = clazz.getDeclaredConstructors();
-            for (Constructor<?> constructor : constructors) {
-                if (compareTypeList(constructor.getParameterTypes(), parameterTypes)) {
-                    return constructor;
-                }
-                // if (compareConstructorParameterTypes(constructor, parameterTypes)) {
-                // return constructor;
-                // }
-            }
 
-            return null;
+            Constructor<?> bestMatch = (Constructor<?>) chooseBestMatchExecutable(clazz.getDeclaredConstructors(),
+                    parameterTypes);
+            return bestMatch;
         }
-
-        // private boolean compareConstructorParameterTypes(Constructor<?> constructor, Class<?>[] parameterTypes) {
-        //
-        // Class<?>[] constructorParameterTypes = constructor.getParameterTypes();
-        //
-        // if (constructorParameterTypes.length != parameterTypes.length) {
-        // return false;
-        // }
-        //
-        // for (int i = 0; i < constructorParameterTypes.length; i++) {
-        // if (!compareClassType(constructorParameterTypes[i], parameterTypes[i])) {
-        // return false;
-        // }
-        // }
-        //
-        // return true;
-        // }
 
     }
 
@@ -179,6 +158,37 @@ public abstract class ClassUtils {
                 LOG.error("Can't found class:[{}]", classPath);
             }
             return Optional.ofNullable(result);
+        }
+    }
+
+    private static class MethodPrivilegedAction implements PrivilegedAction<Optional<Method>> {
+
+        private Class<?> targetClazz;
+        private String methodName;
+        private Class<?>[] parameterTypeList;
+
+        public MethodPrivilegedAction(Class<?> targetClazz, String methodName, Class<?>[] parameterTypeList) {
+            this.targetClazz = targetClazz;
+            this.methodName = methodName;
+            this.parameterTypeList = parameterTypeList;
+        }
+
+        @Override
+        public Optional<Method> run() {
+            Method[] declaredMethods = targetClazz.getDeclaredMethods();
+
+            Method[] nameMatchMethod = new Method[declaredMethods.length];
+            int cursor = 0;
+            for (Method method : declaredMethods) {
+                if (!this.methodName.equals(method.getName())) {
+                    continue;
+                }
+                nameMatchMethod[cursor] = method;
+                cursor++;
+            }
+
+            Method bestMatchMethod = (Method) chooseBestMatchExecutable(nameMatchMethod, this.parameterTypeList);
+            return Optional.ofNullable(bestMatchMethod);
         }
     }
 
@@ -383,9 +393,10 @@ public abstract class ClassUtils {
      * @author @iwuyc
      * @param firstType 第一个类型
      * @param another 第二个类型
+     * @param isAssignale 是否依据继承关系进行判断。
      * @return 如果是同一种类型，则返回true，否则返回false;
      */
-    public static boolean compareClassType(Class<?> firstType, Class<?> another) {
+    public static boolean compareType(Class<?> firstType, Class<?> another, boolean isAssignale) {
         if (null == firstType || null == another) {
             return firstType == another;
         }
@@ -398,6 +409,9 @@ public abstract class ClassUtils {
             another = PRIMITIVE_TYPES_MAPPING_WRAPPED_TYPES.get(another);
             return another == null ? false : another.equals(firstType);
         }
+        if (isAssignale) {
+            return firstType.isAssignableFrom(another);
+        }
         return firstType.equals(another);
     }
 
@@ -406,17 +420,111 @@ public abstract class ClassUtils {
      * @author @iwuyc
      * @param firstList 第一个类型列表
      * @param anotherList 另外一个类型列表
+     * @param isAssignable 是否判断anotherList中的类型是否为firstList中的子类继承关系
      * @return 如果两个列表一致，则返回true，否则返回false；
      */
-    public static boolean compareTypeList(Class<?>[] firstList, Class<?>[] anotherList) {
+    public static boolean compareTypeList(Class<?>[] firstList, Class<?>[] anotherList, boolean isAssignable) {
         if (firstList.length != anotherList.length) {
             return false;
         }
         for (int i = 0; i < firstList.length; i++) {
-            if (!compareClassType(firstList[i], anotherList[i])) {
+            if (!compareType(firstList[i], anotherList[i], isAssignable)) {
                 return false;
             }
         }
         return true;
+    }
+
+    /**
+     * 调用对象的方法，静态方法的话，请传入 Class 对象，而无需传入实例对象。
+     * @author @iwuyc
+     * @param instance 实例或者Class对象
+     * @param methodName 方法名
+     * @param parameters 方法的入参
+     * @return
+     */
+    public static Object callMethod(Object instance, String methodName, Object... parameters) {
+
+        Class<?> instanceType = null;
+        if (instance instanceof Class) {
+            instanceType = (Class<?>) instance;
+        }
+        else {
+            instanceType = instance.getClass();
+        }
+        
+        Class<?>[] parameterTypeList = typeList(parameters);
+        MethodPrivilegedAction action = new MethodPrivilegedAction(instanceType, methodName, parameterTypeList);
+        Optional<Method> methodOpt = AccessController.doPrivileged(action);
+        if (!methodOpt.isPresent()) {
+            return null;
+        }
+
+        Method method = methodOpt.get();
+        Object result = null;
+        try {
+            result = method.invoke(instance, parameters);
+        }
+        catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+            LOG.error("Call [{}] raise an error.Cause:[{}]", methodName, e);
+        }
+        return result;
+    }
+
+    /**
+     * 获取对象的类型列表，将列表中的对象的类型，按照输入的顺序进行输出。
+     * @author @iwuyc
+     * @param object 待获取的数据列表
+     * @return 类型列表
+     */
+    public static Class<?>[] typeList(Object... object) {
+        int parametersLength = ArrayUtil.arrayLength(object);
+
+        Class<?>[] objectTypeList = new Class<?>[parametersLength];
+        for (int i = 0; i < parametersLength; i++) {
+            objectTypeList[i] = object[i].getClass();
+        }
+        return objectTypeList;
+    }
+
+    /**
+     * 根据参数列表，从executable列表中获取最匹配的方法。
+     * @author @iwuyc
+     * @param executables executable 列表
+     * @param parameterTypes 参数类型列表
+     * @return 参数列表最匹配的executable对象
+     */
+    public static Executable chooseBestMatchExecutable(Executable[] executables, Class<?>[] parameterTypes) {
+
+        Integer[] constructorIndex = new Integer[executables.length];
+        int cursor = 0;
+        Executable constructor = null;
+        for (int i = 0; i < executables.length; i++) {
+            constructor = executables[i];
+            if (compareTypeList(constructor.getParameterTypes(), parameterTypes, false)) {
+                return constructor;
+            }
+            else if (compareTypeList(constructor.getParameterTypes(), parameterTypes, true)) {
+                constructorIndex[cursor] = i;
+                cursor++;
+            }
+        }
+
+        Executable bestMatch = null;
+        for (Integer index : constructorIndex) {
+            if (null == index) {
+                break;
+            }
+            if (null == bestMatch) {
+                bestMatch = executables[index];
+                continue;
+            }
+            if (compareTypeList(bestMatch.getParameterTypes(), executables[index].getParameterTypes(), true)) {
+                bestMatch = executables[index];
+            }
+        }
+
+        return bestMatch;
+
     }
 }

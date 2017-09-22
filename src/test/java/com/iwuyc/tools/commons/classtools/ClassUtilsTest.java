@@ -11,14 +11,6 @@ import com.iwuyc.tools.commons.classtools.typeconverter.TypeConverter;
 
 public class ClassUtilsTest {
 
-    @Test
-    public void test() {
-        Parameter1 p1 = new Parameter1();
-        Parameter2 p2 = new Parameter2();
-        TestClass tc = ClassUtils.instance(TestClass.class, TestClass.class.getName(), p1, p2);
-        System.out.println(tc.print());
-    }
-
     public static class TestClass {
         private Parameter1 p1;
         private Parameter2 P2;
@@ -47,36 +39,6 @@ public class ClassUtilsTest {
 
     }
 
-    @Test
-    public void testModifiers() {
-        Field nameField = ClassUtils.findField(TestClassCase.class, "name");
-        System.out.println(nameField);
-        TestClassCase testClazz = new TestClassCase("Tom");
-        Map<String, Object> fieldAndVal = new HashMap<>();
-        fieldAndVal.put("name", "Jack");
-
-        MultiMap<Class<? extends Object>, TypeConverter<? extends Object, ? extends Object>> typeConverters = new MultiMap<>();
-
-        ClassUtils.injectFields(testClazz, fieldAndVal, typeConverters);
-        System.out.println(testClazz);
-    }
-    
-    @Test
-    public void testInjectNull() {
-        Field nameField = ClassUtils.findField(TestClassCase.class, "name");
-        System.out.println(nameField);
-        TestClassCase testClazz = new TestClassCase("Tom");
-        System.out.println(testClazz);
-        
-        Map<String, Object> fieldAndVal = new HashMap<>();
-        fieldAndVal.put("name", null);
-
-        MultiMap<Class<? extends Object>, TypeConverter<? extends Object, ? extends Object>> typeConverters = new MultiMap<>();
-
-        ClassUtils.injectFields(testClazz, fieldAndVal, typeConverters);
-        System.out.println(testClazz);
-    }
-
     public static class TestClassCase {
         public final String name;
 
@@ -97,9 +59,49 @@ public class ClassUtilsTest {
     }
 
     @Test
+    public void test() {
+        Parameter1 p1 = new Parameter1();
+        Parameter2 p2 = new Parameter2();
+        TestClass tc = ClassUtils.instance(TestClass.class, TestClass.class.getName(), p1, p2);
+        System.out.println(tc.print());
+    }
+
+    @Test
+    public void testModifiers() {
+        Field nameField = ClassUtils.findField(TestClassCase.class, "name");
+        System.out.println(nameField);
+        TestClassCase testClazz = new TestClassCase("Tom");
+        Map<String, Object> fieldAndVal = new HashMap<>();
+        fieldAndVal.put("name", "Jack");
+
+        MultiMap<Class<? extends Object>, TypeConverter<? extends Object, ? extends Object>> typeConverters = new MultiMap<>();
+
+        ClassUtils.injectFields(testClazz, fieldAndVal, typeConverters);
+        System.out.println(testClazz);
+    }
+
+    @Test
+    public void testInjectNull() {
+        Field nameField = ClassUtils.findField(TestClassCase.class, "name");
+        System.out.println(nameField);
+        TestClassCase testClazz = new TestClassCase("Tom");
+        System.out.println(testClazz);
+
+        Map<String, Object> fieldAndVal = new HashMap<>();
+        fieldAndVal.put("name", null);
+
+        MultiMap<Class<? extends Object>, TypeConverter<? extends Object, ? extends Object>> typeConverters = new MultiMap<>();
+
+        ClassUtils.injectFields(testClazz, fieldAndVal, typeConverters);
+        System.out.println(testClazz);
+    }
+
+    @Test
     public void testInstance() {
-        int num = 10;
+        Object num = 10;
         Object obj = ClassUtils.instance(TestInstanceCase.class, num);
+        System.out.println(obj);
+        obj = ClassUtils.instance(TestInstanceCase.class, new Object[] { "String" });
         System.out.println(obj);
     }
 
@@ -108,6 +110,24 @@ public class ClassUtilsTest {
 
         private TestInstanceCase(int num) {
             this.num = num;
+            System.out.println("Integer constructor.");
+        }
+
+        private TestInstanceCase(Object num) {
+            this.num = 0;
+            System.out.println("Object constructor.");
+        }
+
+        public static void staticMethod() {
+            System.out.println("Static method without parameters.");
+        }
+
+        public static void staticMethod(String parameter) {
+            System.out.println("Parameter:" + parameter);
+        }
+
+        public static void staticMethod(Object parameter) {
+            System.out.println("Parameter object:" + parameter);
         }
 
         @Override
@@ -115,6 +135,21 @@ public class ClassUtilsTest {
             return "TestInstanceCase [num=" + num + "]";
         }
 
+        public String toString(String friend) {
+            return "TestInstanceCase [num=" + num + ",friend=" + friend + "]";
+        }
     }
 
+    @Test
+    public void testCallMethod() {
+        ClassUtils.callMethod(TestInstanceCase.class, "staticMethod");
+        ClassUtils.callMethod(TestInstanceCase.class, "staticMethod", "parameter");
+
+    }
+
+    @Test
+    public void testCompareType() {
+        assert ClassUtils.compareType(Object.class, TestClassCase.class, true);
+        assert !ClassUtils.compareType(Object.class, TestClassCase.class, false);
+    }
 }

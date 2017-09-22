@@ -16,4 +16,8 @@ public abstract class ArrayUtil {
     public static boolean isNotEmpty(int[] arrays) {
         return !isEmpty(arrays);
     }
+
+    public static <T> int arrayLength(T[] arrays) {
+        return null == arrays ? 0 : arrays.length;
+    }
 }
