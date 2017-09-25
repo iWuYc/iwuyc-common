@@ -41,34 +41,41 @@ public class DefaultThreadPoolsService implements ThreadPoolsService {
         }
         LOG.debug("Get executor service for :{}.domain is:{}", clazz, domain);
         ExecutorService executorSer = executorServiceCache.get(domain);
+
         if (null == executorSer) {
-            Lock writeLock = lock.writeLock();
-            try {
-                writeLock.lock();
-                executorSer = findThreadPoolOrCreate(domain);
-            }
-            finally {
-                writeLock.unlock();
-            }
+            executorSer = findThreadPoolOrCreate(domain);
         }
         return executorSer;
     }
 
     private ExecutorService findThreadPoolOrCreate(String domain) {
-        UsingConfig usingConfig = config.findUsingSetting(domain);
-        ExecutorService executorService = executorServiceCache.get(usingConfig.getDomain());
+
+        UsingConfig usingConfig = this.config.findUsingSetting(domain);
+        ExecutorService executorService = this.executorServiceCache.get(usingConfig.getDomain());
         if (null != executorService) {
-            this.executorServiceCache.put(domain, executorService);
             return executorService;
         }
 
-        ThreadPoolConfig threadPoolConfig = config.findThreadPoolConfig(usingConfig.getDomain());
-        executorService = createNewThreadPoolFactory(threadPoolConfig);
+        Lock writeLock = this.lock.writeLock();
+        try {
+            writeLock.lock();
 
-        this.executorServiceCache.put(usingConfig.getDomain(), executorService);
-        this.executorServiceCache.put(domain, executorService);
+            if (this.executorServiceCache.containsKey(usingConfig.getDomain())) {
+                executorService = this.executorServiceCache.get(usingConfig.getDomain());
+                return executorService;
+            }
 
-        return executorService;
+            ThreadPoolConfig threadPoolConfig = this.config.findThreadPoolConfig(usingConfig.getDomain());
+            executorService = createNewThreadPoolFactory(threadPoolConfig);
+
+            this.executorServiceCache.put(usingConfig.getDomain(), executorService);
+            this.executorServiceCache.put(domain, executorService);
+
+            return executorService;
+        }
+        finally {
+            writeLock.unlock();
+        }
     }
 
     private ExecutorService createNewThreadPoolFactory(ThreadPoolConfig threadPoolConfig) {

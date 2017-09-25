@@ -13,6 +13,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -166,16 +167,19 @@ public abstract class ClassUtils {
         private Class<?> targetClazz;
         private String methodName;
         private Class<?>[] parameterTypeList;
+        private boolean declared;
 
-        public MethodPrivilegedAction(Class<?> targetClazz, String methodName, Class<?>[] parameterTypeList) {
+        public MethodPrivilegedAction(Class<?> targetClazz, String methodName, Class<?>[] parameterTypeList,
+                boolean declared) {
             this.targetClazz = targetClazz;
             this.methodName = methodName;
             this.parameterTypeList = parameterTypeList;
+            this.declared = declared;
         }
 
         @Override
         public Optional<Method> run() {
-            Method[] declaredMethods = targetClazz.getDeclaredMethods();
+            Method[] declaredMethods = declared ? targetClazz.getDeclaredMethods() : targetClazz.getMethods();
 
             Method[] nameMatchMethod = new Method[declaredMethods.length];
             int cursor = 0;
@@ -444,6 +448,24 @@ public abstract class ClassUtils {
      * @return
      */
     public static Object callMethod(Object instance, String methodName, Object... parameters) {
+        boolean declared = false;
+        return callMethod0(instance, methodName, declared, parameters);
+    }
+
+    /**
+     * 忽略访问修饰符强制调用对象的方法，静态方法的话，请传入 Class 对象，而无需传入实例对象。
+     * @author @iwuyc
+     * @param instance 实例或者Class对象
+     * @param methodName 方法名
+     * @param parameters 方法的入参
+     * @return
+     */
+    public static Object mandatoryCallMethod(Object instance, String methodName, Object... parameters) {
+        boolean declared = true;
+        return callMethod0(instance, methodName, declared, parameters);
+    }
+
+    private static Object callMethod0(Object instance, String methodName, boolean declared, Object... parameters) {
 
         Class<?> instanceType = null;
         if (instance instanceof Class) {
@@ -452,15 +474,22 @@ public abstract class ClassUtils {
         else {
             instanceType = instance.getClass();
         }
-        
         Class<?>[] parameterTypeList = typeList(parameters);
-        MethodPrivilegedAction action = new MethodPrivilegedAction(instanceType, methodName, parameterTypeList);
+        MethodPrivilegedAction action = new MethodPrivilegedAction(instanceType, methodName, parameterTypeList,
+                declared);
         Optional<Method> methodOpt = AccessController.doPrivileged(action);
         if (!methodOpt.isPresent()) {
+            LOG.warn("Can't found any method for name:[{}];Parameter Type List:{}", methodName, Arrays.toString(
+                    parameterTypeList));
             return null;
         }
 
         Method method = methodOpt.get();
+
+        if (!method.isAccessible()) {
+            method.setAccessible(true);
+        }
+
         Object result = null;
         try {
             result = method.invoke(instance, parameters);
@@ -469,6 +498,7 @@ public abstract class ClassUtils {
             LOG.error("Call [{}] raise an error.Cause:[{}]", methodName, e);
         }
         return result;
+
     }
 
     /**
