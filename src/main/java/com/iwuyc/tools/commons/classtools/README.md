@@ -5,10 +5,12 @@ Deprecated. 废弃，不建议再使用。GitHub有一个开源的类路径扫�
 扫描包含指定注解的类，并返回这些类。 突然间发现GitHub有一个 FastClasspathScanner 包可以做到更加强大的功能，也更加稳定。
 
 ### Fast Classpath Scanner
-#### Maven POM Archive
+##### [Maven POM Archive](https://mvnrepository.com/artifact/io.github.lukehutch/fast-classpath-scanner)
+``` xml
 <!-- https://mvnrepository.com/artifact/io.github.lukehutch/fast-classpath-scanner -->
-&lt;dependency&gt;
-    &lt;groupId&gt;io.github.lukehutch&lt;/groupId&gt;
-    &lt;artifactId&gt;fast-classpath-scanner&lt;/artifactId&gt;
-    &lt;version&gt;${classpath.scanner.version}&lt;/version&gt;
-&lt;/dependency&gt;
+<dependency>
+    <groupId>io.github.lukehutch</groupId>
+    <artifactId>fast-classpath-scanner</artifactId>
+    <version>${classpath.scanner.version}</version>
+</dependency>
+```
