@@ -22,11 +22,23 @@ import org.slf4j.LoggerFactory;
 import com.iwuyc.tools.commons.basic.StringUtils;
 
 /**
- * 扫描包含指定注解的类，并返回这些类。
+ * 扫描包含指定注解的类，并返回这些类。 突然间发现GitHub有一个 FastClasspathScanner 包可以做到更加强大的功能。
+ * 
+ * @deprecated 废弃，不建议再使用。GitHub有一个开源的类路径扫描工具包，建议使用该工具包。
+ * <pre>
+ * <!-- https://mvnrepository.com/artifact/io.github.lukehutch/fast-classpath-scanner -->
+ * &lt;dependency&gt;
+ *     &lt;groupId&gt;io.github.lukehutch&lt;/groupId&gt;
+ *     &lt;artifactId&gt;fast-classpath-scanner&lt;/artifactId&gt;
+ *     &lt;version&gt;${classpath.scanner.version}&lt;/version&gt;
+ * &lt;/dependency&gt;
+ * </pre>
+ * 
  * @Auth iWuYc
  * @since
  * @time 2017-08-04 15:23
  */
+@Deprecated
 public class AnnotationScanner implements Runnable {
 
     private static final Logger LOG = LoggerFactory.getLogger(AnnotationScanner.class);
@@ -132,8 +144,11 @@ public class AnnotationScanner implements Runnable {
 
     /**
      * 根据JarEntry的名字重构包名，如果JarEntry的名字跟当前包路径名相同，则不放入栈中，防止重复扫描
-     * @param entriesName JarEntry的名字
-     * @param packageDirName 当前包名
+     * 
+     * @param entriesName
+     *            JarEntry的名字
+     * @param packageDirName
+     *            当前包名
      */
     private void reproducePackageAndPushStack(String entriesName, String packageDirName) {
         String newPackageName = entriesName.substring(0, entriesName.lastIndexOf('/'));
