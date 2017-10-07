@@ -6,8 +6,9 @@ Deprecated. 废弃，不建议再使用。GitHub有一个开源的类路径扫�
 
 ### Fast Classpath Scanner
 #### Maven POM Archive
- <dependency>
-     <groupId>io.github.lukehutch</groupId>
-     <artifactId>fast-classpath-scanner</artifactId>
-     <version>${classpath.scanner.version}</version>
- </dependency>
+<!-- https://mvnrepository.com/artifact/io.github.lukehutch/fast-classpath-scanner -->
+&lt;dependency&gt;
+    &lt;groupId&gt;io.github.lukehutch&lt;/groupId&gt;
+    &lt;artifactId&gt;fast-classpath-scanner&lt;/artifactId&gt;
+    &lt;version&gt;${classpath.scanner.version}&lt;/version&gt;
+&lt;/dependency&gt;
