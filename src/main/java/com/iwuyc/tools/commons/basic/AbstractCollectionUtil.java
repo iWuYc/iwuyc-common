@@ -2,7 +2,11 @@ package com.iwuyc.tools.commons.basic;
 
 import java.util.Collection;
 
-public abstract class CollectionUtil {
+/**
+ * @author @Neil
+ * @since @2017年10月15日
+ */
+public abstract class AbstractCollectionUtil {
 
     public static boolean isEmpty(Collection<?> coll) {
         return null == coll || coll.isEmpty();

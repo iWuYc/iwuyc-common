@@ -4,6 +4,10 @@ import java.util.Date;
 
 import com.iwuyc.tools.commons.util.TimeUtil;
 
+/**
+ * @author @Neil
+ * @since @2017年10月15日
+ */
 public class String2Date extends AbstractStringConverter<Date> {
 
     @Override

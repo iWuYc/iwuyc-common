@@ -13,15 +13,21 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.iwuyc.tools.commons.basic.MapUtil;
-import com.iwuyc.tools.commons.classtools.ClassUtils;
-import com.iwuyc.tools.commons.thread.conf.ConfigConstant;
+import com.iwuyc.tools.commons.basic.AbstractMapUtil;
+import com.iwuyc.tools.commons.classtools.AbstractClassUtils;
+import com.iwuyc.tools.commons.thread.conf.ThreadConfigConstant;
 import com.iwuyc.tools.commons.thread.conf.ThreadPoolConfig;
 import com.iwuyc.tools.commons.thread.conf.UsingConfig;
-import com.iwuyc.tools.commons.thread.impl.DefaultThreadPoolsService;
+import com.iwuyc.tools.commons.thread.impl.DefaultThreadPoolsServiceImpl;
 
-public class Config {
-    private static final Logger LOG = LoggerFactory.getLogger(Config.class);
+/**
+ * 线程池的配置项
+ * 
+ * @author @Neil
+ * @since @2017年10月15日
+ */
+public class ThreadConfig {
+    private static final Logger LOG = LoggerFactory.getLogger(ThreadConfig.class);
 
     /**
      * 线程池配置缓存。key是线程池的名字，val为线程池的配置实例。
@@ -35,11 +41,12 @@ public class Config {
 
     private Properties propertis;
 
-    public Config() {
+    public ThreadConfig() {
     }
 
     /**
      * 可以重复调用多次，增加新的配置项，或者修改配置项
+     * 
      * @param in
      * @throws IOException
      */
@@ -48,7 +55,7 @@ public class Config {
             this.propertis = new Properties();
 
             // 加载默认配置。
-            InputStream defaultSettings = DefaultThreadPoolsService.class.getResourceAsStream(
+            InputStream defaultSettings = DefaultThreadPoolsServiceImpl.class.getResourceAsStream(
                     "/thread/thread.properties");
             this.propertis.load(defaultSettings);
         }
@@ -56,12 +63,12 @@ public class Config {
             propertis.load(in);
         }
 
-        Map<Object, Object> configInfo = MapUtil.findEntryByPrefixKey(this.propertis,
-                ConfigConstant.THREAD_CONFIG_PRENAME);
+        Map<Object, Object> configInfo = AbstractMapUtil.findEntryByPrefixKey(this.propertis,
+                ThreadConfigConstant.THREAD_CONFIG_PRENAME);
         config(configInfo);
 
-        Map<Object, Object> usingInfo = MapUtil.findEntryByPrefixKey(this.propertis,
-                ConfigConstant.THREAD_USING_PRENAME);
+        Map<Object, Object> usingInfo = AbstractMapUtil.findEntryByPrefixKey(this.propertis,
+                ThreadConfigConstant.THREAD_USING_PRENAME);
         usingConfig(usingInfo);
     }
 
@@ -72,7 +79,7 @@ public class Config {
         UsingConfig usingConfig = null;
         for (Entry<Object, Object> item : usingInfo.entrySet()) {
             key = String.valueOf(item.getKey());
-            prefixUsingDomain = key.substring(ConfigConstant.THREAD_USING_PRENAME.length() + 1);
+            prefixUsingDomain = key.substring(ThreadConfigConstant.THREAD_USING_PRENAME.length() + 1);
 
             config = String.valueOf(item.getValue());
             usingConfig = UsingConfig.create(prefixUsingDomain, config);
@@ -92,10 +99,10 @@ public class Config {
         while (!keys.isEmpty()) {
             key = String.valueOf(keys.iterator().next());
             threadPoolsNamePrefix = findThreadNameIncludePrefix(key);
-            threadPoolFacotryConfig = MapUtil.findEntryByPrefixKey(configInfo, threadPoolsNamePrefix);
+            threadPoolFacotryConfig = AbstractMapUtil.findEntryByPrefixKey(configInfo, threadPoolsNamePrefix);
 
-            threadPoolFacotryConfig.forEach((K, V) -> {
-                configInfo.remove(K);
+            threadPoolFacotryConfig.forEach((k, v) -> {
+                configInfo.remove(k);
             });
 
             threadPoolFactoryConfig(threadPoolsNamePrefix, threadPoolFacotryConfig);
@@ -105,23 +112,23 @@ public class Config {
     }
 
     private void threadPoolFactoryConfig(String prefix, Map<Object, Object> threadPoolConfig) {
-        final Map<String, Object> injectFieldVal = new HashMap<>();
-        threadPoolConfig.forEach((K, V) -> {
-            String newKey = String.valueOf(K).substring(prefix.length() + 1);
-            injectFieldVal.put(newKey, V);
+        final Map<String, Object> injectFieldVal = new HashMap<>(threadPoolConfig.size());
+        threadPoolConfig.forEach((k, v) -> {
+            String newKey = String.valueOf(k).substring(prefix.length() + 1);
+            injectFieldVal.put(newKey, v);
         });
-        final String threadPoolsName = prefix.substring(ConfigConstant.THREAD_CONFIG_PRENAME.length() + 1);
+        final String threadPoolsName = prefix.substring(ThreadConfigConstant.THREAD_CONFIG_PRENAME.length() + 1);
         injectFieldVal.put("threadPoolsName", threadPoolsName);
 
         ThreadPoolConfig config = new ThreadPoolConfig();
-        Map<Object, Object> otherSetting = ClassUtils.injectFields(config, injectFieldVal);
+        Map<Object, Object> otherSetting = AbstractClassUtils.injectFields(config, injectFieldVal);
         config.setOtherSetting(otherSetting);
 
         threadConfigCache.put(config.getThreadPoolsName(), config);
     }
 
     private String findThreadNameIncludePrefix(String key) {
-        int prefixLength = ConfigConstant.THREAD_CONFIG_PRENAME.length();
+        int prefixLength = ThreadConfigConstant.THREAD_CONFIG_PRENAME.length();
         int endIndex = key.indexOf('.', prefixLength + 1);
         return key.substring(0, endIndex);
     }
@@ -156,18 +163,20 @@ public class Config {
 
     /**
      * 提供配置文件，直接返回默认的 ThreadPoolsService 实例。
-     * @param file 可以为空，空则取classpath中/thread/thread.properties的默认配置
+     * 
+     * @param file
+     *            可以为空，空则取classpath中/thread/thread.properties的默认配置
      * @return
      */
     public static ThreadPoolsService config(File file) {
-        Config config = new Config();
+        ThreadConfig config = new ThreadConfig();
         try {
             InputStream in = null;
             if (null != file) {
                 in = new FileInputStream(file);
             }
             config.load(in);
-            return new DefaultThreadPoolsService(config);
+            return new DefaultThreadPoolsServiceImpl(config);
         }
         catch (IOException e) {
             LOG.error("Config thread pool service raise an error:{}", e);

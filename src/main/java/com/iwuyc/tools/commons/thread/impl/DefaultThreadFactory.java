@@ -3,8 +3,12 @@ package com.iwuyc.tools.commons.thread.impl;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicLong;
 
-import com.iwuyc.tools.commons.basic.StringUtils;
+import com.iwuyc.tools.commons.basic.AbstractStringUtils;
 
+/**
+ * @author @Neil
+ * @since @2017年10月15日
+ */
 public class DefaultThreadFactory implements ThreadFactory {
     /**
      * 线程名字前缀
@@ -21,7 +25,7 @@ public class DefaultThreadFactory implements ThreadFactory {
      * @param threadPreName 线程名前缀
      */
     public DefaultThreadFactory(String threadPreName) {
-        if (StringUtils.isEmpty(threadPreName)) {
+        if (AbstractStringUtils.isEmpty(threadPreName)) {
             threadPreName = "thframe";
         }
         this.threadPreName = threadPreName;

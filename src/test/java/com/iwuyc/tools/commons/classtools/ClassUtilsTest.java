@@ -62,13 +62,13 @@ public class ClassUtilsTest {
     public void test() {
         Parameter1 p1 = new Parameter1();
         Parameter2 p2 = new Parameter2();
-        TestClass tc = ClassUtils.instance(TestClass.class, TestClass.class.getName(), p1, p2);
+        TestClass tc = AbstractClassUtils.instance(TestClass.class, TestClass.class.getName(), p1, p2);
         System.out.println(tc.print());
     }
 
     @Test
     public void testModifiers() {
-        Field nameField = ClassUtils.findField(TestClassCase.class, "name");
+        Field nameField = AbstractClassUtils.findField(TestClassCase.class, "name");
         System.out.println(nameField);
         TestClassCase testClazz = new TestClassCase("Tom");
         Map<String, Object> fieldAndVal = new HashMap<>();
@@ -76,13 +76,13 @@ public class ClassUtilsTest {
 
         MultiMap<Class<? extends Object>, TypeConverter<? extends Object, ? extends Object>> typeConverters = new MultiMap<>();
 
-        ClassUtils.injectFields(testClazz, fieldAndVal, typeConverters);
+        AbstractClassUtils.injectFields(testClazz, fieldAndVal, typeConverters);
         System.out.println(testClazz);
     }
 
     @Test
     public void testInjectNull() {
-        Field nameField = ClassUtils.findField(TestClassCase.class, "name");
+        Field nameField = AbstractClassUtils.findField(TestClassCase.class, "name");
         System.out.println(nameField);
         TestClassCase testClazz = new TestClassCase("Tom");
         System.out.println(testClazz);
@@ -92,16 +92,16 @@ public class ClassUtilsTest {
 
         MultiMap<Class<? extends Object>, TypeConverter<? extends Object, ? extends Object>> typeConverters = new MultiMap<>();
 
-        ClassUtils.injectFields(testClazz, fieldAndVal, typeConverters);
+        AbstractClassUtils.injectFields(testClazz, fieldAndVal, typeConverters);
         System.out.println(testClazz);
     }
 
     @Test
     public void testInstance() {
         Object num = 10;
-        Object obj = ClassUtils.instance(TestInstanceCase.class, num);
+        Object obj = AbstractClassUtils.instance(TestInstanceCase.class, num);
         System.out.println(obj);
-        obj = ClassUtils.instance(TestInstanceCase.class, new Object[] { "String" });
+        obj = AbstractClassUtils.instance(TestInstanceCase.class, new Object[] { "String" });
         System.out.println(obj);
     }
 
@@ -142,14 +142,14 @@ public class ClassUtilsTest {
 
     @Test
     public void testCallMethod() {
-        ClassUtils.callMethod(TestInstanceCase.class, "staticMethod");
-        ClassUtils.callMethod(TestInstanceCase.class, "staticMethod", "parameter");
+        AbstractClassUtils.callMethod(TestInstanceCase.class, "staticMethod");
+        AbstractClassUtils.callMethod(TestInstanceCase.class, "staticMethod", "parameter");
 
     }
 
     @Test
     public void testCompareType() {
-        assert ClassUtils.compareType(Object.class, TestClassCase.class, true);
-        assert !ClassUtils.compareType(Object.class, TestClassCase.class, false);
+        assert AbstractClassUtils.compareType(Object.class, TestClassCase.class, true);
+        assert !AbstractClassUtils.compareType(Object.class, TestClassCase.class, false);
     }
 }

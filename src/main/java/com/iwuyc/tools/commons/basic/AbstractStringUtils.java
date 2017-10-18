@@ -1,8 +1,12 @@
 package com.iwuyc.tools.commons.basic;
 
-public abstract class StringUtils {
+/**
+ * @author @Neil
+ * @since @2017年10月15日
+ */
+public abstract class AbstractStringUtils {
 
-    public StringUtils() {
+    public AbstractStringUtils() {
     }
 
     /**
@@ -15,7 +19,7 @@ public abstract class StringUtils {
 
     /**
      * isEmpty的取反
-     * @see com.iwuyc.tools.commons.basic.StringUtils#isEmpty(String)
+     * @see com.iwuyc.tools.commons.basic.AbstractStringUtils#isEmpty(String)
      */
     public static boolean isNotEmpty(String str) {
         return !isEmpty(str);

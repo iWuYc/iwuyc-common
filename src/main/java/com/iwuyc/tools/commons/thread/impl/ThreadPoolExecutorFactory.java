@@ -9,6 +9,10 @@ import com.iwuyc.tools.commons.basic.type.TimeTuple;
 import com.iwuyc.tools.commons.thread.ExecutorServiceFactory;
 import com.iwuyc.tools.commons.thread.conf.ThreadPoolConfig;
 
+/**
+ * @author @Neil
+ * @since @2017年10月15日
+ */
 public class ThreadPoolExecutorFactory implements ExecutorServiceFactory {
 
     @Override

@@ -7,14 +7,15 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * @Auth iWuYc
+ * @author iWuYc
  * @since JDK 8
  * @time 2017-08-04 14:31
  */
-public abstract class MapUtil {
+public abstract class AbstractMapUtil {
 
     /**
      * 根据map的值获取map中的key
+     * 
      * @param map
      * @param val
      * @return
@@ -40,12 +41,15 @@ public abstract class MapUtil {
 
     /**
      * 根据key的前缀进行搜索。key按string类型进行转换。
-     * @param source 数据源
-     * @param prefixKey 前缀
+     * 
+     * @param source
+     *            数据源
+     * @param prefixKey
+     *            前缀
      * @return key带有 prefixKey前缀的数据
      */
     public static <K, V> Map<K, V> findEntryByPrefixKey(Map<K, V> source, String prefixKey) {
-        final Map<K, V> result = new HashMap<>();
+        final Map<K, V> result = new HashMap<>(source.size());
         source.entrySet().stream().filter((item) -> {
             return String.valueOf(item.getKey()).startsWith(prefixKey);
         }).forEach((item) -> {

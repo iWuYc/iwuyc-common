@@ -4,8 +4,14 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
 
-import com.iwuyc.tools.commons.basic.StringUtils;
+import com.iwuyc.tools.commons.basic.AbstractStringUtils;
 
+/**
+ * 数值范围
+ * 
+ * @author @Neil
+ * @since @2017年10月15日
+ */
 public class Range {
     private static class BoundaryNumber extends BigDecimal {
 
@@ -69,8 +75,18 @@ public class Range {
         }
     }
 
-    private static final byte CONTAIN_LEAF = 2;// 10
-    private static final byte CONTAIN_RIGHT = 1;// 01
+    /**
+     * 01
+     * 
+     * @author @Neil
+     */
+    private static final byte CONTAIN_RIGHT = 1;
+    /**
+     * 10
+     * 
+     * @author @Neil
+     */
+    private static final byte CONTAIN_LEAF = 2;
 
     private static final BigDecimal MAX = new BoundaryNumber("max", true);
     private static final BigDecimal MIN = new BoundaryNumber("min", false);
@@ -79,8 +95,11 @@ public class Range {
 
     /**
      * 编译表达式。表达式以区间表示，多个区间以"|"隔开，最大值以max表示，最小值以min表示
-     * @param rangeStr 表达式字符串。
-     * @exception IllegalArgumentException 如果表达式有问题，则会抛出这个错误。
+     * 
+     * @param rangeStr
+     *            表达式字符串。
+     * @exception IllegalArgumentException
+     *                如果表达式有问题，则会抛出这个错误。
      * @return range 实例
      */
     public static Range compiler(String rangeStr) throws IllegalArgumentException {
@@ -89,7 +108,7 @@ public class Range {
         RangeItem rangeItem = null;
         for (String rangeStrItem : rangeStrArr) {
             rangeStrItem = rangeStrItem.trim();
-            if (StringUtils.isEmpty(rangeStrItem)) {
+            if (AbstractStringUtils.isEmpty(rangeStrItem)) {
                 continue;
             }
             rangeItem = itemCompiler(rangeStrItem);
@@ -133,11 +152,14 @@ public class Range {
         return range;
     }
 
+    private final static String MAX_TAG = "max";
+    private final static String MIN_TAG = "min";
+
     private static BigDecimal builderBigDecimal(String numStr) {
-        if ("max".equals(numStr)) {
+        if (MAX_TAG.equals(numStr)) {
             return MAX;
         }
-        else if ("min".equals(numStr)) {
+        else if (MIN_TAG.equals(numStr)) {
             return MIN;
         }
         return new BigDecimal(numStr);
@@ -148,7 +170,9 @@ public class Range {
 
     /**
      * 判断一个数字是否在范围内。
-     * @param num 待判断的数字
+     * 
+     * @param num
+     *            待判断的数字
      * @return 如果在范围内，则返回true，否则返回false。
      */
     public boolean inRange(Number num) {
@@ -158,7 +182,9 @@ public class Range {
 
     /**
      * 判断一个数字是否在范围内。
-     * @param number 待判断的数字
+     * 
+     * @param number
+     *            待判断的数字
      * @return 如果在范围内，则返回true，否则返回false。
      */
     public boolean inRange(BigDecimal number) {

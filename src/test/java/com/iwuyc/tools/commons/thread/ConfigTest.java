@@ -9,13 +9,13 @@ import org.junit.Test;
 public class ConfigTest
 {
 
-    private Config config;
+    private ThreadConfig config;
 
     @Before
     public void before() throws Exception
     {
-        InputStream in = Config.class.getResourceAsStream("/thread/thread.properties");
-        this.config = new Config();
+        InputStream in = ThreadConfig.class.getResourceAsStream("/thread/thread.properties");
+        this.config = new ThreadConfig();
         config.load(in);
 
     }
@@ -23,13 +23,13 @@ public class ConfigTest
     @Test
     public void test() throws Exception
     {
-        config.findUsingSetting(Config.class.getName());
+        config.findUsingSetting(ThreadConfig.class.getName());
     }
 
     @Test
     public void test1() throws Exception
     {
-        InputStream in = Config.class.getResourceAsStream("/thread/thread.properties");
+        InputStream in = ThreadConfig.class.getResourceAsStream("/thread/thread.properties");
         Properties properties = new Properties();
         properties.load(in);
 

@@ -19,22 +19,23 @@ import java.util.jar.JarFile;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.iwuyc.tools.commons.basic.StringUtils;
+import com.iwuyc.tools.commons.basic.AbstractStringUtils;
 
 /**
  * 扫描包含指定注解的类，并返回这些类。 突然间发现GitHub有一个 FastClasspathScanner 包可以做到更加强大的功能。
  * 
  * @deprecated 废弃，不建议再使用。GitHub有一个开源的类路径扫描工具包，建议使用该工具包。
- * <pre>
+ * 
+ *             <pre>
  * <!-- https://mvnrepository.com/artifact/io.github.lukehutch/fast-classpath-scanner -->
  * &lt;dependency&gt;
  *     &lt;groupId&gt;io.github.lukehutch&lt;/groupId&gt;
  *     &lt;artifactId&gt;fast-classpath-scanner&lt;/artifactId&gt;
  *     &lt;version&gt;${classpath.scanner.version}&lt;/version&gt;
  * &lt;/dependency&gt;
- * </pre>
+ *             </pre>
  * 
- * @Auth iWuYc
+ * @author iWuYc
  * @since
  * @time 2017-08-04 15:23
  */
@@ -50,7 +51,7 @@ public class AnnotationScanner implements Runnable {
     public AnnotationScanner(Class<? extends Annotation> annotation, String... packages) {
         this.annotation = annotation;
         for (String packageName : packages) {
-            if (StringUtils.isEmpty(packageName)) {
+            if (AbstractStringUtils.isEmpty(packageName)) {
                 continue;
             }
             this.packages.push(packageName);
@@ -180,13 +181,15 @@ public class AnnotationScanner implements Runnable {
         }
     }
 
+    private static final String NUMBER_REGEX = "\\$[0-9]*";
+
     private void annotationClass(String className) throws ClassNotFoundException {
         int anonymityClassLocation = className.lastIndexOf('$');
         // 匿名内部类，则直接跳过
-        if (anonymityClassLocation >= 0 && className.substring(anonymityClassLocation).matches("\\$[0-9]*")) {
+        if (anonymityClassLocation >= 0 && className.substring(anonymityClassLocation).matches(NUMBER_REGEX)) {
             return;
         }
-        Optional<Class<?>> clazzOpt = ClassUtils.loadClass(className, true, null);
+        Optional<Class<?>> clazzOpt = AbstractClassUtils.loadClass(className, true, null);
         if (!clazzOpt.isPresent()) {
             return;
         }

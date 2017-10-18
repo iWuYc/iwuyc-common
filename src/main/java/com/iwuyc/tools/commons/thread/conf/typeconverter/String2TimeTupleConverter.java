@@ -4,10 +4,14 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import com.iwuyc.tools.commons.basic.StringUtils;
+import com.iwuyc.tools.commons.basic.AbstractStringUtils;
 import com.iwuyc.tools.commons.basic.type.TimeTuple;
 import com.iwuyc.tools.commons.classtools.typeconverter.AbstractStringConverter;
 
+/**
+ * @author @Neil
+ * @since @2017年10月15日
+ */
 public class String2TimeTupleConverter extends AbstractStringConverter<TimeTuple> {
     public static final Map<String, TimeUnit> MAPPING = new HashMap<>();
 
@@ -28,7 +32,7 @@ public class String2TimeTupleConverter extends AbstractStringConverter<TimeTuple
 
         String unitStr = from.replaceAll("[0-9]*", "").trim();
         TimeUnit timeUnit = null;
-        if (StringUtils.isEmpty(unitStr)) {
+        if (AbstractStringUtils.isEmpty(unitStr)) {
             timeUnit = TimeUnit.SECONDS;
         }
         else {

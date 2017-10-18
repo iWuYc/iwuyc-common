@@ -10,22 +10,27 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.iwuyc.tools.commons.classtools.ClassUtils;
-import com.iwuyc.tools.commons.thread.Config;
+import com.iwuyc.tools.commons.classtools.AbstractClassUtils;
+import com.iwuyc.tools.commons.thread.ThreadConfig;
 import com.iwuyc.tools.commons.thread.ExecutorServiceFactory;
 import com.iwuyc.tools.commons.thread.ThreadPoolsService;
 import com.iwuyc.tools.commons.thread.conf.ThreadPoolConfig;
 import com.iwuyc.tools.commons.thread.conf.UsingConfig;
 
-public class DefaultThreadPoolsService implements ThreadPoolsService {
 
-    private static final Logger LOG = LoggerFactory.getLogger(DefaultThreadPoolsService.class);
+/**
+ * @author @Neil
+ * @since @2017年10月15日
+ */
+public class DefaultThreadPoolsServiceImpl implements ThreadPoolsService {
+
+    private static final Logger LOG = LoggerFactory.getLogger(DefaultThreadPoolsServiceImpl.class);
 
     public Map<String, ExecutorService> executorServiceCache = new ConcurrentHashMap<>();
     private ReadWriteLock lock = new ReentrantReadWriteLock(true);
-    private Config config;
+    private ThreadConfig config;
 
-    public DefaultThreadPoolsService(Config config) {
+    public DefaultThreadPoolsServiceImpl(ThreadConfig config) {
         this.config = config;
     }
 
@@ -79,13 +84,13 @@ public class DefaultThreadPoolsService implements ThreadPoolsService {
     }
 
     private ExecutorService createNewThreadPoolFactory(ThreadPoolConfig threadPoolConfig) {
-        ExecutorServiceFactory factory = ClassUtils.instance(ExecutorServiceFactory.class, threadPoolConfig
+        ExecutorServiceFactory factory = AbstractClassUtils.instance(ExecutorServiceFactory.class, threadPoolConfig
                 .getFactory());
         return factory.create(threadPoolConfig);
     }
 
     @Override
-    public Config getConfig() {
+    public ThreadConfig getConfig() {
         return this.config;
     }
 

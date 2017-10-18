@@ -74,14 +74,14 @@ public class ClassTestCase {
 
     @Test
     public void testInstance() {
-        ClassUtils.instance(TestClass.class, new Parameter3());
-        ClassUtils.instance(TestClass.class, new Parameter2());
-        ClassUtils.instance(TestClass.class, new Parameter1());
-        ClassUtils.instance(TestClass.class, new Parameter());
-        ClassUtils.instance(TestClass.class, new Object());
+        AbstractClassUtils.instance(TestClass.class, new Parameter3());
+        AbstractClassUtils.instance(TestClass.class, new Parameter2());
+        AbstractClassUtils.instance(TestClass.class, new Parameter1());
+        AbstractClassUtils.instance(TestClass.class, new Parameter());
+        AbstractClassUtils.instance(TestClass.class, new Object());
     }
 
-    @Test
+    @Test(expected = NoSuchMethodException.class)
     public void testConstructor() throws Exception {
         Class<TestClass> clazz = TestClass.class;
         Constructor<TestClass> constructor = clazz.getDeclaredConstructor(Parameter3.class);
@@ -90,11 +90,11 @@ public class ClassTestCase {
 
     @Test
     public void testCallStaticMethod() {
-        ClassUtils.callMethod(TestClass.class, "staticMethod", "String");
-        ClassUtils.callMethod(TestClass.class, "staticMethod", new Parameter3());
-        ClassUtils.callMethod(TestClass.class, "staticMethod", new Parameter1());
-        ClassUtils.callMethod(TestClass.class, "staticMethod", new Parameter2());
-        ClassUtils.callMethod(TestClass.class, "staticMethod", new Parameter());
-        ClassUtils.callMethod(TestClass.class, "staticMethod");
+        AbstractClassUtils.callMethod(TestClass.class, "staticMethod", "String");
+        AbstractClassUtils.callMethod(TestClass.class, "staticMethod", new Parameter3());
+        AbstractClassUtils.callMethod(TestClass.class, "staticMethod", new Parameter1());
+        AbstractClassUtils.callMethod(TestClass.class, "staticMethod", new Parameter2());
+        AbstractClassUtils.callMethod(TestClass.class, "staticMethod", new Parameter());
+        AbstractClassUtils.callMethod(TestClass.class, "staticMethod");
     }
 }

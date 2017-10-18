@@ -2,6 +2,10 @@ package com.iwuyc.tools.commons.basic.type;
 
 import java.util.concurrent.TimeUnit;
 
+/**
+ * @author @Neil
+ * @since @2017年10月15日
+ */
 public class TimeTuple {
     private final long time;
     private final TimeUnit timeUnit;

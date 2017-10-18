@@ -4,7 +4,7 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import com.iwuyc.tools.commons.basic.StringUtils;
+import com.iwuyc.tools.commons.basic.AbstractStringUtils;
 import com.iwuyc.tools.commons.basic.type.TimeTuple;
 
 /**
@@ -45,12 +45,12 @@ public class ThreadPoolConfig {
 
     public ThreadPoolConfig(String factory, String threadPoolsName) {
 
-        if (StringUtils.isEmpty(factory)) {
+        if (AbstractStringUtils.isEmpty(factory)) {
             factory = "com.iwuyc.tools.commons.thread.impl.ThreadPoolExecutor";
         }
         this.factory = factory;
 
-        if (StringUtils.isEmpty(threadPoolsName)) {
+        if (AbstractStringUtils.isEmpty(threadPoolsName)) {
             threadPoolsName = "thframe";
         }
         this.threadPoolsName = threadPoolsName;

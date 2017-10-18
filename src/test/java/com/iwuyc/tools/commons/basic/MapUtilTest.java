@@ -40,19 +40,24 @@ public class MapUtilTest {
 
         @Override
         public boolean equals(Object obj) {
-            if (this == obj)
+            if (this == obj) {
                 return true;
-            if (obj == null)
+            }
+            if (obj == null) {
                 return false;
-            if (getClass() != obj.getClass())
+            }
+            if (getClass() != obj.getClass()) {
                 return false;
+            }
             Entity other = (Entity) obj;
             if (name == null) {
-                if (other.name != null)
+                if (other.name != null) {
                     return false;
+                }
             }
-            else if (!name.equals(other.name))
+            else if (!name.equals(other.name)) {
                 return false;
+            }
             return true;
         }
 
@@ -85,10 +90,10 @@ public class MapUtilTest {
         map.put("entity2", entity2);
         map.put("entity3", entity3);
 
-        Collection<String> result = MapUtil.findKeyByVal(map, null);
+        Collection<String> result = AbstractMapUtil.findKeyByVal(map, null);
         System.out.println(result);
 
-        result = MapUtil.findKeyByVal(map, entity1);
+        result = AbstractMapUtil.findKeyByVal(map, entity1);
         System.out.println(result);
     }
 
