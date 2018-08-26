@@ -1,12 +1,15 @@
 package com.iwuyc.tools.commons.util;
 
 import com.iwuyc.tools.commons.classtools.AbstractClassUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author @Neil
  * @since @2017年10月15日
  */
-public abstract class AbstractNumberUtil {
+public abstract class NumberUtils {
+
     public static boolean isByteClass(Class<?> target) {
         return Byte.class.equals(target) || byte.class.equals(target);
     }
@@ -86,4 +89,5 @@ public abstract class AbstractNumberUtil {
         }
         return (T) result;
     }
+
 }
