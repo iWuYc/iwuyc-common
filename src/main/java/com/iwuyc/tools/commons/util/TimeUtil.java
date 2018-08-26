@@ -1,26 +1,20 @@
 package com.iwuyc.tools.commons.util;
 
-import java.io.Closeable;
-import java.io.IOException;
-import java.text.DateFormat;
-import java.text.FieldPosition;
-import java.text.ParseException;
-import java.text.ParsePosition;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-
+import com.iwuyc.tools.commons.basic.AbstractStringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.iwuyc.tools.commons.basic.AbstractStringUtils;
+import java.text.*;
+import java.util.Date;
 
 /**
  * 时间格式化工具类。由于使用了静态属性，因此一个项目只能有一个格式，如果需要有不同的格式，可以使用
  * {@link TimeUtil#createThreadSafeDateFormat(String)}创建线程安全的DateFormat对象。
  * 日期格式可以通过设置环境变量"timeformat"来定义，或者jvm的系统变量"timeformat"，如果都没有设置，则默认值为:"yyyy-MM-dd'T'HH:mm:ss.SSSZ"
- * 
+ * @deprecated 弃用，使用
  * @author iWuYc
  */
+@Deprecated
 public class TimeUtil {
     private static final Logger LOG = LoggerFactory.getLogger(TimeUtil.class);
 
