@@ -1,7 +1,8 @@
-package com.iwuyc.tools.commons.util;
+package com.iwuyc.tools.commons.util.time;
 
 import com.iwuyc.tools.commons.basic.type.DateTimeTuple;
-import com.iwuyc.tools.commons.util.time.DateFormatterPattern;
+import com.iwuyc.tools.commons.util.DateTimeUtils;
+import lombok.Data;
 
 import java.time.Instant;
 import java.time.LocalDate;
@@ -16,31 +17,13 @@ import java.util.Locale;
  *
  * @author Neil
  */
+@Data
 public class DateTimeBuilder {
-    public static final Locale DEFAULT_LOCALE = Locale.PRC;
     private LocalDateTime localDateTime;
+    private DateTimeFormatter formatter;
 
     public DateTimeBuilder(LocalDateTime localDateTime) {
         this.localDateTime = localDateTime;
-    }
-
-    public static DateTimeBuilder withTime(LocalDateTime time) {
-        return new DateTimeBuilder(time);
-    }
-
-    public static DateTimeBuilder withTime(String time, String pattern, Locale locale) {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern(pattern, locale);
-        return withTime(time, formatter);
-    }
-
-    public static DateTimeBuilder withTime(String time, String pattern) {
-        return withTime(time, pattern, DEFAULT_LOCALE);
-    }
-
-    public static DateTimeBuilder withTime(String time) {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern(DateFormatterPattern.DEFAULT, DEFAULT_LOCALE);
-        TemporalAccessor temporalAccessor = formatter.parse(time);
-        return withTime(LocalDateTime.from(temporalAccessor));
     }
 
     public static DateTimeBuilder withTime(Date time) {
@@ -48,10 +31,29 @@ public class DateTimeBuilder {
         return withTime(LocalDateTime.from(instant));
     }
 
-    public static DateTimeBuilder withTime(String time, DateTimeFormatter pattern) {
-        TemporalAccessor temporalAccessor = pattern.parse(time);
+    public static DateTimeBuilder withTime(LocalDateTime time) {
+        return new DateTimeBuilder(time);
+    }
+
+    public static DateTimeBuilder withTime(String time, DateTimeFormatter formatter) {
+        TemporalAccessor temporalAccessor = formatter.parse(time);
         LocalDateTime dateTime = LocalDateTime.from(temporalAccessor);
-        return withTime(dateTime);
+        DateTimeBuilder builder = withTime(dateTime);
+        builder.setFormatter(formatter);
+        return builder;
+    }
+
+    public static DateTimeBuilder withTime(String time, String pattern, Locale locale) {
+        DateTimeFormatter formatter = DateTimeUtils.getDateTimeFormatter(pattern, locale);
+        return withTime(time, formatter);
+    }
+
+    public static DateTimeBuilder withTime(String time, String pattern) {
+        return withTime(time, pattern, DateFormatterPattern.DEFAULT_LOCALE);
+    }
+
+    public static DateTimeBuilder withTime(String time) {
+        return withTime(time, DateFormatterPattern.DEFAULT, DateFormatterPattern.DEFAULT_LOCALE);
     }
 
     public DateTimeBuilder withYears(int years) {
@@ -89,6 +91,12 @@ public class DateTimeBuilder {
         return this;
     }
 
+    /**
+     * 根据timeTuple计算过了多久时间
+     *
+     * @param timeTuple 时间的元组，包含时间长度跟时间单位
+     * @return
+     */
     public DateTimeBuilder after(DateTimeTuple timeTuple) {
         this.localDateTime = this.localDateTime.plus(timeTuple.getTime(), timeTuple.getTemporalUnit());
         return this;
@@ -99,10 +107,10 @@ public class DateTimeBuilder {
         LocalDateTime next = now.withDayOfMonth(1).plusDays(dayOfMonth - 1);
         LocalDate nowDate = now.toLocalDate();
         LocalDate nextDate = next.toLocalDate();
-        if (nowDate.isAfter(nextDate)) {
-            this.localDateTime = next.plusMonths(1);
-        } else {
+        if (nextDate.isAfter(nowDate)) {
             this.localDateTime = next;
+        } else {
+            this.localDateTime = next.plusMonths(1);
         }
         return this;
     }
@@ -112,18 +120,30 @@ public class DateTimeBuilder {
     }
 
     public String format(String pattern, Locale locale) {
-        return format(DateTimeFormatter.ofPattern(pattern, locale));
+        return format(DateTimeUtils.getDateTimeFormatter(pattern, locale));
     }
 
     public String format(String pattern) {
-        return format(pattern, DEFAULT_LOCALE);
+        return format(pattern, DateFormatterPattern.DEFAULT_LOCALE);
     }
 
     public String format() {
-        return format(DateFormatterPattern.DEFAULT);
+        if (null == this.formatter) {
+            this.formatter =
+                DateTimeUtils.getDateTimeFormatter(DateFormatterPattern.DEFAULT, DateFormatterPattern.DEFAULT_LOCALE);
+        }
+        return format(this.formatter);
     }
 
     public LocalDateTime getLocalDateTime() {
         return localDateTime;
+    }
+
+    public DateTimeFormatter getFormatter() {
+        return formatter;
+    }
+
+    public void setFormatter(DateTimeFormatter formatter) {
+        this.formatter = formatter;
     }
 }

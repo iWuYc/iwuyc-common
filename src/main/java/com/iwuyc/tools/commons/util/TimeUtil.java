@@ -11,7 +11,7 @@ import java.util.Date;
  * 时间格式化工具类。由于使用了静态属性，因此一个项目只能有一个格式，如果需要有不同的格式，可以使用
  * {@link TimeUtil#createThreadSafeDateFormat(String)}创建线程安全的DateFormat对象。
  * 日期格式可以通过设置环境变量"timeformat"来定义，或者jvm的系统变量"timeformat"，如果都没有设置，则默认值为:"yyyy-MM-dd'T'HH:mm:ss.SSSZ"
- * @deprecated 弃用，使用
+ * @deprecated 弃用，使用DateTimeUtils进行数据格式转化
  * @author iWuYc
  */
 @Deprecated
@@ -32,7 +32,7 @@ public class TimeUtil {
      * 获取日期的格式
      * 
      * @author @iwuyc
-     * @return
+     * @return 日期的格式
      */
     private static String getDateFormat() {
         String result = System.getProperty(FORMAT_PATTERN_KEY);
@@ -45,13 +45,11 @@ public class TimeUtil {
      * 创建{@link DateFormat}的{@link ThreadLocal}shi
      * 
      * @author @iwuyc
-     * @param datePattern
-     * @return
+     * @param datePattern 日期格式
+     * @return 线程本地变量
      */
-    public static ThreadLocal<DateFormat> createDateFormatThreadLocal(final String datePattern) {
-        ThreadLocal<DateFormat> threadSafe = ThreadLocal.withInitial(() -> {
-            return new SimpleDateFormat(datePattern);
-        });
+    private static ThreadLocal<DateFormat> createDateFormatThreadLocal(final String datePattern) {
+        ThreadLocal<DateFormat> threadSafe = ThreadLocal.withInitial(() -> new SimpleDateFormat(datePattern));
         return threadSafe;
     }
 
@@ -81,7 +79,7 @@ public class TimeUtil {
      *            日期的格式
      * @return 日期格式化实例
      */
-    public static DateFormat createThreadSafeDateFormat(String datePattern) {
+    private static DateFormat createThreadSafeDateFormat(String datePattern) {
         return new ThreadSafeDateFormat(datePattern);
     }
 
@@ -97,11 +95,11 @@ public class TimeUtil {
         return THREADSAFE_DATE_FORMATTER.format(time);
     }
 
+    /**
+     * @author @iwuyc
+     */
     private static class ThreadSafeDateFormat extends DateFormat {
 
-        /**
-         * @author @iwuyc
-         */
         private static final long serialVersionUID = -8321081491688772093L;
 
         private ThreadLocal<DateFormat> dateFormatFactory;
@@ -123,7 +121,7 @@ public class TimeUtil {
         }
 
         @Override
-        protected void finalize() throws Throwable {
+        protected void finalize() {
             this.dateFormatFactory.remove();
         }
 
