@@ -1,5 +1,6 @@
 package com.iwuyc.tools.commons.util.time;
 
+import java.time.ZoneOffset;
 import java.util.Locale;
 
 /**
@@ -10,4 +11,5 @@ import java.util.Locale;
 public interface DateFormatterPattern {
     String DEFAULT = "yyyy-MM-dd'T'HH:mm:ssZ";
     Locale DEFAULT_LOCALE = Locale.PRC;
+    ZoneOffset DEFAULT_ZONE_OFFSET = ZoneOffset.ofHours(8);
 }

@@ -102,6 +102,16 @@ public class DateTimeBuilder {
         return this;
     }
 
+    /**
+     * 获取当前时间为起点，下一个指定“day”的时间。<br />
+     * Example:<br />
+     * this.localDateTime = 2018-08-26 13:14:00;<br />
+     * input:dayOfMonth = 26; <br />
+     * output:this.localDateTime = 2018-09-26 13:14:00;
+     *
+     * @param dayOfMonth 指定的“day”
+     * @return 获取到的时间
+     */
     public DateTimeBuilder nextDayOfMonth(int dayOfMonth) {
         LocalDateTime now = this.localDateTime;
         LocalDateTime next = now.withDayOfMonth(1).plusDays(dayOfMonth - 1);
@@ -116,7 +126,7 @@ public class DateTimeBuilder {
     }
 
     public String format(DateTimeFormatter formatter) {
-        return this.localDateTime.format(formatter);
+        return formatter.format(this.localDateTime);
     }
 
     public String format(String pattern, Locale locale) {
@@ -145,5 +155,10 @@ public class DateTimeBuilder {
 
     public void setFormatter(DateTimeFormatter formatter) {
         this.formatter = formatter;
+    }
+
+    public Date toDate() {
+        Instant instance = this.localDateTime.toInstant(DateFormatterPattern.DEFAULT_ZONE_OFFSET);
+        return Date.from(instance);
     }
 }
