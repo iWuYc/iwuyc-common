@@ -1,6 +1,7 @@
 package com.iwuyc.tools.commons.util;
 
 import com.iwuyc.tools.commons.basic.type.DateTimeTuple;
+import com.iwuyc.tools.commons.util.time.DateFormatterPattern;
 import com.iwuyc.tools.commons.util.time.DateTimeBuilder;
 import org.junit.Test;
 
@@ -37,9 +38,11 @@ public class DateTimeBuilderTest {
 
     @Test
     public void testLocale() {
-        DateTimeBuilder builder = DateTimeBuilder.withTime("2018-08-25T00:26:20+0800");
+        DateTimeBuilder builder = DateTimeBuilder.withTime("2018-08-25T00:26:20+0100");
         builder = builder.nextDayOfMonth(26);
         System.out.println(builder.toDate());
+
+        System.out.println(builder.format(DateFormatterPattern.DEFAULT));
     }
 
 }

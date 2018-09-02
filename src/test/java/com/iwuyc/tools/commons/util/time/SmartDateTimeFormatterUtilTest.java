@@ -48,6 +48,10 @@ public class SmartDateTimeFormatterUtilTest {
 
     @Test
     public void testIsDateTime(){
-        System.out.println(SmartDateTimeFormatter.isDateTimePattern("yyyy "));
+        System.out.println(SmartDateTimeFormatter.isZoneDateTimePattern("yyyy-MM-dd'T'hh:mm:ss.SSSZ"));
+        System.out.println(SmartDateTimeFormatter.isZoneDateTimePattern("yyyy-MM-dd'T'hh:mm:ss.SSS+0800"));
+        System.out.println(SmartDateTimeFormatter.isZoneDateTimePattern("yyyy-MM-dd'T'hh:mm:ss.SSS+080"));
+        System.out.println(SmartDateTimeFormatter.isZoneDateTimePattern("yyyy-MM-dd'T'hh:mm:ss.SSS"));
+        System.out.println(SmartDateTimeFormatter.isZoneDateTimePattern("yyyy-MM-dd hh:mm:ss.SSS+0800"));
     }
 }
