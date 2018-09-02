@@ -7,6 +7,7 @@ import lombok.Data;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.TemporalAccessor;
 import java.util.Date;
@@ -20,7 +21,8 @@ import java.util.Locale;
 @Data
 public class DateTimeBuilder {
     private LocalDateTime localDateTime;
-    private DateTimeFormatter formatter;
+    //    private DateTimeFormatter formatter;
+    private SmartDateTimeFormatter formatter;
 
     public DateTimeBuilder(LocalDateTime localDateTime) {
         this.localDateTime = localDateTime;
@@ -35,7 +37,7 @@ public class DateTimeBuilder {
         return new DateTimeBuilder(time);
     }
 
-    public static DateTimeBuilder withTime(String time, DateTimeFormatter formatter) {
+    public static DateTimeBuilder withTime(String time, SmartDateTimeFormatter formatter) {
         TemporalAccessor temporalAccessor = formatter.parse(time);
         LocalDateTime dateTime = LocalDateTime.from(temporalAccessor);
         DateTimeBuilder builder = withTime(dateTime);
@@ -44,7 +46,7 @@ public class DateTimeBuilder {
     }
 
     public static DateTimeBuilder withTime(String time, String pattern, Locale locale) {
-        DateTimeFormatter formatter = DateTimeUtils.getDateTimeFormatter(pattern, locale);
+        SmartDateTimeFormatter formatter = SmartDateTimeFormatter.create(pattern, locale);
         return withTime(time, formatter);
     }
 
@@ -95,10 +97,42 @@ public class DateTimeBuilder {
      * 根据timeTuple计算过了多久时间
      *
      * @param timeTuple 时间的元组，包含时间长度跟时间单位
-     * @return
+     * @return 当前的构建实例
      */
     public DateTimeBuilder after(DateTimeTuple timeTuple) {
         this.localDateTime = this.localDateTime.plus(timeTuple.getTime(), timeTuple.getTemporalUnit());
+        return this;
+    }
+
+    /**
+     * 根据timeTuple计算在多久之前的时间
+     *
+     * @param timeTuple 时间的元组，包含时间长度跟时间单位
+     * @return 当前的构建实例
+     */
+    public DateTimeBuilder before(DateTimeTuple timeTuple) {
+        this.localDateTime = this.localDateTime.plus(-timeTuple.getTime(), timeTuple.getTemporalUnit());
+        return this;
+    }
+
+
+    /**
+     * 将时间设置为当天的起始时间
+     *
+     * @return 当前的构建实例
+     */
+    public DateTimeBuilder startWithDay() {
+        this.localDateTime = localDateTime.with(LocalTime.MIN);
+        return this;
+    }
+
+    /**
+     * 将时间设置为当天最后的一纳秒
+     *
+     * @return 当前的构建实例
+     */
+    public DateTimeBuilder endWithDay() {
+        this.startWithDay().after(DateTimeTuple.CHRONO_ONE_DAYS).before(DateTimeTuple.CHRONO_ONE_NANOSECOND);
         return this;
     }
 
@@ -113,9 +147,9 @@ public class DateTimeBuilder {
      * @return 获取到的时间
      */
     public DateTimeBuilder nextDayOfMonth(int dayOfMonth) {
-        LocalDateTime now = this.localDateTime;
-        LocalDateTime next = now.withDayOfMonth(1).plusDays(dayOfMonth - 1);
-        LocalDate nowDate = now.toLocalDate();
+        LocalDateTime originTime = this.localDateTime;
+        LocalDateTime next = originTime.withDayOfMonth(1).plusDays(dayOfMonth - 1);
+        LocalDate nowDate = originTime.toLocalDate();
         LocalDate nextDate = next.toLocalDate();
         if (nextDate.isAfter(nowDate)) {
             this.localDateTime = next;
@@ -125,12 +159,12 @@ public class DateTimeBuilder {
         return this;
     }
 
-    public String format(DateTimeFormatter formatter) {
+    public String format(SmartDateTimeFormatter formatter) {
         return formatter.format(this.localDateTime);
     }
 
     public String format(String pattern, Locale locale) {
-        return format(DateTimeUtils.getDateTimeFormatter(pattern, locale));
+        return format(SmartDateTimeFormatter.create(pattern, locale));
     }
 
     public String format(String pattern) {
@@ -140,7 +174,7 @@ public class DateTimeBuilder {
     public String format() {
         if (null == this.formatter) {
             this.formatter =
-                DateTimeUtils.getDateTimeFormatter(DateFormatterPattern.DEFAULT, DateFormatterPattern.DEFAULT_LOCALE);
+                    SmartDateTimeFormatter.create(DateFormatterPattern.DEFAULT, DateFormatterPattern.DEFAULT_LOCALE);
         }
         return format(this.formatter);
     }
@@ -149,11 +183,11 @@ public class DateTimeBuilder {
         return localDateTime;
     }
 
-    public DateTimeFormatter getFormatter() {
+    public SmartDateTimeFormatter getFormatter() {
         return formatter;
     }
 
-    public void setFormatter(DateTimeFormatter formatter) {
+    public void setFormatter(SmartDateTimeFormatter formatter) {
         this.formatter = formatter;
     }
 
