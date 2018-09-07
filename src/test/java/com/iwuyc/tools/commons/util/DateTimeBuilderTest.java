@@ -6,9 +6,11 @@ import com.iwuyc.tools.commons.util.time.DateTimeBuilder;
 import org.junit.Test;
 
 import java.time.LocalDateTime;
-import java.time.LocalTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
-import java.time.temporal.TemporalUnit;
+import java.util.Locale;
 
 public class DateTimeBuilderTest {
 
@@ -38,11 +40,24 @@ public class DateTimeBuilderTest {
 
     @Test
     public void testLocale() {
-        DateTimeBuilder builder = DateTimeBuilder.withTime("2018-08-25T00:26:20+0100");
+        DateTimeBuilder builder =
+            DateTimeBuilder.withTime("2018-08-25T00:26:20+0000", DateFormatterPattern.DEFAULT, Locale.US);
         builder = builder.nextDayOfMonth(26);
+        LocalDateTime localDateTime = builder.getLocalDateTime();
+        ZonedDateTime zoneTime = localDateTime.atZone(ZoneId.of("+08"));
+        System.out.println(zoneTime);
+        System.out.println(zoneTime.withZoneSameInstant(ZoneId.of("+18")));
         System.out.println(builder.toDate());
 
         System.out.println(builder.format(DateFormatterPattern.DEFAULT));
+    }
+
+    @Test
+    public void testZoneDateTime() {
+        // TODO Neil zone time turn to localtime
+        ZonedDateTime time = ZonedDateTime.now().withZoneSameInstant(ZoneId.of("+09"));
+        DateTimeFormatter pattern = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
+        System.out.println(time.format(pattern));
     }
 
 }
