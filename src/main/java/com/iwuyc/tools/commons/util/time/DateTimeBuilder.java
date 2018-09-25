@@ -7,7 +7,6 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.time.temporal.TemporalAccessor;
 import java.util.Date;
 import java.util.Locale;
 
@@ -19,7 +18,6 @@ import java.util.Locale;
 @Data
 public class DateTimeBuilder {
     private LocalDateTime localDateTime;
-    //    private DateTimeFormatter formatter;
     private SmartDateTimeFormatter formatter;
 
     public DateTimeBuilder(LocalDateTime localDateTime) {
@@ -36,8 +34,7 @@ public class DateTimeBuilder {
     }
 
     public static DateTimeBuilder withTime(String time, SmartDateTimeFormatter formatter) {
-        TemporalAccessor temporalAccessor = formatter.parse(time);
-        LocalDateTime dateTime = LocalDateTime.from(temporalAccessor);
+        LocalDateTime dateTime = formatter.parse(time);
         DateTimeBuilder builder = withTime(dateTime);
         builder.setFormatter(formatter);
         return builder;

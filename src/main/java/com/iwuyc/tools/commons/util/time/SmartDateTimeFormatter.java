@@ -5,10 +5,7 @@ import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.iwuyc.tools.commons.basic.type.DateTimeFormatterTuple;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.ZonedDateTime;
+import java.time.*;
 import java.time.chrono.ChronoLocalDateTime;
 import java.time.chrono.ChronoZonedDateTime;
 import java.time.format.DateTimeFormatter;
@@ -99,28 +96,34 @@ public class SmartDateTimeFormatter {
         }
         return this.formatter.format(time);
     }
-
-    public TemporalAccessor parse(String time) {
-        DateParser parser = null;
+    public LocalDateTime parse(String time) {
+        LocalDateTime result = null;
         switch (this.modFlag) {
             case 1:
-                parser = ZonedDateTime::parse;
+                ZonedDateTime zonedDateTime = ZonedDateTime.parse(time);
+                result = zonedDateTime.withZoneSameInstant(ZoneId.systemDefault()).toLocalDateTime();
                 break;
             case 2:
-                parser = LocalTime::parse;
+                LocalTime localTime = LocalTime.parse(time, this.formatter);
+                result = localTime.atDate(LocalDate.now());
+                break;
+            case 4:
+                LocalDate localDate = LocalDate.parse(time, this.formatter);
+                result = localDate.atTime(LocalTime.MIN);
                 break;
             case 6:
-                parser = LocalDate::parse;
+                result = LocalDateTime.parse(time, this.formatter);
                 break;
             case 7:
-                parser = LocalDateTime::parse;
+                zonedDateTime = ZonedDateTime.parse(time, this.formatter);
+                result = zonedDateTime.withZoneSameInstant(ZoneId.systemDefault()).toLocalDateTime();
                 break;
             default:
                 ZonedDateTime.parse(time, this.formatter);
                 throw new IllegalArgumentException("Pattern was wrong.The pattern was [" + pattern + "]");
         }
 
-        return parser.parse(time, this.formatter);
+        return result;
     }
 
     TemporalAccessor parse(String time, DateParser parser) {

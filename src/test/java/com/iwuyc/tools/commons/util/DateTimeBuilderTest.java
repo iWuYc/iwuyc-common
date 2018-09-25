@@ -58,6 +58,13 @@ public class DateTimeBuilderTest {
         ZonedDateTime time = ZonedDateTime.now().withZoneSameInstant(ZoneId.of("+09"));
         DateTimeFormatter pattern = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
         System.out.println(time.format(pattern));
+        System.out.println(time.withZoneSameInstant(ZoneId.systemDefault()).toLocalDateTime());
     }
 
+    @Test
+    public void testTimeCalculator() {
+        DateTimeBuilder builder = DateTimeBuilder.withTime("2018-07-27", "yyyy-MM-dd");
+        builder.after(DateTimeTuple.create(1, ChronoUnit.DAYS));
+        System.out.println(builder.format());
+    }
 }
