@@ -3,10 +3,7 @@ package com.iwuyc.tools.commons.util.time;
 import com.iwuyc.tools.commons.basic.type.DateTimeTuple;
 import lombok.Data;
 
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
+import java.time.*;
 import java.util.Date;
 import java.util.Locale;
 
@@ -187,7 +184,12 @@ public class DateTimeBuilder {
     }
 
     public Date toDate() {
-        Instant instance = this.localDateTime.toInstant(DateFormatterPattern.DEFAULT_ZONE_OFFSET);
-        return Date.from(instance);
+        return toDate(ZoneId.systemDefault());
+    }
+
+    public Date toDate(ZoneId zoneId) {
+        ZonedDateTime zonedDateTime = this.localDateTime.atZone(ZoneId.systemDefault()).withZoneSameInstant(zoneId);
+        ZoneOffset zoneOffset = zonedDateTime.getOffset();
+        return Date.from(zonedDateTime.toLocalDateTime().toInstant(zoneOffset));
     }
 }

@@ -7,6 +7,7 @@ import org.junit.Test;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
@@ -33,7 +34,7 @@ public class DateTimeBuilderTest {
         System.out.println(builder.startWithDay().getLocalDateTime());
         System.out.println(builder.after(DateTimeTuple.create(-1, ChronoUnit.NANOS)).getLocalDateTime());
 
-        builder = DateTimeBuilder.withTime("00:26:20","HH:mm:ss");
+        builder = DateTimeBuilder.withTime("00:26:20", "HH:mm:ss");
         builder = builder.nextDayOfMonth(26);
         System.out.println(builder.getLocalDateTime());
     }
@@ -41,7 +42,7 @@ public class DateTimeBuilderTest {
     @Test
     public void testLocale() {
         DateTimeBuilder builder =
-            DateTimeBuilder.withTime("2018-08-25T00:26:20+0000", DateFormatterPattern.DEFAULT, Locale.US);
+                DateTimeBuilder.withTime("2018-08-25T00:26:20+0000", DateFormatterPattern.DEFAULT, Locale.US);
         builder = builder.nextDayOfMonth(26);
         LocalDateTime localDateTime = builder.getLocalDateTime();
         ZonedDateTime zoneTime = localDateTime.atZone(ZoneId.of("+08"));
@@ -63,8 +64,11 @@ public class DateTimeBuilderTest {
 
     @Test
     public void testTimeCalculator() {
-        DateTimeBuilder builder = DateTimeBuilder.withTime("2018-07-27", "yyyy-MM-dd");
+        DateTimeBuilder builder = DateTimeBuilder.withTime("2018-07-27T00:00:00+0000", "yyyy-MM-dd'T'HH:mm:ssZ");
         builder.after(DateTimeTuple.create(1, ChronoUnit.DAYS));
         System.out.println(builder.format());
+        System.out.println(builder.toDate(ZoneId.of("+07")));
+        System.out.println(builder.toDate());
     }
+
 }

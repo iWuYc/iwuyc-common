@@ -31,9 +31,6 @@ public class DateTimeUtils {
         CacheBuilder<Object, Object> cacheBuilder = CacheBuilder.newBuilder();
         cacheBuilder.expireAfterAccess(10, TimeUnit.MINUTES);
         DATE_TIME_FORMATTER_CACHE = cacheBuilder.build(cacheLoader);
-
-
-
     }
 
     private static DateTimeFormatter getDateTimeFormatter(DateTimeFormatterTuple tuple) {
