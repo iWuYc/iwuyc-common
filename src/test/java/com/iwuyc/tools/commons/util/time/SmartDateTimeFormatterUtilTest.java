@@ -3,13 +3,10 @@ package com.iwuyc.tools.commons.util.time;
 import org.junit.Test;
 
 import java.text.SimpleDateFormat;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.regex.Pattern;
-
-import static org.junit.Assert.*;
 
 public class SmartDateTimeFormatterUtilTest {
 
@@ -42,7 +39,7 @@ public class SmartDateTimeFormatterUtilTest {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy HH");
         SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         Date date = format.parse("2018-09-02 13:28:27");
-        LocalDateTime localDateTime = LocalDateTime.ofInstant(date.toInstant(),DateFormatterPattern.DEFAULT_ZONE_OFFSET);
+        LocalDateTime localDateTime = LocalDateTime.ofInstant(date.toInstant(), DateFormatterConstants.DEFAULT_ZONE_OFFSET);
         System.out.println(localDateTime.format(formatter));
     }
 

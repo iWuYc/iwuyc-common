@@ -43,11 +43,11 @@ public class DateTimeBuilder {
     }
 
     public static DateTimeBuilder withTime(String time, String pattern) {
-        return withTime(time, pattern, DateFormatterPattern.DEFAULT_LOCALE);
+        return withTime(time, pattern, DateFormatterConstants.DEFAULT_LOCALE);
     }
 
     public static DateTimeBuilder withTime(String time) {
-        return withTime(time, DateFormatterPattern.DEFAULT, DateFormatterPattern.DEFAULT_LOCALE);
+        return withTime(time, DateFormatterConstants.DEFAULT, DateFormatterConstants.DEFAULT_LOCALE);
     }
 
     public DateTimeBuilder withYears(int years) {
@@ -160,13 +160,13 @@ public class DateTimeBuilder {
     }
 
     public String format(String pattern) {
-        return format(pattern, DateFormatterPattern.DEFAULT_LOCALE);
+        return format(pattern, DateFormatterConstants.DEFAULT_LOCALE);
     }
 
     public String format() {
         if (null == this.formatter) {
             this.formatter =
-                    SmartDateTimeFormatter.create(DateFormatterPattern.DEFAULT, DateFormatterPattern.DEFAULT_LOCALE);
+                    SmartDateTimeFormatter.create(DateFormatterConstants.DEFAULT, DateFormatterConstants.DEFAULT_LOCALE);
         }
         return format(this.formatter);
     }

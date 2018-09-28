@@ -1,13 +1,12 @@
 package com.iwuyc.tools.commons.util;
 
 import com.iwuyc.tools.commons.basic.type.DateTimeTuple;
-import com.iwuyc.tools.commons.util.time.DateFormatterPattern;
+import com.iwuyc.tools.commons.util.time.DateFormatterConstants;
 import com.iwuyc.tools.commons.util.time.DateTimeBuilder;
 import org.junit.Test;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
@@ -42,7 +41,7 @@ public class DateTimeBuilderTest {
     @Test
     public void testLocale() {
         DateTimeBuilder builder =
-                DateTimeBuilder.withTime("2018-08-25T00:26:20+0000", DateFormatterPattern.DEFAULT, Locale.US);
+                DateTimeBuilder.withTime("2018-08-25T00:26:20+0000", DateFormatterConstants.DEFAULT, Locale.US);
         builder = builder.nextDayOfMonth(26);
         LocalDateTime localDateTime = builder.getLocalDateTime();
         ZonedDateTime zoneTime = localDateTime.atZone(ZoneId.of("+08"));
@@ -50,7 +49,7 @@ public class DateTimeBuilderTest {
         System.out.println(zoneTime.withZoneSameInstant(ZoneId.of("+18")));
         System.out.println(builder.toDate());
 
-        System.out.println(builder.format(DateFormatterPattern.DEFAULT));
+        System.out.println(builder.format(DateFormatterConstants.DEFAULT));
     }
 
     @Test

@@ -93,7 +93,7 @@ public class SmartDateTimeFormatter {
         if (this.modFlag == 1) {
             if (ChronoLocalDateTime.class.isAssignableFrom(time.getClass())) {
                 ChronoLocalDateTime localDateTime = (ChronoLocalDateTime) time;
-                ChronoZonedDateTime zonedDateTime = localDateTime.atZone(DateFormatterPattern.DEFAULT_ZONE_OFFSET);
+                ChronoZonedDateTime zonedDateTime = localDateTime.atZone(DateFormatterConstants.DEFAULT_ZONE_OFFSET);
                 return zonedDateTime.format(this.formatter);
             }
         }
