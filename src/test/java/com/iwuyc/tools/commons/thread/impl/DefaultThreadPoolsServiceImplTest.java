@@ -7,7 +7,9 @@ import org.junit.Test;
 import java.io.InputStream;
 import java.util.concurrent.ExecutorService;
 
-public class DefaultThreadPoolsServiceTest {
+import static org.junit.Assert.*;
+
+public class DefaultThreadPoolsServiceImplTest {
     private ThreadConfig config;
     private DefaultThreadPoolsServiceImpl poolSer;
 
@@ -26,6 +28,14 @@ public class DefaultThreadPoolsServiceTest {
         System.out.println(result);
         result = this.poolSer.getExecutorService(DefaultThreadPoolsServiceImpl.class);
         System.out.println(result);
+    }
+
+    @Test
+    public void test1() {
+        ExecutorService rootExecutor = poolSer.getExecutorService(null);
+        System.out.println(rootExecutor);
+
+        System.out.println(poolSer.getConfig());
     }
 
 }

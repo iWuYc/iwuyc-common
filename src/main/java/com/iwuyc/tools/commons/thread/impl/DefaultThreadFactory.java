@@ -29,7 +29,7 @@ public class DefaultThreadFactory implements ThreadFactory {
         if (AbstractStringUtils.isEmpty(threadPreName)) {
             threadPreName = "thframe";
         }
-        this.threadPreName = threadPreName;
+        this.threadPreName = threadPreName + "-%s";
     }
 
     @Override
@@ -39,6 +39,6 @@ public class DefaultThreadFactory implements ThreadFactory {
     }
 
     private String builderThreadName() {
-        return new StringBuilder(threadPreName).append('-').append(flag.getAndIncrement()).toString();
+        return String.format(threadPreName,flag.getAndIncrement());
     }
 }
