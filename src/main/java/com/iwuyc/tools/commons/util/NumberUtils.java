@@ -38,7 +38,7 @@ public abstract class NumberUtils {
         if (null == target) {
             return false;
         }
-        return target.isAssignableFrom(Number.class) || (target.isPrimitive() && target != Void.TYPE);
+        return Number.class.isAssignableFrom(target) || (target.isPrimitive() && target != Void.TYPE);
     }
 
     /**
