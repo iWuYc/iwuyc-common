@@ -7,12 +7,10 @@ import java.math.BigInteger;
 
 import org.junit.Test;
 
-public class RangeTest
-{
+public class RangeTest {
 
     @Test
-    public void testSimple()
-    {
+    public void testSimple() {
         Range range = Range.compiler("[ 0,10]");
         assertNotNull(range);
 
@@ -35,11 +33,11 @@ public class RangeTest
         assertFalse(range.inRange(0));
         assertFalse(range.inRange(10));
 
+        System.out.println(range.toString());
     }
 
     @Test
-    public void test()
-    {
+    public void test() {
         Range range = Range.compiler("[0,10)|[20,30]|(40,50]");
         assertNotNull(range);
         assertFalse(range.inRange(-1));
@@ -57,8 +55,7 @@ public class RangeTest
     }
 
     @Test
-    public void testBigNum()
-    {
+    public void testBigNum() {
         Range range = Range.compiler("[0,10)|[20,30]|(40,50]");
         assertNotNull(range);
         assertFalse(range.inRange(new BigDecimal("-1")));
@@ -76,8 +73,7 @@ public class RangeTest
     }
 
     @Test
-    public void test2()
-    {
+    public void test2() {
         Range range = Range.compiler("[0,10)||[20,30]|||(40,50]||");
         assertNotNull(range);
         assertFalse(range.inRange(-1));
@@ -95,8 +91,7 @@ public class RangeTest
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void test3()
-    {
+    public void test3() {
         Range range = Range.compiler("[100,10)||[20,30]|||(40,50]||(min,max)|[10,min)");
         assertNotNull(range);
         assertFalse(range.inRange(-1));
@@ -111,5 +106,17 @@ public class RangeTest
         assertTrue(range.inRange(50));
         assertFalse(range.inRange(51));
 
+    }
+
+    @Test
+    public void test4() {
+        Range range = Range.compiler("[1,10)| ");
+        System.out.println(range);
+
+        range = Range.compiler(" | ");
+        System.out.println(range);
+        System.out.println(range.inRange(1));
+        System.out.println(range.inRange(0));
+        System.out.println(range.inRange(-1));
     }
 }

@@ -27,7 +27,7 @@ public class SmartDateTimeFormatter {
 
     private static final Pattern DATE_PATTERN = Pattern.compile(".*([yMd]+.*)+");
     private static final Pattern TIME_PATTERN = Pattern.compile(".*([HhmsS]+.*)+");
-    private static final Pattern ZONE_DATE_TIME_PATTERN = Pattern.compile(".*'T'.*((Z)|(\\+[0-9]{4})){1}");
+    private static final Pattern ZONE_DATE_TIME_PATTERN = Pattern.compile(".*'T'.*((Z)|(\\+[0-9]{4}))");
 
     private static final LoadingCache<DateTimeFormatterTuple, SmartDateTimeFormatter> DATE_TIME_SMART_FORMATTER_CACHE;
 
