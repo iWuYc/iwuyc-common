@@ -1,19 +1,22 @@
 package com.iwuyc.tools.commons.thread.conf.typeconverter;
 
+import com.iwuyc.tools.commons.basic.type.TimeTuple;
+import com.iwuyc.tools.commons.classtools.typeconverter.AbstractStringConverter;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
-
-import com.iwuyc.tools.commons.basic.AbstractStringUtils;
-import com.iwuyc.tools.commons.basic.type.TimeTuple;
-import com.iwuyc.tools.commons.classtools.typeconverter.AbstractStringConverter;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * @author @Neil
  * @since @2017年10月15日
  */
 public class String2TimeTupleConverter extends AbstractStringConverter<TimeTuple> {
-    public static final Map<String, TimeUnit> MAPPING = new HashMap<>();
+    private static final Pattern UNIT_PATTERN = Pattern.compile("[A-Za-z]+");
+    private static final Pattern NUMBER_PATTERN = Pattern.compile("[0-9]+");
+    private static final Map<String, TimeUnit> MAPPING = new HashMap<>();
 
     static {
         MAPPING.put("h", TimeUnit.HOURS);
@@ -29,17 +32,16 @@ public class String2TimeTupleConverter extends AbstractStringConverter<TimeTuple
 
         String numStr = from.replaceAll("[A-Za-z]*", "").trim();
         long num = Long.parseLong(numStr);
-
-        String unitStr = from.replaceAll("[0-9]*", "").trim();
-        TimeUnit timeUnit = null;
-        if (AbstractStringUtils.isEmpty(unitStr)) {
-            timeUnit = TimeUnit.SECONDS;
-        }
-        else {
+        Matcher unitMatcher = UNIT_PATTERN.matcher(from);
+        TimeUnit timeUnit;
+        if (unitMatcher.find()) {
+            String unitStr = unitMatcher.group();
             timeUnit = MAPPING.get(unitStr);
             if (null == timeUnit) {
                 throw new IllegalArgumentException("Can't find unit for [" + unitStr + "]");
             }
+        } else {
+            timeUnit = TimeUnit.SECONDS;
         }
         return TimeTuple.create(num, timeUnit);
     }
