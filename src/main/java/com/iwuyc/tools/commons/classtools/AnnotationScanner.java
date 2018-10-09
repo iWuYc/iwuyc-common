@@ -153,6 +153,10 @@ public class AnnotationScanner implements Runnable {
         String dirPath = URLDecoder.decode(url.getFile(), StandardCharsets.UTF_8.name());
         File dir = new File(dirPath);
         File[] files = dir.listFiles();
+        if (null == files) {
+            return;
+        }
+
         String newPackage = null;
         String className = null;
         for (File file : files) {

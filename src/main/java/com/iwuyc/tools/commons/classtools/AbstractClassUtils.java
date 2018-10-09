@@ -260,7 +260,7 @@ public abstract class AbstractClassUtils {
             fieldModifier(field);
 
             if (null == val) {
-                injectField(instance, field, val);
+                injectField(instance, field, null);
                 return true;
             }
             Object rejectVal = convert(val.getClass(), field.getType(), val, typeConverters);

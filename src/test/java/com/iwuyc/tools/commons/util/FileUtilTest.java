@@ -8,10 +8,10 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 public class FileUtilTest {
-
+    private String path = "/Users/iwuyc/Downloads/sbt copy.tar";
     @Test
     public void test() {
-        assertFalse(FileUtil.safeDelete("/Users/iwuyc/Downloads/sbt copy.tar"));
+        assertFalse(FileUtil.safeDelete(path));
 
         URL testPropertiesUrl = FileUtilTest.class.getResource("/test.properties");
         assertTrue(FileUtil.safeDelete(testPropertiesUrl.getFile()));

@@ -1,5 +1,6 @@
 package com.iwuyc.tools.commons.thread;
 
+import com.iwuyc.tools.commons.thread.conf.UsingConfig;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -12,27 +13,23 @@ public class ThreadConfigTest {
 
     private ThreadConfig config;
 
+    private String pathName = "/thread/thread_not_exists.properties";
+
     @Before
     public void before() throws Exception {
-        InputStream in = ThreadConfig.class.getResourceAsStream("/thread/thread.properties");
-        this.config = new ThreadConfig();
-        config.load(in);
-
+        try (InputStream in = ThreadConfig.class.getResourceAsStream("/thread/thread.properties");) {
+            this.config = new ThreadConfig();
+            config.load(in);
+        }
     }
 
     @Test
     public void test() {
-        config.findUsingSetting(ThreadConfig.class.getName());
+        UsingConfig result = config.findUsingSetting(ThreadConfig.class.getName());
+        System.out.println(result);
         // return root setting
-        config.findUsingSetting("org");
-    }
-
-    @Test
-    public void test1() throws Exception {
-        InputStream in = ThreadConfig.class.getResourceAsStream("/thread/thread.properties");
-        Properties properties = new Properties();
-        properties.load(in);
-
+        result = config.findUsingSetting("org");
+        System.out.println(result);
     }
 
     @Test
@@ -44,8 +41,16 @@ public class ThreadConfigTest {
     }
 
     @Test
+    public void test1() throws Exception {
+        try (InputStream in = ThreadConfig.class.getResourceAsStream("/thread/thread.properties");) {
+            Properties properties = new Properties();
+            properties.load(in);
+        }
+    }
+
+    @Test
     public void configException() {
-        File file = new File("/thread/thread_not_exists.properties");
+        File file = new File(pathName);
         ThreadPoolsService config = ThreadConfig.config(file);
         System.out.println(config);
     }

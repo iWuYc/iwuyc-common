@@ -38,6 +38,15 @@ public class Range {
             return "BoundaryNumber [name=" + name + "]";
         }
 
+        @Override
+        public boolean equals(Object x) {
+            return super.equals(x);
+        }
+
+        @Override
+        public int hashCode() {
+            return super.hashCode();
+        }
     }
 
     private static class RangeItem {
