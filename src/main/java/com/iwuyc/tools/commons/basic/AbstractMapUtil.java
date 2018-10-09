@@ -4,7 +4,7 @@ import java.util.*;
 
 /**
  * @author iWuYc
- * @time 2017-08-04 14:31
+ * @date 2017-08-04 14:31
  * @since JDK 8
  */
 public abstract class AbstractMapUtil {
@@ -12,9 +12,9 @@ public abstract class AbstractMapUtil {
     /**
      * 根据map的值获取map中的key
      *
-     * @param map
-     * @param val
-     * @return
+     * @param map 源数据
+     * @param val 目标的value值
+     * @return 符合条件的数据列表
      */
     public static <K, V> Collection<K> findKeyByVal(Map<K, V> map, Object val) {
         if (isEmpty(map)) {
@@ -29,9 +29,7 @@ public abstract class AbstractMapUtil {
             }
             // 其他不为null的情况使用equal方法进行比较。
             return null != item.getValue() && item.getValue().equals(val);
-        }).forEach((item) -> {
-            result.add(item.getKey());
-        });
+        }).forEach((item) -> result.add(item.getKey()));
         return result;
     }
 
@@ -43,12 +41,15 @@ public abstract class AbstractMapUtil {
      * @return key带有 prefixKey前缀的数据
      */
     public static <K, V> Map<K, V> findEntryByPrefixKey(Map<K, V> source, String prefixKey) {
+        if (isEmpty(source)) {
+            return Collections.emptyMap();
+        }
+        if (null == prefixKey) {
+            return Collections.singletonMap(null, source.get(null));
+        }
         final Map<K, V> result = new HashMap<>(source.size());
-        source.entrySet().stream().filter((item) -> {
-            return String.valueOf(item.getKey()).startsWith(prefixKey);
-        }).forEach((item) -> {
-            result.put(item.getKey(), item.getValue());
-        });
+        source.entrySet().stream().filter((item) -> String.valueOf(item.getKey()).startsWith(prefixKey))
+            .forEach((item) -> result.put(item.getKey(), item.getValue()));
         return result;
     }
 

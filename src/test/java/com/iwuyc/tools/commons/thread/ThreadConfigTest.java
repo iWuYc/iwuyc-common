@@ -4,7 +4,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.Properties;
@@ -22,7 +21,7 @@ public class ThreadConfigTest {
     }
 
     @Test
-    public void test() throws Exception {
+    public void test() {
         config.findUsingSetting(ThreadConfig.class.getName());
         // return root setting
         config.findUsingSetting("org");
@@ -44,7 +43,7 @@ public class ThreadConfigTest {
         System.out.println(config);
     }
 
-    @Test(expected = IOException.class)
+    @Test
     public void configException() {
         File file = new File("/thread/thread_not_exists.properties");
         ThreadPoolsService config = ThreadConfig.config(file);
