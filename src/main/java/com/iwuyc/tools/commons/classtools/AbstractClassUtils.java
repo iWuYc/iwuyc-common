@@ -1,36 +1,25 @@
 /**
  * @Auth iWuYc
- * @since
  * @time 2017-08-07 16:25
+ * @since
  */
 package com.iwuyc.tools.commons.classtools;
-
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Executable;
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.iwuyc.tools.commons.basic.AbstractArrayUtil;
 import com.iwuyc.tools.commons.basic.MultiMap;
 import com.iwuyc.tools.commons.classtools.typeconverter.TypeConverter;
 import com.iwuyc.tools.commons.classtools.typeconverter.TypeConverterConstant;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.lang.reflect.*;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
+import java.util.*;
 
 /**
  * 类对象的工具类。
- * 
+ *
  * @author iWuYc
  * @since
  * @time 2017-08-07 16:25
@@ -39,7 +28,7 @@ public abstract class AbstractClassUtils {
 
     /**
      * 基础类型 跟 包装类型 的映射关系。
-     * 
+     *
      * @author @iwuyc
      */
     public final static Map<Class<?>, Class<?>> PRIMITIVE_TYPES_MAPPING_WRAPPED_TYPES;
@@ -114,8 +103,7 @@ public abstract class AbstractClassUtils {
                 }
                 Object i = constructor.newInstance(args);
                 return (I) i;
-            }
-            catch (Exception e) {
+            } catch (Exception e) {
                 LOG.debug("error:{}", e);
                 LOG.error("Can't init class[{}]", clazz);
             }
@@ -156,8 +144,7 @@ public abstract class AbstractClassUtils {
             Class<?> result = null;
             try {
                 result = Class.forName(this.classPath, this.isInitialize, this.loader);
-            }
-            catch (ClassNotFoundException e) {
+            } catch (ClassNotFoundException e) {
                 LOG.error("Can't found class:[{}]", classPath);
             }
             return Optional.ofNullable(result);
@@ -172,7 +159,7 @@ public abstract class AbstractClassUtils {
         private boolean declared;
 
         public MethodPrivilegedAction(Class<?> targetClazz, String methodName, Class<?>[] parameterTypeList,
-                boolean declared) {
+                                      boolean declared) {
             this.targetClazz = targetClazz;
             this.methodName = methodName;
             this.parameterTypeList = parameterTypeList;
@@ -202,7 +189,7 @@ public abstract class AbstractClassUtils {
 
     /**
      * 获取class类对象，不做类的初始化。以屏蔽讨厌的try……catch块。
-     * 
+     *
      * @param classPath
      *            类的名字
      * @return 一个 {@link Optional} 对象，如果成功加载，则返回相应的对象，否则返回一个 {@link Optional#empty()}
@@ -228,7 +215,7 @@ public abstract class AbstractClassUtils {
 
     /**
      * 将map中的值，按field的名字注入到instance中。
-     * 
+     *
      * @param instance
      *            实例
      * @param fieldAndVal
@@ -238,7 +225,7 @@ public abstract class AbstractClassUtils {
      * @return 未注入成功的字段跟值，一般是，不存在这个字段，或者，在注入的时候出问题了
      */
     public static Map<Object, Object> injectFields(Object instance, Map<String, Object> fieldAndVal,
-            MultiMap<Class<? extends Object>, TypeConverter<? extends Object, ? extends Object>> typeConverters) {
+                                                   MultiMap<Class<? extends Object>, TypeConverter<? extends Object, ? extends Object>> typeConverters) {
         if (null == instance || null == fieldAndVal) {
             return Collections.emptyMap();
         }
@@ -267,7 +254,7 @@ public abstract class AbstractClassUtils {
     }
 
     private static boolean injectField(Object instance, Field field, Object val,
-            MultiMap<Class<? extends Object>, TypeConverter<? extends Object, ? extends Object>> typeConverters) {
+                                       MultiMap<Class<? extends Object>, TypeConverter<? extends Object, ? extends Object>> typeConverters) {
         try {
             // 字段属性修改，以便可以进行属性设置
             fieldModifier(field);
@@ -283,8 +270,7 @@ public abstract class AbstractClassUtils {
             }
 
             return injectField(instance, field, rejectVal);
-        }
-        catch (IllegalArgumentException e) {
+        } catch (IllegalArgumentException e) {
             LOG.error("Can't inject the field[{}] val[{}].cause:{}", field, val, e);
             return false;
         }
@@ -294,8 +280,7 @@ public abstract class AbstractClassUtils {
         try {
             field.set(instance, rejectVal);
             return true;
-        }
-        catch (IllegalArgumentException | IllegalAccessException e) {
+        } catch (IllegalArgumentException | IllegalAccessException e) {
 
             LOG.error("Can't inject the field[{}] val[{}].cause:{}", field, rejectVal, e);
             return false;
@@ -304,7 +289,7 @@ public abstract class AbstractClassUtils {
 
     /**
      * 对一些有访问限制的字段进行修改，以便可以正常访问进行数据修改。
-     * 
+     *
      * @param field
      *            待修改字段。
      */
@@ -321,7 +306,7 @@ public abstract class AbstractClassUtils {
 
     /**
      * 将数据转换成对应的类型。
-     * 
+     *
      * @param sourceType
      *            数据源类型
      * @param targetType
@@ -332,9 +317,9 @@ public abstract class AbstractClassUtils {
      *            类型转换器集合
      * @return
      */
-    @SuppressWarnings({ "unchecked", "rawtypes" })
+    @SuppressWarnings({"unchecked", "rawtypes"})
     private static Object convert(Class<? extends Object> sourceType, Class targetType, Object val,
-            MultiMap<Class<? extends Object>, TypeConverter<? extends Object, ? extends Object>> typeConverters) {
+                                  MultiMap<Class<? extends Object>, TypeConverter<? extends Object, ? extends Object>> typeConverters) {
         if (sourceType == targetType) {
             return val;
         }
@@ -361,7 +346,7 @@ public abstract class AbstractClassUtils {
 
     /**
      * 根据类名实例化一个对象。
-     * 
+     *
      * @param targetClass
      *            返回的目标类型。
      * @param clazzName
@@ -380,7 +365,7 @@ public abstract class AbstractClassUtils {
 
     /**
      * 根据类对象实例化一个对象
-     * 
+     *
      * @author @iwuyc
      * @param targetClass
      *            返回的目标类型
@@ -396,7 +381,7 @@ public abstract class AbstractClassUtils {
 
     /**
      * 根据类对象实例化一个对象
-     * 
+     *
      * @author @iwuyc
      * @param clazz
      *            类对象
@@ -410,7 +395,7 @@ public abstract class AbstractClassUtils {
 
     /**
      * 获取属性对象
-     * 
+     *
      * @param clazz
      * @param fieldName
      * @return
@@ -421,7 +406,7 @@ public abstract class AbstractClassUtils {
 
     /**
      * 比较两个类型是否相同，主要是解决基础类型跟包装类型不一致的情况，如果不存在基础类型跟包装类型同时存在的比较，不建议使用该方法。
-     * 
+     *
      * @author @iwuyc
      * @param firstType
      *            第一个类型
@@ -439,8 +424,7 @@ public abstract class AbstractClassUtils {
         if (firstType.isPrimitive()) {
             firstType = PRIMITIVE_TYPES_MAPPING_WRAPPED_TYPES.get(firstType);
             return firstType == null ? false : firstType.equals(another);
-        }
-        else if (another.isPrimitive()) {
+        } else if (another.isPrimitive()) {
             another = PRIMITIVE_TYPES_MAPPING_WRAPPED_TYPES.get(another);
             return another == null ? false : another.equals(firstType);
         }
@@ -452,7 +436,7 @@ public abstract class AbstractClassUtils {
 
     /**
      * 比较两个类型的列表是否一致，包括基础类型跟包装类型。
-     * 
+     *
      * @author @iwuyc
      * @param firstList
      *            第一个类型列表
@@ -476,7 +460,7 @@ public abstract class AbstractClassUtils {
 
     /**
      * 调用对象的方法，静态方法的话，请传入 Class 对象，而无需传入实例对象。
-     * 
+     *
      * @author @iwuyc
      * @param instance
      *            实例或者Class对象
@@ -493,7 +477,7 @@ public abstract class AbstractClassUtils {
 
     /**
      * 忽略访问修饰符强制调用对象的方法，静态方法的话，请传入 Class 对象，而无需传入实例对象。
-     * 
+     *
      * @author @iwuyc
      * @param instance
      *            实例或者Class对象
@@ -513,8 +497,7 @@ public abstract class AbstractClassUtils {
         Class<?> instanceType = null;
         if (instance instanceof Class) {
             instanceType = (Class<?>) instance;
-        }
-        else {
+        } else {
             instanceType = instance.getClass();
         }
         Class<?>[] parameterTypeList = typeList(parameters);
@@ -536,8 +519,7 @@ public abstract class AbstractClassUtils {
         Object result = null;
         try {
             result = method.invoke(instance, parameters);
-        }
-        catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+        } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
             LOG.error("Call [{}] raise an error.Cause:[{}]", methodName, e);
         }
         return result;
@@ -546,7 +528,7 @@ public abstract class AbstractClassUtils {
 
     /**
      * 获取对象的类型列表，将列表中的对象的类型，按照输入的顺序进行输出。
-     * 
+     *
      * @author @iwuyc
      * @param object
      *            待获取的数据列表
@@ -564,7 +546,7 @@ public abstract class AbstractClassUtils {
 
     /**
      * 根据参数列表，从executable列表中获取最匹配的方法。
-     * 
+     *
      * @author @iwuyc
      * @param executables
      *            executable 列表
@@ -581,8 +563,7 @@ public abstract class AbstractClassUtils {
             constructor = executables[i];
             if (compareTypeList(constructor.getParameterTypes(), parameterTypes, false)) {
                 return constructor;
-            }
-            else if (compareTypeList(constructor.getParameterTypes(), parameterTypes, true)) {
+            } else if (compareTypeList(constructor.getParameterTypes(), parameterTypes, true)) {
                 constructorIndex[cursor] = i;
                 cursor++;
             }

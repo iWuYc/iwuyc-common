@@ -1,22 +1,19 @@
 package com.iwuyc.tools.commons.util;
 
-import java.math.BigInteger;
-
 import org.junit.Test;
 
-public class NumberUtilTest
-{
+import java.math.BigInteger;
+
+public class NumberUtilTest {
 
     @Test
-    public void testBigInteger()
-    {
+    public void testBigInteger() {
         BigInteger number = NumberUtils.parse("11111", BigInteger.class);
         System.out.println(number);
     }
 
     @Test
-    public void testint()
-    {
+    public void testint() {
         int intNumber = NumberUtils.parse("11111", int.class);
         System.out.println(intNumber);
 
@@ -25,8 +22,7 @@ public class NumberUtilTest
     }
 
     @Test
-    public void testLong()
-    {
+    public void testLong() {
         long longNumber = NumberUtils.parse("11111", long.class);
         System.out.println(longNumber);
 
@@ -35,8 +31,7 @@ public class NumberUtilTest
     }
 
     @Test
-    public void testByte()
-    {
+    public void testByte() {
         byte byteNumber = NumberUtils.parse("111", byte.class);
         System.out.println(byteNumber);
 

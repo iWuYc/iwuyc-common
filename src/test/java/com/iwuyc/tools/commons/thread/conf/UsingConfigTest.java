@@ -2,8 +2,6 @@ package com.iwuyc.tools.commons.thread.conf;
 
 import org.junit.Test;
 
-import static org.junit.Assert.*;
-
 public class UsingConfigTest {
 
     @Test

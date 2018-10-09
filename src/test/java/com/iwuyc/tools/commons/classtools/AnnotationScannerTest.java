@@ -1,17 +1,14 @@
 package com.iwuyc.tools.commons.classtools;
 
-import java.util.Collection;
-
+import com.iwuyc.tools.commons.classtools.annotation.MyAnnotation;
 import org.junit.Test;
 
-import com.iwuyc.tools.commons.classtools.annotation.MyAnnotation;
+import java.util.Collection;
 
-public class AnnotationScannerTest
-{
+public class AnnotationScannerTest {
 
     @Test
-    public void test() throws Exception
-    {
+    public void test() throws Exception {
         AnnotationScanner scanner = new AnnotationScanner(MyAnnotation.class,
                 "com.iwuyc.tools.commons.classtools.annotation.classes");
         scanner.run();
@@ -20,8 +17,7 @@ public class AnnotationScannerTest
     }
 
     @Test
-    public void test1() throws Exception
-    {
+    public void test1() throws Exception {
         AnnotationScanner scanner = new AnnotationScanner(MyAnnotation.class,
                 "com.iwuyc.tools.commons.classtools.annotation");
         new Thread(scanner, "scanner").start();
@@ -31,8 +27,7 @@ public class AnnotationScannerTest
     }
 
     @Test
-    public void test2() throws Exception
-    {
+    public void test2() throws Exception {
         AnnotationScanner scanner = new AnnotationScanner(MyAnnotation.class,
                 "com.iwuyc.tools.commons");
         scanner.run();

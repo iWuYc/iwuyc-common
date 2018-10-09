@@ -1,8 +1,8 @@
 package com.iwuyc.tools.commons.classtools;
 
-import java.lang.reflect.Constructor;
-
 import org.junit.Test;
+
+import java.lang.reflect.Constructor;
 
 public class ClassTestCase {
 

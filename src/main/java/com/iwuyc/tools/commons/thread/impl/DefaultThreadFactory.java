@@ -1,9 +1,9 @@
 package com.iwuyc.tools.commons.thread.impl;
 
+import com.iwuyc.tools.commons.basic.AbstractStringUtils;
+
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicLong;
-
-import com.iwuyc.tools.commons.basic.AbstractStringUtils;
 
 /**
  * @author @Neil
@@ -22,6 +22,7 @@ public class DefaultThreadFactory implements ThreadFactory {
 
     /**
      * 线程工厂
+     *
      * @param threadPreName 线程名前缀
      */
     public DefaultThreadFactory(String threadPreName) {

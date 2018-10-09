@@ -1,8 +1,8 @@
 package com.iwuyc.tools.commons.classtools.typeconverter;
 
-import java.util.Date;
-
 import com.iwuyc.tools.commons.util.TimeUtil;
+
+import java.util.Date;
 
 /**
  * @author @Neil

@@ -37,7 +37,7 @@ public class MathUtils {
             } else if (unitsCount != 0 && unitsCountTemp == 0) {
                 sb.append(BIGUNITS[unitsCount / 4 - 1]);
             }
-            int temp = (int)(num % 10);
+            int temp = (int) (num % 10);
             sb.append(NumChinese[temp]);
             num /= 10;
             unitsCount++;

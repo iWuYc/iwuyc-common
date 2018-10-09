@@ -5,6 +5,5 @@ import java.lang.annotation.RetentionPolicy;
 
 @MyAnnotation
 @Retention(RetentionPolicy.RUNTIME)
-public @interface MyAnnotationChild
-{
+public @interface MyAnnotationChild {
 }

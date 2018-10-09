@@ -1,21 +1,17 @@
 package com.iwuyc.tools.commons.basic;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @author iWuYc
- * @since JDK 8
  * @time 2017-08-04 14:31
+ * @since JDK 8
  */
 public abstract class AbstractMapUtil {
 
     /**
      * 根据map的值获取map中的key
-     * 
+     *
      * @param map
      * @param val
      * @return
@@ -41,11 +37,9 @@ public abstract class AbstractMapUtil {
 
     /**
      * 根据key的前缀进行搜索。key按string类型进行转换。
-     * 
-     * @param source
-     *            数据源
-     * @param prefixKey
-     *            前缀
+     *
+     * @param source    数据源
+     * @param prefixKey 前缀
      * @return key带有 prefixKey前缀的数据
      */
     public static <K, V> Map<K, V> findEntryByPrefixKey(Map<K, V> source, String prefixKey) {

@@ -1,11 +1,11 @@
 package com.iwuyc.tools.commons.math;
 
-import static org.junit.Assert.*;
+import org.junit.Test;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
-import org.junit.Test;
+import static org.junit.Assert.*;
 
 public class RangeTest {
 

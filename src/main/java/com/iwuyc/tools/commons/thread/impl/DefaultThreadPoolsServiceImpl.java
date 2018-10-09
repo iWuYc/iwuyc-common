@@ -1,21 +1,20 @@
 package com.iwuyc.tools.commons.thread.impl;
 
+import com.iwuyc.tools.commons.classtools.AbstractClassUtils;
+import com.iwuyc.tools.commons.thread.ExecutorServiceFactory;
+import com.iwuyc.tools.commons.thread.ThreadConfig;
+import com.iwuyc.tools.commons.thread.ThreadPoolsService;
+import com.iwuyc.tools.commons.thread.conf.ThreadPoolConfig;
+import com.iwuyc.tools.commons.thread.conf.UsingConfig;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.iwuyc.tools.commons.classtools.AbstractClassUtils;
-import com.iwuyc.tools.commons.thread.ThreadConfig;
-import com.iwuyc.tools.commons.thread.ExecutorServiceFactory;
-import com.iwuyc.tools.commons.thread.ThreadPoolsService;
-import com.iwuyc.tools.commons.thread.conf.ThreadPoolConfig;
-import com.iwuyc.tools.commons.thread.conf.UsingConfig;
 
 
 /**
@@ -40,8 +39,7 @@ public class DefaultThreadPoolsServiceImpl implements ThreadPoolsService {
         String domain = null;
         if (null == clazz) {
             domain = "root";
-        }
-        else {
+        } else {
             domain = clazz.getName();
         }
         LOG.debug("Get executor service for :{}.domain is:{}", clazz, domain);
@@ -77,8 +75,7 @@ public class DefaultThreadPoolsServiceImpl implements ThreadPoolsService {
             this.executorServiceCache.put(domain, executorService);
 
             return executorService;
-        }
-        finally {
+        } finally {
             writeLock.unlock();
         }
     }

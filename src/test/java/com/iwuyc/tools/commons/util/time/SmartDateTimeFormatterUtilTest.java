@@ -11,7 +11,7 @@ import java.util.regex.Pattern;
 public class SmartDateTimeFormatterUtilTest {
 
     @Test
-    public void test()throws  Exception{
+    public void test() throws Exception {
         Pattern pattern = Pattern.compile(".*([yMd]+.*)+");
         System.out.println(pattern.matcher("y").matches());
         System.out.println(pattern.matcher("M").matches());
@@ -44,7 +44,7 @@ public class SmartDateTimeFormatterUtilTest {
     }
 
     @Test
-    public void testIsDateTime(){
+    public void testIsDateTime() {
         System.out.println(SmartDateTimeFormatter.isZoneDateTimePattern("yyyy-MM-dd'T'hh:mm:ss.SSSZ"));
         System.out.println(SmartDateTimeFormatter.isZoneDateTimePattern("yyyy-MM-dd'T'hh:mm:ss.SSS+0800"));
         System.out.println(SmartDateTimeFormatter.isZoneDateTimePattern("yyyy-MM-dd'T'hh:mm:ss.SSS+080"));

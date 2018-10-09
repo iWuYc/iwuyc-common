@@ -1,32 +1,28 @@
 package com.iwuyc.tools.commons.classtools;
 
+import com.iwuyc.tools.commons.basic.AbstractStringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.File;
 import java.lang.annotation.Annotation;
 import java.net.JarURLConnection;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Enumeration;
-import java.util.HashSet;
-import java.util.Optional;
-import java.util.Set;
-import java.util.Stack;
+import java.util.*;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.iwuyc.tools.commons.basic.AbstractStringUtils;
-
 /**
  * 扫描包含指定注解的类，并返回这些类。 突然间发现GitHub有一个 FastClasspathScanner 包可以做到更加强大的功能。
- * 
+ *
+ * @author iWuYc
+ * @time 2017-08-04 15:23
+ * @since
  * @deprecated 废弃，不建议再使用。GitHub有一个开源的类路径扫描工具包，建议使用该工具包。
- * 
- *             <pre>
+ *
+ * <pre>
  * <!-- https://mvnrepository.com/artifact/io.github.lukehutch/fast-classpath-scanner -->
  * &lt;dependency&gt;
  *     &lt;groupId&gt;io.github.lukehutch&lt;/groupId&gt;
@@ -34,10 +30,6 @@ import com.iwuyc.tools.commons.basic.AbstractStringUtils;
  *     &lt;version&gt;${classpath.scanner.version}&lt;/version&gt;
  * &lt;/dependency&gt;
  *             </pre>
- * 
- * @author iWuYc
- * @since
- * @time 2017-08-04 15:23
  */
 @Deprecated
 public class AnnotationScanner implements Runnable {
@@ -68,8 +60,7 @@ public class AnnotationScanner implements Runnable {
                 removeParentPackage(nextPackage);
                 packageScanner(nextPackage);
             }
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             LOG.warn("Raise an error when scanning package.", e);
         }
     }
@@ -128,8 +119,7 @@ public class AnnotationScanner implements Runnable {
             if (entry.isDirectory()) {
                 reproducePackageAndPushStack(entriesName, packageDirName);
                 continue;
-            }
-            else if (entriesName.endsWith(".class")) {
+            } else if (entriesName.endsWith(".class")) {
                 className = extractClassName(entriesName);
                 classFullName = toClassFullName(packageName, className);
                 annotationClass(classFullName);
@@ -145,11 +135,9 @@ public class AnnotationScanner implements Runnable {
 
     /**
      * 根据JarEntry的名字重构包名，如果JarEntry的名字跟当前包路径名相同，则不放入栈中，防止重复扫描
-     * 
-     * @param entriesName
-     *            JarEntry的名字
-     * @param packageDirName
-     *            当前包名
+     *
+     * @param entriesName    JarEntry的名字
+     * @param packageDirName 当前包名
      */
     private void reproducePackageAndPushStack(String entriesName, String packageDirName) {
         String newPackageName = entriesName.substring(0, entriesName.lastIndexOf('/'));

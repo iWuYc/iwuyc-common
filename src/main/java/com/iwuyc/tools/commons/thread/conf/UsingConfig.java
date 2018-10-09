@@ -2,7 +2,7 @@ package com.iwuyc.tools.commons.thread.conf;
 
 /**
  * UsingConfig
- * 
+ *
  * @author @Neil
  * @since @2017年10月15日
  */

@@ -1,5 +1,14 @@
 package com.iwuyc.tools.commons.thread;
 
+import com.iwuyc.tools.commons.basic.AbstractMapUtil;
+import com.iwuyc.tools.commons.classtools.AbstractClassUtils;
+import com.iwuyc.tools.commons.thread.conf.ThreadConfigConstant;
+import com.iwuyc.tools.commons.thread.conf.ThreadPoolConfig;
+import com.iwuyc.tools.commons.thread.conf.UsingConfig;
+import com.iwuyc.tools.commons.thread.impl.DefaultThreadPoolsServiceImpl;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -10,19 +19,9 @@ import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.iwuyc.tools.commons.basic.AbstractMapUtil;
-import com.iwuyc.tools.commons.classtools.AbstractClassUtils;
-import com.iwuyc.tools.commons.thread.conf.ThreadConfigConstant;
-import com.iwuyc.tools.commons.thread.conf.ThreadPoolConfig;
-import com.iwuyc.tools.commons.thread.conf.UsingConfig;
-import com.iwuyc.tools.commons.thread.impl.DefaultThreadPoolsServiceImpl;
-
 /**
  * 线程池的配置项
- * 
+ *
  * @author @Neil
  * @since @2017年10月15日
  */
@@ -46,7 +45,7 @@ public class ThreadConfig {
 
     /**
      * 可以重复调用多次，增加新的配置项，或者修改配置项
-     * 
+     *
      * @param in
      * @throws IOException
      */
@@ -163,9 +162,8 @@ public class ThreadConfig {
 
     /**
      * 提供配置文件，直接返回默认的 ThreadPoolsService 实例。
-     * 
-     * @param file
-     *            可以为空，空则取classpath中/thread/thread.properties的默认配置
+     *
+     * @param file 可以为空，空则取classpath中/thread/thread.properties的默认配置
      * @return
      */
     public static ThreadPoolsService config(File file) {
@@ -177,8 +175,7 @@ public class ThreadConfig {
             }
             config.load(in);
             return new DefaultThreadPoolsServiceImpl(config);
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             LOG.error("Config thread pool service raise an error:{}", e);
         }
         return null;

@@ -19,6 +19,7 @@ public abstract class AbstractStringUtils {
 
     /**
      * isEmpty的取反
+     *
      * @see com.iwuyc.tools.commons.basic.AbstractStringUtils#isEmpty(String)
      */
     public static boolean isNotEmpty(String str) {

@@ -9,8 +9,6 @@ import java.io.InputStream;
 import java.net.URL;
 import java.util.Properties;
 
-import static org.junit.Assert.*;
-
 public class ThreadConfigTest {
 
     private ThreadConfig config;

@@ -1,13 +1,12 @@
 package com.iwuyc.tools.commons.classtools;
 
+import com.iwuyc.tools.commons.basic.MultiMap;
+import com.iwuyc.tools.commons.classtools.typeconverter.TypeConverter;
+import org.junit.Test;
+
 import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Map;
-
-import org.junit.Test;
-
-import com.iwuyc.tools.commons.basic.MultiMap;
-import com.iwuyc.tools.commons.classtools.typeconverter.TypeConverter;
 
 public class ClassUtilsTest {
 
@@ -101,7 +100,7 @@ public class ClassUtilsTest {
         Object num = 10;
         Object obj = AbstractClassUtils.instance(TestInstanceCase.class, num);
         System.out.println(obj);
-        obj = AbstractClassUtils.instance(TestInstanceCase.class, new Object[] { "String" });
+        obj = AbstractClassUtils.instance(TestInstanceCase.class, new Object[]{"String"});
         System.out.println(obj);
     }
 

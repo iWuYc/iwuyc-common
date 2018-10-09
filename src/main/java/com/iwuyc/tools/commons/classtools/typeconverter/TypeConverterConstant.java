@@ -9,6 +9,7 @@ import com.iwuyc.tools.commons.thread.conf.typeconverter.String2TimeTupleConvert
  */
 public class TypeConverterConstant {
     public static final MultiMap<Class<?>, TypeConverter<?, ?>> DEFAULT_CONVERTERS = new MultiMap<>();
+
     static {
         DEFAULT_CONVERTERS.add(String.class, new String2Number());
         DEFAULT_CONVERTERS.add(String.class, new String2TimeTupleConverter());

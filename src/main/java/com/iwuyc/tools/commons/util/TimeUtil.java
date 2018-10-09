@@ -11,8 +11,9 @@ import java.util.Date;
  * 时间格式化工具类。由于使用了静态属性，因此一个项目只能有一个格式，如果需要有不同的格式，可以使用
  * {@link TimeUtil#createThreadSafeDateFormat(String)}创建线程安全的DateFormat对象。
  * 日期格式可以通过设置环境变量"timeformat"来定义，或者jvm的系统变量"timeformat"，如果都没有设置，则默认值为:"yyyy-MM-dd'T'HH:mm:ss.SSSZ"
- * @deprecated 弃用，使用DateTimeUtils进行数据格式转化
+ *
  * @author iWuYc
+ * @deprecated 弃用，使用DateTimeUtils进行数据格式转化
  */
 @Deprecated
 public class TimeUtil {
@@ -30,9 +31,9 @@ public class TimeUtil {
 
     /**
      * 获取日期的格式
-     * 
-     * @author @iwuyc
+     *
      * @return 日期的格式
+     * @author @iwuyc
      */
     private static String getDateFormat() {
         String result = System.getProperty(FORMAT_PATTERN_KEY);
@@ -43,10 +44,10 @@ public class TimeUtil {
 
     /**
      * 创建{@link DateFormat}的{@link ThreadLocal}shi
-     * 
-     * @author @iwuyc
+     *
      * @param datePattern 日期格式
      * @return 线程本地变量
+     * @author @iwuyc
      */
     private static ThreadLocal<DateFormat> createDateFormatThreadLocal(final String datePattern) {
         ThreadLocal<DateFormat> threadSafe = ThreadLocal.withInitial(() -> new SimpleDateFormat(datePattern));
@@ -55,17 +56,15 @@ public class TimeUtil {
 
     /**
      * 将日期字符串转换为日期类型
-     * 
-     * @author @iwuyc
-     * @param time
-     *            时间字符串
+     *
+     * @param time 时间字符串
      * @return 日期类型
+     * @author @iwuyc
      */
     public static Date parser(String time) {
         try {
             return THREADSAFE_DATE_FORMATTER.parse(time);
-        }
-        catch (ParseException e) {
+        } catch (ParseException e) {
             LOG.error("Format pattern:[{}].Can't parse the time:[{}].", DATE_FORMATER_PATTERN, time);
             return null;
         }
@@ -73,11 +72,10 @@ public class TimeUtil {
 
     /**
      * 创建线程安全的 {@link DateFormat} 实例
-     * 
-     * @author @iwuyc
-     * @param datePattern
-     *            日期的格式
+     *
+     * @param datePattern 日期的格式
      * @return 日期格式化实例
+     * @author @iwuyc
      */
     private static DateFormat createThreadSafeDateFormat(String datePattern) {
         return new ThreadSafeDateFormat(datePattern);
@@ -85,11 +83,10 @@ public class TimeUtil {
 
     /**
      * 格式化日期
-     * 
-     * @author @iwuyc
-     * @param time
-     *            格式化日期
+     *
+     * @param time 格式化日期
      * @return 格式化后的日期字符串
+     * @author @iwuyc
      */
     public static String format(Date time) {
         return THREADSAFE_DATE_FORMATTER.format(time);

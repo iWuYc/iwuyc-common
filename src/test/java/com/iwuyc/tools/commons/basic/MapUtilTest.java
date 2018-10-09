@@ -1,16 +1,16 @@
 /**
  * @Auth iWuYc
- * @since
  * @time 2017-08-07 13:45
+ * @since
  */
 package com.iwuyc.tools.commons.basic;
+
+import org.junit.Before;
+import org.junit.Test;
 
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
-
-import org.junit.Before;
-import org.junit.Test;
 
 /**
  * @Auth iWuYc
@@ -54,8 +54,7 @@ public class MapUtilTest {
                 if (other.name != null) {
                     return false;
                 }
-            }
-            else if (!name.equals(other.name)) {
+            } else if (!name.equals(other.name)) {
                 return false;
             }
             return true;

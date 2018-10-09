@@ -1,13 +1,13 @@
 package com.iwuyc.tools.commons.thread.impl;
 
+import com.iwuyc.tools.commons.basic.type.TimeTuple;
+import com.iwuyc.tools.commons.thread.ExecutorServiceFactory;
+import com.iwuyc.tools.commons.thread.conf.ThreadPoolConfig;
+
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ThreadFactory;
-
-import com.iwuyc.tools.commons.basic.type.TimeTuple;
-import com.iwuyc.tools.commons.thread.ExecutorServiceFactory;
-import com.iwuyc.tools.commons.thread.conf.ThreadPoolConfig;
 
 /**
  * @author @Neil

@@ -1,37 +1,33 @@
 package com.iwuyc.tools.commons.classtools.typeconverter;
 
+import com.iwuyc.tools.commons.basic.AbstractStringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.iwuyc.tools.commons.basic.AbstractStringUtils;
-
 /**
+ * @param <T>
  * @author @Neil
  * @since @2017年10月15日
- * @param <T>
  */
 public abstract class AbstractStringConverter<T> implements TypeConverter<String, T> {
     protected static final Logger LOG = LoggerFactory.getLogger(AbstractStringConverter.class);
 
     /**
      * 进行数据转换
-     * 
-     * @author @Neil
-     * @param data
-     *            待转换的数据
-     * @param targetType
-     *            目标类型
+     *
+     * @param data       待转换的数据
+     * @param targetType 目标类型
      * @return 返回值
+     * @author @Neil
      */
     protected abstract T converterData(String data, Class<? extends T> targetType);
 
     /**
      * 是否支持转换为目标类型
-     * 
-     * @author @Neil
-     * @param target
-     *            目标类型
+     *
+     * @param target 目标类型
      * @return 如果支持则返回true
+     * @author @Neil
      */
     protected abstract boolean isSupport(Class<?> target);
 

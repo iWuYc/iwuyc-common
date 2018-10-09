@@ -1,11 +1,11 @@
 package com.iwuyc.tools.commons.thread.conf;
 
+import com.iwuyc.tools.commons.basic.AbstractStringUtils;
+import com.iwuyc.tools.commons.basic.type.TimeTuple;
+
 import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
-
-import com.iwuyc.tools.commons.basic.AbstractStringUtils;
-import com.iwuyc.tools.commons.basic.type.TimeTuple;
 
 /**
  * @author iWuYc

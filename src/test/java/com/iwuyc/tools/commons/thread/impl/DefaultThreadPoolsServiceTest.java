@@ -1,21 +1,18 @@
 package com.iwuyc.tools.commons.thread.impl;
 
-import java.io.InputStream;
-import java.util.concurrent.ExecutorService;
-
+import com.iwuyc.tools.commons.thread.ThreadConfig;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.iwuyc.tools.commons.thread.ThreadConfig;
+import java.io.InputStream;
+import java.util.concurrent.ExecutorService;
 
-public class DefaultThreadPoolsServiceTest
-{
+public class DefaultThreadPoolsServiceTest {
     private ThreadConfig config;
     private DefaultThreadPoolsServiceImpl poolSer;
 
     @Before
-    public void before() throws Exception
-    {
+    public void before() throws Exception {
         InputStream in = ThreadConfig.class.getResourceAsStream("/thread/thread.properties");
         this.config = new ThreadConfig();
         config.load(in);
@@ -23,8 +20,7 @@ public class DefaultThreadPoolsServiceTest
     }
 
     @Test
-    public void test()
-    {
+    public void test() {
 
         ExecutorService result = this.poolSer.getExecutorService(DefaultThreadPoolsServiceImpl.class);
         System.out.println(result);

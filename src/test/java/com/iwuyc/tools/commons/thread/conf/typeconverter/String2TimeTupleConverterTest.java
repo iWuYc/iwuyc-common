@@ -3,10 +3,7 @@ package com.iwuyc.tools.commons.thread.conf.typeconverter;
 import com.iwuyc.tools.commons.basic.type.TimeTuple;
 import org.junit.Test;
 
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import static org.junit.Assert.*;
 
 public class String2TimeTupleConverterTest {
 

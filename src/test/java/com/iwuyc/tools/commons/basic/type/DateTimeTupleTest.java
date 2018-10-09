@@ -4,8 +4,6 @@ import org.junit.Test;
 
 import java.time.temporal.ChronoUnit;
 
-import static org.junit.Assert.*;
-
 public class DateTimeTupleTest {
     @Test
     public void test1() {
