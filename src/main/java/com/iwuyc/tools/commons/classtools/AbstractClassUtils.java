@@ -21,8 +21,8 @@ import java.util.*;
  * 类对象的工具类。
  *
  * @author iWuYc
- * @since
- * @time 2017-08-07 16:25
+ * @since JDK8
+ * @date 2017-08-07 16:25
  */
 public abstract class AbstractClassUtils {
 
@@ -260,7 +260,7 @@ public abstract class AbstractClassUtils {
             fieldModifier(field);
 
             if (null == val) {
-                injectField(instance, field, val);
+                injectField(instance, field, null);
                 return true;
             }
             Object rejectVal = convert(val.getClass(), field.getType(), val, typeConverters);
@@ -429,7 +429,7 @@ public abstract class AbstractClassUtils {
             return another == null ? false : another.equals(firstType);
         }
         if (isAssignale) {
-            return firstType.isAssignableFrom(another);
+            return firstType.isAssignableFrom(another) || another.isAssignableFrom(firstType);
         }
         return firstType.equals(another);
     }

@@ -44,31 +44,25 @@ public class ThreadConfig {
     }
 
     /**
-     * 可以重复调用多次，增加新的配置项，或者修改配置项
+     * 提供配置文件，直接返回默认的 ThreadPoolsService 实例。
      *
-     * @param in
-     * @throws IOException
+     * @param file 可以为空，空则取classpath中/thread/thread.properties的默认配置
+     * @return
      */
-    public void load(InputStream in) throws IOException {
-        if (null == this.propertis) {
-            this.propertis = new Properties();
-
-            // 加载默认配置。
-            InputStream defaultSettings = DefaultThreadPoolsServiceImpl.class.getResourceAsStream(
-                    "/thread/thread.properties");
-            this.propertis.load(defaultSettings);
-        }
-        if (null != in) {
-            propertis.load(in);
+    public static ThreadPoolsService config(File file) {
+        if (null == file) {
+            LOG.error("file can't be null.");
+            return null;
         }
 
-        Map<Object, Object> configInfo = AbstractMapUtil.findEntryByPrefixKey(this.propertis,
-                ThreadConfigConstant.THREAD_CONFIG_PRENAME);
-        config(configInfo);
-
-        Map<Object, Object> usingInfo = AbstractMapUtil.findEntryByPrefixKey(this.propertis,
-                ThreadConfigConstant.THREAD_USING_PRENAME);
-        usingConfig(usingInfo);
+        ThreadConfig config = new ThreadConfig();
+        try (InputStream in = new FileInputStream(file);) {
+            config.load(in);
+            return new DefaultThreadPoolsServiceImpl(config);
+        } catch (IOException e) {
+            LOG.error("Config thread pool service raise an error:{}", e);
+        }
+        return null;
     }
 
     private void usingConfig(Map<Object, Object> usingInfo) {
@@ -161,24 +155,32 @@ public class ThreadConfig {
     }
 
     /**
-     * 提供配置文件，直接返回默认的 ThreadPoolsService 实例。
+     * 可以重复调用多次，增加新的配置项，或者修改配置项
      *
-     * @param file 可以为空，空则取classpath中/thread/thread.properties的默认配置
-     * @return
+     * @param in
+     * @throws IOException
      */
-    public static ThreadPoolsService config(File file) {
-        ThreadConfig config = new ThreadConfig();
-        try {
-            InputStream in = null;
-            if (null != file) {
-                in = new FileInputStream(file);
+    public void load(InputStream in) throws IOException {
+        if (null == this.propertis) {
+            this.propertis = new Properties();
+
+            // 加载默认配置。
+            try (InputStream defaultSettings = DefaultThreadPoolsServiceImpl.class
+                .getResourceAsStream("/thread/thread.properties")) {
+                this.propertis.load(defaultSettings);
             }
-            config.load(in);
-            return new DefaultThreadPoolsServiceImpl(config);
-        } catch (IOException e) {
-            LOG.error("Config thread pool service raise an error:{}", e);
         }
-        return null;
+        if (null != in) {
+            propertis.load(in);
+        }
+
+        Map<Object, Object> configInfo =
+            AbstractMapUtil.findEntryByPrefixKey(this.propertis, ThreadConfigConstant.THREAD_CONFIG_PRENAME);
+        config(configInfo);
+
+        Map<Object, Object> usingInfo =
+            AbstractMapUtil.findEntryByPrefixKey(this.propertis, ThreadConfigConstant.THREAD_USING_PRENAME);
+        usingConfig(usingInfo);
     }
 
 }

@@ -54,7 +54,7 @@ public class FileUtil {
 
             // Delete file.
             if (file.exists()) {
-                file.delete();
+                return file.delete();
             }
         } catch (Exception e) {
             e.printStackTrace();

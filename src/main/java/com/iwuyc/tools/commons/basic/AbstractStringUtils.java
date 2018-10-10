@@ -6,9 +6,6 @@ package com.iwuyc.tools.commons.basic;
  */
 public abstract class AbstractStringUtils {
 
-    public AbstractStringUtils() {
-    }
-
     /**
      * @param str 待判断的字符
      * @return 如果字符为null或者为""空字符，则返回true，否则返回false

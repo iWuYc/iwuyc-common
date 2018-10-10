@@ -15,10 +15,11 @@ public class DefaultThreadPoolsServiceImplTest {
 
     @Before
     public void before() throws Exception {
-        InputStream in = ThreadConfig.class.getResourceAsStream("/thread/thread.properties");
-        this.config = new ThreadConfig();
-        config.load(in);
-        this.poolSer = new DefaultThreadPoolsServiceImpl(config);
+        try (InputStream in = ThreadConfig.class.getResourceAsStream("/thread/thread.properties");) {
+            this.config = new ThreadConfig();
+            config.load(in);
+            this.poolSer = new DefaultThreadPoolsServiceImpl(config);
+        }
     }
 
     @Test

@@ -1,6 +1,6 @@
 package com.iwuyc.tools.commons.classtools.typeconverter;
 
-import com.iwuyc.tools.commons.util.TimeUtil;
+import com.iwuyc.tools.commons.util.DateTimeUtils;
 
 import java.util.Date;
 
@@ -12,7 +12,7 @@ public class String2Date extends AbstractStringConverter<Date> {
 
     @Override
     protected Date converterData(String data, Class<? extends Date> targetType) {
-        return TimeUtil.parser(data);
+        return DateTimeUtils.parse(data);
     }
 
     @Override

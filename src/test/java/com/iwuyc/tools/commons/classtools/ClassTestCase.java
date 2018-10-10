@@ -68,6 +68,7 @@ public class ClassTestCase {
         clazz = new TestClass(new Parameter2());
         clazz = new TestClass(new Parameter1());
         clazz = new TestClass(new Parameter());
+        System.out.println(clazz);
         clazz = new TestClass(new Object());
         System.out.println(clazz);
     }
