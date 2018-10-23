@@ -18,6 +18,8 @@ public class AbstractCollectionUtilTest {
         Assert.assertFalse(AbstractCollectionUtil.isEmpty(coll));
 
         Assert.assertTrue(AbstractCollectionUtil.isNotEmpty(coll));
+
+        System.out.println(AbstractCollectionUtil.class.getName());
     }
 
 }

@@ -38,9 +38,10 @@ public class FileUtil {
      * @author @iwuyc
      */
     public static boolean safeDelete(File file) {
+        boolean result = false;
         // Return false if file not exists or not a file;
         if (!file.isFile()) {
-            return false;
+            return result;
         }
         try (FileInputStream in = new FileInputStream(file); FileOutputStream out = new FileOutputStream(file);) {
             final byte[] emptyBytes = new byte[1024];
@@ -52,15 +53,16 @@ public class FileUtil {
                 in.skip(availableSize);
             }
 
-            // Delete file.
-            if (file.exists()) {
-                return file.delete();
-            }
         } catch (Exception e) {
             e.printStackTrace();
             return false;
         }
-        return true;
+
+        // Delete file.
+        if (file.exists()) {
+            result = file.delete();
+        }
+        return result;
     }
 
     /**
