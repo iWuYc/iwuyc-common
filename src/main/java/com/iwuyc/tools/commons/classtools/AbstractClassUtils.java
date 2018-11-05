@@ -12,17 +12,21 @@ import com.iwuyc.tools.commons.classtools.typeconverter.TypeConverterConstant;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.lang.annotation.Annotation;
+import java.lang.invoke.SerializedLambda;
 import java.lang.reflect.*;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
 
 /**
  * 类对象的工具类。
  *
  * @author iWuYc
- * @since JDK8
  * @date 2017-08-07 16:25
+ * @since JDK8
  */
 public abstract class AbstractClassUtils {
 
@@ -159,7 +163,7 @@ public abstract class AbstractClassUtils {
         private boolean declared;
 
         public MethodPrivilegedAction(Class<?> targetClazz, String methodName, Class<?>[] parameterTypeList,
-                                      boolean declared) {
+                boolean declared) {
             this.targetClazz = targetClazz;
             this.methodName = methodName;
             this.parameterTypeList = parameterTypeList;
@@ -190,8 +194,7 @@ public abstract class AbstractClassUtils {
     /**
      * 获取class类对象，不做类的初始化。以屏蔽讨厌的try……catch块。
      *
-     * @param classPath
-     *            类的名字
+     * @param classPath 类的名字
      * @return 一个 {@link Optional} 对象，如果成功加载，则返回相应的对象，否则返回一个 {@link Optional#empty()}
      */
     public static Optional<Class<?>> loadClass(String classPath) {
@@ -216,16 +219,13 @@ public abstract class AbstractClassUtils {
     /**
      * 将map中的值，按field的名字注入到instance中。
      *
-     * @param instance
-     *            实例
-     * @param fieldAndVal
-     *            字段跟值（这个map的键值应该是Map<String,Object>）
-     * @param typeConverters
-     *            类型转换器，用于注入前的类型转换。key是源类型，val是转换器列表。
+     * @param instance       实例
+     * @param fieldAndVal    字段跟值（这个map的键值应该是Map<String,Object>）
+     * @param typeConverters 类型转换器，用于注入前的类型转换。key是源类型，val是转换器列表。
      * @return 未注入成功的字段跟值，一般是，不存在这个字段，或者，在注入的时候出问题了
      */
     public static Map<Object, Object> injectFields(Object instance, Map<String, Object> fieldAndVal,
-                                                   MultiMap<Class<? extends Object>, TypeConverter<? extends Object, ? extends Object>> typeConverters) {
+            MultiMap<Class<? extends Object>, TypeConverter<? extends Object, ? extends Object>> typeConverters) {
         if (null == instance || null == fieldAndVal) {
             return Collections.emptyMap();
         }
@@ -254,7 +254,7 @@ public abstract class AbstractClassUtils {
     }
 
     private static boolean injectField(Object instance, Field field, Object val,
-                                       MultiMap<Class<? extends Object>, TypeConverter<? extends Object, ? extends Object>> typeConverters) {
+            MultiMap<Class<? extends Object>, TypeConverter<? extends Object, ? extends Object>> typeConverters) {
         try {
             // 字段属性修改，以便可以进行属性设置
             fieldModifier(field);
@@ -290,8 +290,7 @@ public abstract class AbstractClassUtils {
     /**
      * 对一些有访问限制的字段进行修改，以便可以正常访问进行数据修改。
      *
-     * @param field
-     *            待修改字段。
+     * @param field 待修改字段。
      */
     private static void fieldModifier(Field field) {
         if (!field.isAccessible()) {
@@ -307,19 +306,15 @@ public abstract class AbstractClassUtils {
     /**
      * 将数据转换成对应的类型。
      *
-     * @param sourceType
-     *            数据源类型
-     * @param targetType
-     *            目标数据类型
-     * @param val
-     *            数据
-     * @param typeConverters
-     *            类型转换器集合
+     * @param sourceType     数据源类型
+     * @param targetType     目标数据类型
+     * @param val            数据
+     * @param typeConverters 类型转换器集合
      * @return
      */
-    @SuppressWarnings({"unchecked", "rawtypes"})
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     private static Object convert(Class<? extends Object> sourceType, Class targetType, Object val,
-                                  MultiMap<Class<? extends Object>, TypeConverter<? extends Object, ? extends Object>> typeConverters) {
+            MultiMap<Class<? extends Object>, TypeConverter<? extends Object, ? extends Object>> typeConverters) {
         if (sourceType == targetType) {
             return val;
         }
@@ -331,10 +326,10 @@ public abstract class AbstractClassUtils {
         Object rejectVal = null;
         Collection<TypeConverter<? extends Object, ? extends Object>> converters = typeConverters.get(sourceType);
         // 筛选支持转换的转换器，并且返回第一个。
-        Optional<TypeConverter<? extends Object, ? extends Object>> supportConverterOpt = converters.stream().filter((
-                item) -> {
-            return item.support(targetType);
-        }).findFirst();
+        Optional<TypeConverter<? extends Object, ? extends Object>> supportConverterOpt = converters.stream()
+                .filter((item) -> {
+                    return item.support(targetType);
+                }).findFirst();
         // 如果没有找到转换器，则直接将源数据返回。
         if (!supportConverterOpt.isPresent()) {
             LOG.warn("Can't find any convert for this type[{}]", targetType);
@@ -347,12 +342,9 @@ public abstract class AbstractClassUtils {
     /**
      * 根据类名实例化一个对象。
      *
-     * @param targetClass
-     *            返回的目标类型。
-     * @param clazzName
-     *            类名。
-     * @param args
-     *            构造函数的参数。
+     * @param targetClass 返回的目标类型。
+     * @param clazzName   类名。
+     * @param args        构造函数的参数。
      * @return 实例化后的对象。
      */
     public static <I> I instance(Class<I> targetClass, String clazzName, Object... args) {
@@ -366,14 +358,11 @@ public abstract class AbstractClassUtils {
     /**
      * 根据类对象实例化一个对象
      *
-     * @author @iwuyc
-     * @param targetClass
-     *            返回的目标类型
-     * @param clazz
-     *            类对象
-     * @param args
-     *            构造函数的参数
+     * @param targetClass 返回的目标类型
+     * @param clazz       类对象
+     * @param args        构造函数的参数
      * @return 实例化后的对象
+     * @author @iwuyc
      */
     public static <I> I instance(Class<I> targetClass, Class<?> clazz, Object... args) {
         return AccessController.doPrivileged(new InstancePrivilegedAction<I>(targetClass, clazz, args));
@@ -382,12 +371,10 @@ public abstract class AbstractClassUtils {
     /**
      * 根据类对象实例化一个对象
      *
-     * @author @iwuyc
-     * @param clazz
-     *            类对象
-     * @param args
-     *            构造函数的参数
+     * @param clazz 类对象
+     * @param args  构造函数的参数
      * @return 实例化后的对象
+     * @author @iwuyc
      */
     public static Object instance(Class<?> clazz, Object... args) {
         return instance(Object.class, clazz, args);
@@ -407,14 +394,11 @@ public abstract class AbstractClassUtils {
     /**
      * 比较两个类型是否相同，主要是解决基础类型跟包装类型不一致的情况，如果不存在基础类型跟包装类型同时存在的比较，不建议使用该方法。
      *
-     * @author @iwuyc
-     * @param firstType
-     *            第一个类型
-     * @param another
-     *            第二个类型
-     * @param isAssignale
-     *            是否依据继承关系进行判断。
+     * @param firstType   第一个类型
+     * @param another     第二个类型
+     * @param isAssignale 是否依据继承关系进行判断。
      * @return 如果是同一种类型，则返回true，否则返回false;
+     * @author @iwuyc
      */
     public static boolean compareType(Class<?> firstType, Class<?> another, boolean isAssignale) {
         if (null == firstType || null == another) {
@@ -437,14 +421,11 @@ public abstract class AbstractClassUtils {
     /**
      * 比较两个类型的列表是否一致，包括基础类型跟包装类型。
      *
-     * @author @iwuyc
-     * @param firstList
-     *            第一个类型列表
-     * @param anotherList
-     *            另外一个类型列表
-     * @param isAssignable
-     *            是否判断anotherList中的类型是否为firstList中的子类继承关系
+     * @param firstList    第一个类型列表
+     * @param anotherList  另外一个类型列表
+     * @param isAssignable 是否判断anotherList中的类型是否为firstList中的子类继承关系
      * @return 如果两个列表一致，则返回true，否则返回false；
+     * @author @iwuyc
      */
     public static boolean compareTypeList(Class<?>[] firstList, Class<?>[] anotherList, boolean isAssignable) {
         if (firstList.length != anotherList.length) {
@@ -461,14 +442,11 @@ public abstract class AbstractClassUtils {
     /**
      * 调用对象的方法，静态方法的话，请传入 Class 对象，而无需传入实例对象。
      *
-     * @author @iwuyc
-     * @param instance
-     *            实例或者Class对象
-     * @param methodName
-     *            方法名
-     * @param parameters
-     *            方法的入参
+     * @param instance   实例或者Class对象
+     * @param methodName 方法名
+     * @param parameters 方法的入参
      * @return
+     * @author @iwuyc
      */
     public static Object callMethod(Object instance, String methodName, Object... parameters) {
         boolean declared = false;
@@ -478,14 +456,11 @@ public abstract class AbstractClassUtils {
     /**
      * 忽略访问修饰符强制调用对象的方法，静态方法的话，请传入 Class 对象，而无需传入实例对象。
      *
-     * @author @iwuyc
-     * @param instance
-     *            实例或者Class对象
-     * @param methodName
-     *            方法名
-     * @param parameters
-     *            方法的入参
+     * @param instance   实例或者Class对象
+     * @param methodName 方法名
+     * @param parameters 方法的入参
      * @return
+     * @author @iwuyc
      */
     public static Object mandatoryCallMethod(Object instance, String methodName, Object... parameters) {
         boolean declared = true;
@@ -505,8 +480,8 @@ public abstract class AbstractClassUtils {
                 declared);
         Optional<Method> methodOpt = AccessController.doPrivileged(action);
         if (!methodOpt.isPresent()) {
-            LOG.warn("Can't found any method for name:[{}];Parameter Type List:{}", methodName, Arrays.toString(
-                    parameterTypeList));
+            LOG.warn("Can't found any method for name:[{}];Parameter Type List:{}", methodName,
+                    Arrays.toString(parameterTypeList));
             return null;
         }
 
@@ -529,10 +504,9 @@ public abstract class AbstractClassUtils {
     /**
      * 获取对象的类型列表，将列表中的对象的类型，按照输入的顺序进行输出。
      *
-     * @author @iwuyc
-     * @param object
-     *            待获取的数据列表
+     * @param object 待获取的数据列表
      * @return 类型列表
+     * @author @iwuyc
      */
     public static Class<?>[] typeList(Object... object) {
         int parametersLength = AbstractArrayUtil.arrayLength(object);
@@ -547,12 +521,10 @@ public abstract class AbstractClassUtils {
     /**
      * 根据参数列表，从executable列表中获取最匹配的方法。
      *
-     * @author @iwuyc
-     * @param executables
-     *            executable 列表
-     * @param parameterTypes
-     *            参数类型列表
+     * @param executables    executable 列表
+     * @param parameterTypes 参数类型列表
      * @return 参数列表最匹配的executable对象
+     * @author @iwuyc
      */
     public static Executable chooseBestMatchExecutable(Executable[] executables, Class<?>[] parameterTypes) {
 
@@ -585,5 +557,35 @@ public abstract class AbstractClassUtils {
 
         return bestMatch;
 
+    }
+
+    private static final Map<SerializedLambda, String> CACHE_LAMBDA_INFO = new ConcurrentHashMap<>();
+
+    public static <T, R> String getLambdaMethodName(TypeFunction<T, R> function) {
+        Method writeReplaceMethod = null;
+        for (Class<?> clazz = function.getClass(); clazz != null; clazz = clazz.getSuperclass()) {
+            Method[] methods = clazz.getDeclaredMethods();
+            for (Method method : methods) {
+                if ("writeReplace".equals(method.getName())) {
+                    writeReplaceMethod = method;
+                    break;
+                }
+            }
+        }
+
+        if (writeReplaceMethod == null) {
+            return "";
+        }
+        try {
+
+            Object replacement = writeReplaceMethod.invoke(function);
+            if (!(replacement instanceof SerializedLambda)) {
+                return "";
+            }
+            SerializedLambda lambdaSerialized = (SerializedLambda) replacement;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return "";
     }
 }

@@ -1,5 +1,9 @@
 package com.iwuyc.tools.commons.util;
 
+import com.iwuyc.tools.commons.basic.AbstractStringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.*;
 
 /**
@@ -9,6 +13,7 @@ import java.io.*;
  * @since @Sep 3, 2017
  */
 public class FileUtil {
+    private static final Logger LOGGER = LoggerFactory.getLogger(FileUtil.class);
 
     /**
      * 将指定的byte数组以指定长度，填充到指定的流中。
@@ -74,5 +79,25 @@ public class FileUtil {
      */
     public static boolean safeDelete(String path) {
         return safeDelete(new File(path));
+    }
+
+    /**
+     * 读取整个文件的数据，调用该方法应当提前校验过文件的大小，不建议将大文件一次性读取出来
+     *
+     * @param filePath 文件路径
+     * @return 文件中的内容
+     */
+    public static String readAll(String filePath) {
+        try (FileReader fr = new FileReader(new File(filePath)); BufferedReader reader = new BufferedReader(fr)) {
+            StringBuilder sb = new StringBuilder();
+            String tmp;
+            while ((tmp = reader.readLine()) != null) {
+                sb.append(tmp).append("\n");
+            }
+            return sb.toString();
+        } catch (Exception e) {
+            LOGGER.error("Read file raise an error.Cause:{}", e);
+        }
+        return AbstractStringUtils.NIL_STRING;
     }
 }

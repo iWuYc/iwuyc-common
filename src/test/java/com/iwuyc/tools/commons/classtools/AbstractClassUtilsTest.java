@@ -1,5 +1,6 @@
 package com.iwuyc.tools.commons.classtools;
 
+import com.iwuyc.tools.commons.basic.AbstractStringUtils;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -28,8 +29,18 @@ public class AbstractClassUtilsTest {
     }
 
     static class A {
+        private String name;
+
+        public String getName() {
+            return this.name;
+        }
     }
 
     static class B extends A implements I {
+    }
+
+    @Test
+    public void getLambdaMethodName() {
+        System.out.println(AbstractClassUtils.getLambdaMethodName(A::getName));
     }
 }

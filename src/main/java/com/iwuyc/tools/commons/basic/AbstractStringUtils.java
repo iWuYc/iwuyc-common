@@ -5,6 +5,8 @@ package com.iwuyc.tools.commons.basic;
  * @since @2017年10月15日
  */
 public abstract class AbstractStringUtils {
+    public static final String NIL_STRING = "";
+    public static final String EMPTY_STRING = " ";
 
     /**
      * @param str 待判断的字符
