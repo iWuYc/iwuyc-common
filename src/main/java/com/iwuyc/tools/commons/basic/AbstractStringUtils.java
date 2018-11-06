@@ -7,6 +7,7 @@ package com.iwuyc.tools.commons.basic;
 public abstract class AbstractStringUtils {
     public static final String NIL_STRING = "";
     public static final String EMPTY_STRING = " ";
+    public static final char BLANK_CHAR = ' ';
 
     /**
      * @param str 待判断的字符
