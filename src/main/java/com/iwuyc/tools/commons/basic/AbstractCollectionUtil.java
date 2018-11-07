@@ -16,4 +16,10 @@ public abstract class AbstractCollectionUtil {
         return !isEmpty(coll);
     }
 
+    public static int sizeOf(Collection<?> collection) {
+        if (isEmpty(collection)) {
+            return 0;
+        }
+        return collection.size();
+    }
 }

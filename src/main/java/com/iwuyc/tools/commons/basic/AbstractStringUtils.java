@@ -25,4 +25,11 @@ public abstract class AbstractStringUtils {
     public static boolean isNotEmpty(String str) {
         return !isEmpty(str);
     }
+
+    public static boolean equals(String primaryStr, String slaveStr) {
+        if (primaryStr == null || slaveStr == null) {
+            return false;
+        }
+        return primaryStr.equals(slaveStr);
+    }
 }
