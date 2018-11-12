@@ -32,4 +32,16 @@ public abstract class AbstractStringUtils {
         }
         return primaryStr.equals(slaveStr);
     }
+
+    public static String turnFirstCharToLowerCase(String source) {
+        if (isEmpty(source)) {
+            return source;
+        }
+        char firstChar = source.charAt(0);
+        if (firstChar < 'A' || firstChar > 'Z') {
+            return source;
+        }
+        firstChar = (char) (firstChar - 'A' + 'a');
+        return source.length() > 1 ? firstChar + source.substring(1) : String.valueOf(firstChar);
+    }
 }

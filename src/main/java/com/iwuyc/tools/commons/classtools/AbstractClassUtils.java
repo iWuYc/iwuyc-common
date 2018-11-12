@@ -42,7 +42,9 @@ public abstract class AbstractClassUtils {
     static {
 
         MODIFIERS_FIELD = findField(Field.class, "modifiers");
-
+        if (!MODIFIERS_FIELD.isAccessible()) {
+            MODIFIERS_FIELD.setAccessible(true);
+        }
         Map<Class<?>, Class<?>> temp = new HashMap<>();
         temp.put(void.class, Void.class);
 

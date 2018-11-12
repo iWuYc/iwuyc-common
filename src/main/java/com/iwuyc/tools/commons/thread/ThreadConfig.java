@@ -13,6 +13,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -52,7 +53,9 @@ public class ThreadConfig {
     public static ThreadPoolsService config(File file) {
         if (null == file) {
             LOG.error("file can't be null.");
-            return null;
+            //            return null;
+            URL defaultConfigFile = ThreadConfig.class.getResource("/thread/thread.properties");
+            file = new File(defaultConfigFile.getFile());
         }
 
         ThreadConfig config = new ThreadConfig();
@@ -166,7 +169,7 @@ public class ThreadConfig {
 
             // 加载默认配置。
             try (InputStream defaultSettings = DefaultThreadPoolsServiceImpl.class
-                .getResourceAsStream("/thread/thread.properties")) {
+                    .getResourceAsStream("/thread/thread.properties")) {
                 this.propertis.load(defaultSettings);
             }
         }
@@ -174,12 +177,12 @@ public class ThreadConfig {
             propertis.load(in);
         }
 
-        Map<Object, Object> configInfo =
-            AbstractMapUtil.findEntryByPrefixKey(this.propertis, ThreadConfigConstant.THREAD_CONFIG_PRENAME);
+        Map<Object, Object> configInfo = AbstractMapUtil
+                .findEntryByPrefixKey(this.propertis, ThreadConfigConstant.THREAD_CONFIG_PRENAME);
         config(configInfo);
 
-        Map<Object, Object> usingInfo =
-            AbstractMapUtil.findEntryByPrefixKey(this.propertis, ThreadConfigConstant.THREAD_USING_PRENAME);
+        Map<Object, Object> usingInfo = AbstractMapUtil
+                .findEntryByPrefixKey(this.propertis, ThreadConfigConstant.THREAD_USING_PRENAME);
         usingConfig(usingInfo);
     }
 
