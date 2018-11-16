@@ -4,7 +4,7 @@ import org.junit.Test;
 
 import static org.junit.Assert.*;
 
-public class DefaultThreadFactoryTest {
+public class DefaultThreadPoolFactoryTest {
 
     @Test
     public void test() {

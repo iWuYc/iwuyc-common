@@ -12,10 +12,12 @@ import org.slf4j.LoggerFactory;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
-
 
 /**
  * @author @Neil
@@ -28,6 +30,7 @@ public class DefaultThreadPoolsServiceImpl implements ThreadPoolsService {
     public Map<String, ExecutorService> executorServiceCache = new ConcurrentHashMap<>();
     private ReadWriteLock lock = new ReentrantReadWriteLock(true);
     private ThreadConfig config;
+    private AtomicBoolean isShutdown = new AtomicBoolean();
 
     public DefaultThreadPoolsServiceImpl(ThreadConfig config) {
         this.config = config;
@@ -35,6 +38,10 @@ public class DefaultThreadPoolsServiceImpl implements ThreadPoolsService {
 
     @Override
     public ExecutorService getExecutorService(Class<?> clazz) {
+        return getExecutorServiceByMap(clazz, this.executorServiceCache);
+    }
+
+    private <T extends ExecutorService> T getExecutorServiceByMap(Class<?> clazz, Map<String, T> container) {
 
         String domain = null;
         if (null == clazz) {
@@ -43,18 +50,18 @@ public class DefaultThreadPoolsServiceImpl implements ThreadPoolsService {
             domain = clazz.getName();
         }
         LOG.debug("Get executor service for :{}.domain is:{}", clazz, domain);
-        ExecutorService executorSer = executorServiceCache.get(domain);
+        T executorSer = container.get(domain);
 
         if (null == executorSer) {
-            executorSer = findThreadPoolOrCreate(domain);
+            executorSer = findThreadPoolOrCreate(domain, container);
         }
         return executorSer;
     }
 
-    private ExecutorService findThreadPoolOrCreate(String domain) {
+    private <T extends ExecutorService> T findThreadPoolOrCreate(String domain, Map<String, T> container) {
 
         UsingConfig usingConfig = this.config.findUsingSetting(domain);
-        ExecutorService executorService = this.executorServiceCache.get(usingConfig.getDomain());
+        T executorService = container.get(usingConfig.getDomain());
         if (null != executorService) {
             return executorService;
         }
@@ -63,16 +70,16 @@ public class DefaultThreadPoolsServiceImpl implements ThreadPoolsService {
         try {
             writeLock.lock();
 
-            if (this.executorServiceCache.containsKey(usingConfig.getDomain())) {
-                executorService = this.executorServiceCache.get(usingConfig.getDomain());
+            if (container.containsKey(usingConfig.getDomain())) {
+                executorService = container.get(usingConfig.getDomain());
                 return executorService;
             }
 
-            ThreadPoolConfig threadPoolConfig = this.config.findThreadPoolConfig(usingConfig.getDomain());
+            ThreadPoolConfig threadPoolConfig = this.config.findThreadPoolConfig(usingConfig.getThreadPoolsName());
             executorService = createNewThreadPoolFactory(threadPoolConfig);
 
-            this.executorServiceCache.put(usingConfig.getDomain(), executorService);
-            this.executorServiceCache.put(domain, executorService);
+            container.put(usingConfig.getDomain(), executorService);
+            container.put(domain, executorService);
 
             return executorService;
         } finally {
@@ -80,15 +87,37 @@ public class DefaultThreadPoolsServiceImpl implements ThreadPoolsService {
         }
     }
 
-    private ExecutorService createNewThreadPoolFactory(ThreadPoolConfig threadPoolConfig) {
-        ExecutorServiceFactory factory = AbstractClassUtils.instance(ExecutorServiceFactory.class, threadPoolConfig
-                .getFactory());
-        return factory.create(threadPoolConfig);
+    private <T extends ExecutorService> T createNewThreadPoolFactory(ThreadPoolConfig threadPoolConfig) {
+        ExecutorServiceFactory factory = AbstractClassUtils
+                .instance(ExecutorServiceFactory.class, threadPoolConfig.getFactory());
+        return (T) factory.create(threadPoolConfig);
     }
 
     @Override
     public ThreadConfig getConfig() {
         return this.config;
+    }
+
+    @Override
+    public void shutdown() {
+
+        if (!isShutdown.compareAndSet(false, true)) {
+            return;
+        }
+
+        for (Map.Entry<String, ExecutorService> item : executorServiceCache.entrySet()) {
+            try {
+                item.getValue().shutdown();
+            } catch (Exception e) {
+                LOG.error("Shutdown pool raise an error.Cause:", e);
+            }
+        }
+        executorServiceCache.clear();
+    }
+
+    @Override
+    public boolean isShutdown() {
+        return isShutdown.get();
     }
 
 }

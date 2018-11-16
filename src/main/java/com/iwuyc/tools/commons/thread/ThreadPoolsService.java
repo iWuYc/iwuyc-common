@@ -23,4 +23,16 @@ public interface ThreadPoolsService {
      * @return 配置实例
      */
     ThreadConfig getConfig();
+
+    /**
+     * 停止该线程池服务，并释放相应的资源
+     */
+    void shutdown();
+
+    /**
+     * 是否已经停掉当前线程池服务
+     *
+     * @return true 为已经停掉，否则为未停止
+     */
+    boolean isShutdown();
 }

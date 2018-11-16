@@ -39,7 +39,7 @@ public class AbstractClassUtilsTest {
     static class B extends A implements I {
     }
 
-    @Test
+    @Test(expected = Exception.class)
     public void getLambdaMethodName() {
         System.out.println(AbstractClassUtils.getLambdaMethodName(A::getName));
     }

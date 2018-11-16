@@ -7,7 +7,7 @@ package com.iwuyc.tools.commons.basic;
 public abstract class AbstractArrayUtil {
 
     public static <T> boolean isEmpty(T[] arrays) {
-        return null == arrays || 0 == arrays.length;
+        return arrayLength(arrays) == 0;
     }
 
     public static <T> boolean isNotEmpty(T[] arrays) {

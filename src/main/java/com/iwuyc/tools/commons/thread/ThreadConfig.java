@@ -61,7 +61,8 @@ public class ThreadConfig {
         ThreadConfig config = new ThreadConfig();
         try (InputStream in = new FileInputStream(file);) {
             config.load(in);
-            return new DefaultThreadPoolsServiceImpl(config);
+            ThreadPoolFactory.setThreadPoolsService(new DefaultThreadPoolsServiceImpl(config));
+            return ThreadPoolFactory.getThreadPoolsService();
         } catch (IOException e) {
             LOG.error("Config thread pool service raise an error:{}", e);
         }
@@ -95,7 +96,7 @@ public class ThreadConfig {
         while (!keys.isEmpty()) {
             key = String.valueOf(keys.iterator().next());
             threadPoolsNamePrefix = findThreadNameIncludePrefix(key);
-            threadPoolFacotryConfig = AbstractMapUtil.findEntryByPrefixKey(configInfo, threadPoolsNamePrefix);
+            threadPoolFacotryConfig = AbstractMapUtil.findEntryByPrefixKey(configInfo, threadPoolsNamePrefix + '.');
 
             threadPoolFacotryConfig.forEach((k, v) -> {
                 configInfo.remove(k);
