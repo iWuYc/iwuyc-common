@@ -3,11 +3,11 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.iwuyc.tools</groupId>
-    <artifactId>iwuyc-commons</artifactId>
+    <artifactId>iwuyc-common</artifactId>
     <version>1.0.1</version>
     <packaging>jar</packaging>
 
-    <name>iwuyc-commons</name>
+    <name>iwuyc-common</name>
     <url>http://maven.apache.org</url>
 
     <properties>
