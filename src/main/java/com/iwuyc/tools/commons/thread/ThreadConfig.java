@@ -48,7 +48,7 @@ public class ThreadConfig {
      * 提供配置文件，直接返回默认的 ThreadPoolsService 实例。
      *
      * @param file 可以为空，空则取classpath中/thread/thread.properties的默认配置
-     * @return
+     * @return 返回threadPoolService的实例
      */
     public static ThreadPoolsService config(File file) {
         if (null == file) {
@@ -59,21 +59,21 @@ public class ThreadConfig {
         }
 
         ThreadConfig config = new ThreadConfig();
-        try (InputStream in = new FileInputStream(file);) {
+        try (InputStream in = new FileInputStream(file)) {
             config.load(in);
             ThreadPoolFactory.setThreadPoolsService(new DefaultThreadPoolsServiceImpl(config));
             return ThreadPoolFactory.getThreadPoolsService();
         } catch (IOException e) {
-            LOG.error("Config thread pool service raise an error:{}", e);
+            LOG.error("Config thread pool service raise an error:", e);
         }
         return null;
     }
 
     private void usingConfig(Map<Object, Object> usingInfo) {
-        String key = null;
-        String prefixUsingDomain = null;
-        String config = null;
-        UsingConfig usingConfig = null;
+        String key;
+        String prefixUsingDomain;
+        String config;
+        UsingConfig usingConfig;
         for (Entry<Object, Object> item : usingInfo.entrySet()) {
             key = String.valueOf(item.getKey());
             prefixUsingDomain = key.substring(ThreadConfigConstant.THREAD_USING_PRENAME.length() + 1);
@@ -89,18 +89,16 @@ public class ThreadConfig {
 
         Set<Object> keys = configInfo.keySet();
 
-        String threadPoolsNamePrefix = null;
-        String key = null;
-        Map<Object, Object> threadPoolFacotryConfig = null;
+        String threadPoolsNamePrefix;
+        String key;
+        Map<Object, Object> threadPoolFacotryConfig;
 
         while (!keys.isEmpty()) {
             key = String.valueOf(keys.iterator().next());
             threadPoolsNamePrefix = findThreadNameIncludePrefix(key);
             threadPoolFacotryConfig = AbstractMapUtil.findEntryByPrefixKey(configInfo, threadPoolsNamePrefix + '.');
 
-            threadPoolFacotryConfig.forEach((k, v) -> {
-                configInfo.remove(k);
-            });
+            threadPoolFacotryConfig.forEach(configInfo::remove);
 
             threadPoolFactoryConfig(threadPoolsNamePrefix, threadPoolFacotryConfig);
 
@@ -131,8 +129,8 @@ public class ThreadConfig {
     }
 
     public UsingConfig findUsingSetting(String domain) {
-        UsingConfig config = null;
-        int lastDotIndex = -1;
+        UsingConfig config;
+        int lastDotIndex;
         do {
             config = usingConfigCache.get(domain);
             if (null != config) {
@@ -158,11 +156,12 @@ public class ThreadConfig {
         return config;
     }
 
+
     /**
      * 可以重复调用多次，增加新的配置项，或者修改配置项
      *
-     * @param in
-     * @throws IOException
+     * @param in 配置文件的文本流
+     * @throws IOException 流读取异常
      */
     public void load(InputStream in) throws IOException {
         if (null == this.propertis) {
@@ -172,6 +171,7 @@ public class ThreadConfig {
             try (InputStream defaultSettings = DefaultThreadPoolsServiceImpl.class
                     .getResourceAsStream("/thread/thread.properties")) {
                 this.propertis.load(defaultSettings);
+                this.propertis.putAll(InitDefaultProperties.DEFAULT_SETTING);
             }
         }
         if (null != in) {
@@ -185,6 +185,21 @@ public class ThreadConfig {
         Map<Object, Object> usingInfo = AbstractMapUtil
                 .findEntryByPrefixKey(this.propertis, ThreadConfigConstant.THREAD_USING_PRENAME);
         usingConfig(usingInfo);
+    }
+
+    private static class InitDefaultProperties {
+        private final static Map<String, String> DEFAULT_SETTING = new HashMap<>();
+        private static final String DEFAULT_CORE_POOL_SIZE = "thread.conf.default.corePoolSize";
+        private static final String DEFAULT_MAX_POOL_SIZE = "thread.conf.default.maximumPoolSize";
+        private static final String DEFAULT_SCHEDULE_CORE_POOL_SIZE = "thread.conf.defaultSchedule.corePoolSize";
+
+        static {
+            int availableProcessors = Runtime.getRuntime().availableProcessors();
+            DEFAULT_SETTING.put(DEFAULT_CORE_POOL_SIZE, String.valueOf(availableProcessors));
+            DEFAULT_SETTING.put(DEFAULT_MAX_POOL_SIZE, String.valueOf(availableProcessors * 4));
+            DEFAULT_SETTING.put(DEFAULT_SCHEDULE_CORE_POOL_SIZE, String.valueOf(availableProcessors));
+
+        }
     }
 
 }

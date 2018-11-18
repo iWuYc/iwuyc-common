@@ -69,14 +69,14 @@ com.iwuyc.tools.commons.thread.impl.ThreadPoolExecutorFactory
 # thread.using 以这个开头，则是表示配置域下面所使用的线程池实例，值为线程池实例的名字。该规则跟log4j类似，就不再赘了。      
 #                      
 ####################################################################################################################
-thread.conf.default.corePoolSize=2
+thread.conf.default.corePoolSize=availableProcessors
 thread.conf.default.factory=com.iwuyc.tools.commons.thread.impl.ThreadPoolExecutorFactory
 # [h - hour;m - minute;s - second;ms - millisecond;ns - nanosecond;]default:s
 thread.conf.default.keepAliveTime=60m
-thread.conf.default.maximumPoolSize=4
+thread.conf.default.maximumPoolSize=availableProcessors*2
 thread.conf.default.maxQueueSize=1800
 
-thread.conf.defaultSchedule.corePoolSize=2
+thread.conf.defaultSchedule.corePoolSize=availableProcessors
 thread.conf.defaultSchedule.factory=com.iwuyc.tools.commons.thread.impl.ScheduledExecutorServiceFactory
 
 thread.using.root=default

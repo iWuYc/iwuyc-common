@@ -17,7 +17,7 @@ public class ThreadConfigTest {
 
     @Before
     public void before() throws Exception {
-        try (InputStream in = ThreadConfig.class.getResourceAsStream("/thread/thread.properties");) {
+        try (InputStream in = ThreadConfig.class.getResourceAsStream("/thread/thread.properties")) {
             this.config = new ThreadConfig();
             config.load(in);
         }
@@ -42,7 +42,7 @@ public class ThreadConfigTest {
 
     @Test
     public void test1() throws Exception {
-        try (InputStream in = ThreadConfig.class.getResourceAsStream("/thread/thread.properties");) {
+        try (InputStream in = ThreadConfig.class.getResourceAsStream("/thread/thread.properties")) {
             Properties properties = new Properties();
             properties.load(in);
         }
@@ -53,5 +53,10 @@ public class ThreadConfigTest {
         File file = new File(pathName);
         ThreadPoolsService config = ThreadConfig.config(file);
         System.out.println(config);
+    }
+
+    @Test
+    public void coreSize() {
+        System.out.println(Runtime.getRuntime().availableProcessors());
     }
 }
