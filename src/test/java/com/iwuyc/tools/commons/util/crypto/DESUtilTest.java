@@ -34,5 +34,8 @@ public class DESUtilTest {
 
     @Test
     public void decrypt() {
+        String str = "ceFw43yk+ODb7n2TRJNpamKVo+Wj33YXpoVeQX+DAoxX0nZBeVafOjWCxGDb+FWPx4Unh/8KjSy3U+cKUOcltqxd++0BTkqvMtc4TdDZI5dkfT2vTWbxb0Hmfz3MIK3vJQ3zjEcwiquUwcHCYwQZuUzrbMEtC2VxFMzGF8+njjs=";
+        String decrypt = DESUtil.decrypt(str, "1234567890abcdefgijklmnopqrstsdfsdfsdfsdfsdjfljldajlkjaslfjaSLKDAHSLKFHALKSFJLKASDHAJKSLKjlkjslkdjfaklsjdlkajl");
+        System.out.println(decrypt);
     }
 }
