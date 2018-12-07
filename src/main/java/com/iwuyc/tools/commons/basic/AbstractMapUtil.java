@@ -3,7 +3,7 @@ package com.iwuyc.tools.commons.basic;
 import java.util.*;
 
 /**
- * @author iWuYc
+ * @author Neil
  * @date 2017-08-04 14:31
  * @since JDK 8
  */

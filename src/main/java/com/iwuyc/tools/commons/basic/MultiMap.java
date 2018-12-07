@@ -8,7 +8,7 @@ import java.util.LinkedList;
  *
  * @param <K> key
  * @param <V> value
- * @author iWuYc
+ * @author Neil
  */
 public class MultiMap<K, V> extends HashMap<K, LinkedList<V>> {
 

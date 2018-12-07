@@ -5,7 +5,7 @@ import com.iwuyc.tools.commons.util.NumberUtils;
 /**
  * 字符串转数字类型
  *
- * @author iWuYc
+ * @author Neil
  */
 public class String2Number extends AbstractStringConverter<Number> {
     @Override

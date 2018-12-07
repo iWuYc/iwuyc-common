@@ -9,7 +9,7 @@ import java.io.*;
 /**
  * 文件处理工具类
  *
- * @author @iwuyc
+ * @author Neil
  * @since @Sep 3, 2017
  */
 public class FileUtil {
@@ -22,7 +22,7 @@ public class FileUtil {
      * @param length   需要填充的长度，可大于bytes数组的长度。
      * @param bytesArr bytes数组
      * @throws Exception
-     * @author @iwuyc
+     * @author Neil
      */
     private static void fillEmptyByte(OutputStream out, int length, byte[] bytesArr) throws IOException {
 
@@ -40,7 +40,7 @@ public class FileUtil {
      *
      * @param file 将要删除的文件
      * @return 删除成功，则返回true，如果出错，则返回false
-     * @author @iwuyc
+     * @author Neil
      */
     public static boolean safeDelete(File file) {
         boolean result = false;
@@ -75,7 +75,7 @@ public class FileUtil {
      *
      * @param path 将要删除的文件的路径
      * @return 删除成功，则返回true，否则返回false
-     * @author @iwuyc
+     * @author Neil
      */
     public static boolean safeDelete(String path) {
         return safeDelete(new File(path));

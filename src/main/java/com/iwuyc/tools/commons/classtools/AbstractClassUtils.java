@@ -24,7 +24,7 @@ import java.util.function.Function;
 /**
  * 类对象的工具类。
  *
- * @author iWuYc
+ * @author Neil
  * @date 2017-08-07 16:25
  * @since JDK8
  */
@@ -33,7 +33,7 @@ public abstract class AbstractClassUtils {
     /**
      * 基础类型 跟 包装类型 的映射关系。
      *
-     * @author @iwuyc
+     * @author Neil
      */
     public final static Map<Class<?>, Class<?>> PRIMITIVE_TYPES_MAPPING_WRAPPED_TYPES;
 
@@ -364,7 +364,7 @@ public abstract class AbstractClassUtils {
      * @param clazz       类对象
      * @param args        构造函数的参数
      * @return 实例化后的对象
-     * @author @iwuyc
+     * @author Neil
      */
     public static <I> I instance(Class<I> targetClass, Class<?> clazz, Object... args) {
         return AccessController.doPrivileged(new InstancePrivilegedAction<I>(targetClass, clazz, args));
@@ -376,7 +376,7 @@ public abstract class AbstractClassUtils {
      * @param clazz 类对象
      * @param args  构造函数的参数
      * @return 实例化后的对象
-     * @author @iwuyc
+     * @author Neil
      */
     public static Object instance(Class<?> clazz, Object... args) {
         return instance(Object.class, clazz, args);
@@ -400,7 +400,7 @@ public abstract class AbstractClassUtils {
      * @param another     第二个类型
      * @param isAssignale 是否依据继承关系进行判断。
      * @return 如果是同一种类型，则返回true，否则返回false;
-     * @author @iwuyc
+     * @author Neil
      */
     public static boolean compareType(Class<?> firstType, Class<?> another, boolean isAssignale) {
         if (null == firstType || null == another) {
@@ -427,7 +427,7 @@ public abstract class AbstractClassUtils {
      * @param anotherList  另外一个类型列表
      * @param isAssignable 是否判断anotherList中的类型是否为firstList中的子类继承关系
      * @return 如果两个列表一致，则返回true，否则返回false；
-     * @author @iwuyc
+     * @author Neil
      */
     public static boolean compareTypeList(Class<?>[] firstList, Class<?>[] anotherList, boolean isAssignable) {
         if (firstList.length != anotherList.length) {
@@ -448,7 +448,7 @@ public abstract class AbstractClassUtils {
      * @param methodName 方法名
      * @param parameters 方法的入参
      * @return
-     * @author @iwuyc
+     * @author Neil
      */
     public static Object callMethod(Object instance, String methodName, Object... parameters) {
         boolean declared = false;
@@ -462,7 +462,7 @@ public abstract class AbstractClassUtils {
      * @param methodName 方法名
      * @param parameters 方法的入参
      * @return
-     * @author @iwuyc
+     * @author Neil
      */
     public static Object mandatoryCallMethod(Object instance, String methodName, Object... parameters) {
         boolean declared = true;
@@ -508,7 +508,7 @@ public abstract class AbstractClassUtils {
      *
      * @param object 待获取的数据列表
      * @return 类型列表
-     * @author @iwuyc
+     * @author Neil
      */
     public static Class<?>[] typeList(Object... object) {
         int parametersLength = AbstractArrayUtil.arrayLength(object);
@@ -526,7 +526,7 @@ public abstract class AbstractClassUtils {
      * @param executables    executable 列表
      * @param parameterTypes 参数类型列表
      * @return 参数列表最匹配的executable对象
-     * @author @iwuyc
+     * @author Neil
      */
     public static Executable chooseBestMatchExecutable(Executable[] executables, Class<?>[] parameterTypes) {
 

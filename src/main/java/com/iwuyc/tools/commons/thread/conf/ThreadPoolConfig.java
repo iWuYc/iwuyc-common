@@ -8,7 +8,7 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 /**
- * @author iWuYc
+ * @author Neil
  */
 public class ThreadPoolConfig {
 

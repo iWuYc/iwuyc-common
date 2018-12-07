@@ -17,7 +17,7 @@ import java.util.jar.JarFile;
 /**
  * 扫描包含指定注解的类，并返回这些类。 突然间发现GitHub有一个 FastClasspathScanner 包可以做到更加强大的功能。
  *
- * @author iWuYc
+ * @author Neil
  * @time 2017-08-04 15:23
  * @since
  * @deprecated 废弃，不建议再使用。GitHub有一个开源的类路径扫描工具包，建议使用该工具包。
