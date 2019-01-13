@@ -33,6 +33,22 @@ public class NumberUtilsTest {
         NumberUtils.parse("1", NumberTest.class);
     }
 
+    @Test
+    public void isNumber() {
+
+        assertFalse(NumberUtils.isInteger("a12345"));
+        assertFalse(NumberUtils.isInteger("12345a"));
+        assertTrue(NumberUtils.isInteger("12345"));
+
+        assertFalse(NumberUtils.isDouble("a1.2345"));
+        assertFalse(NumberUtils.isDouble("1.2345a"));
+        assertTrue(NumberUtils.isDouble("1.2345"));
+
+        assertTrue(NumberUtils.isNumber("1.2345"));
+        assertTrue(NumberUtils.isNumber("12345"));
+
+    }
+
     static class NumberTest extends Number {
         @Override
         public int intValue() {

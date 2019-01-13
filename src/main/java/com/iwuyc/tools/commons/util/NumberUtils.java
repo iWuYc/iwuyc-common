@@ -2,11 +2,15 @@ package com.iwuyc.tools.commons.util;
 
 import com.iwuyc.tools.commons.classtools.AbstractClassUtils;
 
+import java.util.regex.Pattern;
+
 /**
  * @author @Neil
  * @since @2017年10月15日
  */
 public abstract class NumberUtils {
+
+    private static final Pattern INTEGER_PATTERN = PatternCacheUtils.getPattern("^[0-9]+$");
 
     public static boolean isByteClass(Class<?> target) {
         return Byte.class.equals(target) || byte.class.equals(target);
@@ -52,6 +56,38 @@ public abstract class NumberUtils {
     }
 
     /**
+     * 判断字符串是否为整型
+     *
+     * @param numStr 待判断的字符串
+     * @return 如果是整型则返回true，否则返回false
+     */
+    public static boolean isInteger(String numStr) {
+        Pattern integerPattern = PatternCacheUtils.getPattern("^[0-9]+$");
+        return integerPattern.matcher(numStr).find();
+    }
+
+    /**
+     * 判断字符串是否为浮点类型
+     *
+     * @param numStr 待判断的字符串
+     * @return 如果是整型则返回true，否则返回false
+     */
+    public static boolean isDouble(String numStr) {
+        Pattern integerPattern = PatternCacheUtils.getPattern("^[0-9]+\\.[0-9]+$");
+        return integerPattern.matcher(numStr).find();
+    }
+
+    /**
+     * 判断字符串是否为数字
+     *
+     * @param numStr 待判断的字符串
+     * @return 如果是整型则返回true，否则返回false
+     */
+    public static boolean isNumber(String numStr) {
+        return isInteger(numStr) || isDouble(numStr);
+    }
+
+    /**
      * 将字符串类型转换成目标的数字类型
      *
      * @param numberFormat
@@ -78,7 +114,7 @@ public abstract class NumberUtils {
                 throw new UnsupportedOperationException("The target type unsupport.Target type:" + target);
             }
         }
-        return (T) result;
+        return (T)result;
     }
 
 }
