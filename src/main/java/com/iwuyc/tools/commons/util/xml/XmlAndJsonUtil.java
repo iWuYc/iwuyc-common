@@ -1,19 +1,17 @@
 package com.iwuyc.tools.commons.util.xml;
 
 import com.google.gson.JsonElement;
-import com.google.gson.stream.JsonWriter;
 import com.iwuyc.tools.commons.util.json.GsonUtil;
 import org.dom4j.Document;
 import org.dom4j.DocumentHelper;
-
-import java.io.StringWriter;
+import org.dom4j.Node;
 
 /**
  * 将xml解析成json的工具类
  *
  * @author Neil
  */
-public class Xml2JsonUtil {
+public class XmlAndJsonUtil {
 
     /**
      * 将xml转换为json字符串
@@ -21,14 +19,13 @@ public class Xml2JsonUtil {
      * @param xml 待转换的xml字符串
      * @return 转换后的json字符串
      */
-    public static String xml2JsonString(String xml) {
-        try (StringWriter writer = new StringWriter(); JsonWriter jsonBuilder = new JsonWriter(writer);) {
+    public static String xml2JsonStr(String xml) {
+        try {
             Document document = DocumentHelper.parseText(xml);
 
-            XmlToJsonParser xmlToJsonParser = new XmlToJsonParser(jsonBuilder);
+            Xml2JsonParser xmlToJsonParser = new Xml2JsonParser();
             xmlToJsonParser.parser(document.getRootElement());
-
-            return writer.toString();
+            return xmlToJsonParser.result();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -41,8 +38,23 @@ public class Xml2JsonUtil {
      * @param xml 待转换的xml字符串
      * @return 转换后的 {@link JsonElement} 实例
      */
-    public static JsonElement xml2JsonObject(String xml) {
-        String json = xml2JsonString(xml);
+    public static JsonElement xml2JsonObj(String xml) {
+        String json = xml2JsonStr(xml);
         return GsonUtil.jsonToObj(json);
+    }
+
+    public static Node json2XmlObj(String json) {
+        return json2XmlObj(GsonUtil.jsonToObj(json));
+    }
+
+    private static Node json2XmlObj(JsonElement json) {
+        Json2XmlParser parser = new Json2XmlParser();
+        parser.parser(json);
+        Node result = parser.result();
+        return result;
+    }
+
+    public static String json2XmlStr(String json) {
+        return json2XmlObj(json).asXML();
     }
 }
