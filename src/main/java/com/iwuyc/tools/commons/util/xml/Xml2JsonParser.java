@@ -19,82 +19,70 @@ import java.util.regex.Pattern;
  */
 public class Xml2JsonParser implements Parser<Node, String> {
 
-    private final JsonWriter jsonBuilder;
-    private final StringWriter write;
     private boolean isBegin = true;
-    private boolean isCreated = false;
-    private String result;
 
     public Xml2JsonParser() {
-        this.write = new StringWriter();
-        this.jsonBuilder = new JsonWriter(write);
     }
 
     @Override
-    public void parser(Node ele) {
-        try {
-            parserEle(ele);
+    public String parser(Node ele) {
+        try (StringWriter write = new StringWriter(); JsonWriter jsonBuilder = new JsonWriter(write);) {
+            parserEle(jsonBuilder, ele);
+            return write.toString();
         } catch (IOException e) {
             e.printStackTrace();
         }
+        return "";
     }
 
-    @Override
-    public String result() {
-        if (!isCreated) {
-            this.result = write.toString();
-        }
-        return this.result;
-    }
-
-    private void parserEle(Node ele) throws IOException {
+    private void parserEle(JsonWriter jsonBuilder, Node ele) throws IOException {
         short nodeType = ele.getNodeType();
         switch (nodeType) {
-            case Node.ELEMENT_NODE:
-            case Node.DOCUMENT_NODE:
-                multiObject((Branch)ele);
-                break;
-            case Node.TEXT_NODE:
-                leaf(ele);
-                break;
-            default:
-                break;
+        case Node.ELEMENT_NODE:
+        case Node.DOCUMENT_NODE:
+            multiObject(jsonBuilder, (Branch) ele);
+            break;
+        case Node.TEXT_NODE:
+            leaf(jsonBuilder, ele);
+            break;
+        default:
+            break;
         }
     }
 
-    private void multiObject(Branch ele) throws IOException {
+    private void multiObject(JsonWriter jsonBuilder, Branch ele) throws IOException {
         if (!ele.hasContent()) {
             return;
         }
         String name = ele.getName();
         boolean isArray = isArray(name);
         if (isArray) {
-            arrayParser(ele);
+            arrayParser(jsonBuilder, ele);
             return;
         }
         isBegin = false;
         List<Node> eles = ele.content();
-        this.jsonBuilder.beginObject();
-        this.jsonBuilder.name(name);
+        jsonBuilder.beginObject();
+        jsonBuilder.name(name);
         for (Node item : eles) {
             parser(item);
         }
-        this.jsonBuilder.endObject();
+        jsonBuilder.endObject();
     }
 
-    private void arrayParser(Branch ele) throws IOException {
+    private void arrayParser(JsonWriter jsonBuilder, Branch ele) throws IOException {
         String fieldName = ele.getName();
         if (!isBegin) {
-            this.jsonBuilder.name(fieldName);
+            jsonBuilder.name(fieldName);
         } else {
             isBegin = false;
         }
-        this.jsonBuilder.beginArray();
+        jsonBuilder.beginArray();
         List<Node> items = ele.content();
         for (Node item : items) {
-            parserEle(item);
+            parserEle(jsonBuilder, item);
         }
-        this.jsonBuilder.endArray();
+        jsonBuilder.endArray();
     }
 
     private boolean isArray(String name) {
@@ -103,12 +91,12 @@ public class Xml2JsonParser implements Parser<Node, String> {
         return isArr.matcher(innerName).find();
     }
 
-    private void leaf(Node ele) throws IOException {
+    private void leaf(JsonWriter jsonBuilder, Node ele) throws IOException {
         String val = ele.getStringValue();
         if (NumberUtils.isNumber(val)) {
-            this.jsonBuilder.value(new BigInteger(val));
+            jsonBuilder.value(new BigInteger(val));
         } else {
-            this.jsonBuilder.value(val);
+            jsonBuilder.value(val);
         }
     }
 }

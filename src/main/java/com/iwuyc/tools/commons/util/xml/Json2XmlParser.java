@@ -19,25 +19,22 @@ public class Json2XmlParser implements Parser<JsonElement, Node> {
     private final Document document = DocumentHelper.createDocument();
 
     @Override
-    public void parser(JsonElement ele) {
+    public Node parser(JsonElement ele) {
         try {
             parserCalculator("root", ele);
+            return document;
         } catch (Exception e) {
             e.printStackTrace();
         }
-    }
-
-    @Override
-    public Node result() {
         return document;
     }
 
     private void parserCalculator(String name, JsonElement ele) {
         if (ele.isJsonPrimitive()) {
-            leafCreate(name, (JsonPrimitive)ele);
+            leafCreate(name, (JsonPrimitive) ele);
             return;
         } else if (ele.isJsonObject()) {
-            multiCreate(name, (JsonObject)ele);
+            multiCreate(name, (JsonObject) ele);
             return;
         }
 

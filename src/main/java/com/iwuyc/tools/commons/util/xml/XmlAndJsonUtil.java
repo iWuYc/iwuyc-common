@@ -12,6 +12,7 @@ import org.dom4j.Node;
  * @author Neil
  */
 public class XmlAndJsonUtil {
+    private final static Xml2JsonParser xmlToJsonParser = new Xml2JsonParser();
 
     /**
      * 将xml转换为json字符串
@@ -22,10 +23,7 @@ public class XmlAndJsonUtil {
     public static String xml2JsonStr(String xml) {
         try {
             Document document = DocumentHelper.parseText(xml);
-
-            Xml2JsonParser xmlToJsonParser = new Xml2JsonParser();
-            xmlToJsonParser.parser(document.getRootElement());
-            return xmlToJsonParser.result();
+            return xmlToJsonParser.parser(document.getRootElement());
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -49,8 +47,8 @@ public class XmlAndJsonUtil {
 
     private static Node json2XmlObj(JsonElement json) {
         Json2XmlParser parser = new Json2XmlParser();
-        parser.parser(json);
-        Node result = parser.result();
+
+        Node result = parser.parser(json);
         return result;
     }
 
