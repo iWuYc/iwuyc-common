@@ -1,5 +1,6 @@
 package com.iwuyc.tools.commons.util.xml;
 
+import com.iwuyc.tools.commons.util.FileUtil;
 import org.junit.Test;
 
 public class XmlAndJsonUtilTest {
@@ -7,13 +8,20 @@ public class XmlAndJsonUtilTest {
     @Test
     public void xml2Json() {
         String xml = "<age>123</age>";
-//        printXml2Json(xml);
+        //        printXml2Json(xml);
 
-        xml = "<nameList><name>Jack</name><name>Tom</name></nameList>";
-//        printXml2Json(xml);
+        xml = "<root><nameList><name>Jack</name><name>Tom</name></nameList></root>";
+        //        printXml2Json(xml);
 
-        xml = "<root><nameList><name>Jack</name><name>Tom</name></nameList><ageList><age>1</age><age>2</age><age>3</age></ageList></root>";
+        xml = "<names><nameList><name>Jack</name><name>Tom</name></nameList></names>";
+        //        printXml2Json(xml);
+
+        xml = "<root>name</root>";
+        //        printXml2Json(xml);
+
+        xml = FileUtil.readAll("classpath:/xmltest.xml");
         printXml2Json(xml);
+        //        System.out.println(xml);
     }
 
     private void printXml2Json(String xml) {

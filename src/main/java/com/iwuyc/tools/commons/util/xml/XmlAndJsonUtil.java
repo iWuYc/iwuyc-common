@@ -23,7 +23,7 @@ public class XmlAndJsonUtil {
     public static String xml2JsonStr(String xml) {
         try {
             Document document = DocumentHelper.parseText(xml);
-            return xmlToJsonParser.parser(document.getRootElement());
+            return xmlToJsonParser.parser(document);
         } catch (Exception e) {
             e.printStackTrace();
         }

@@ -14,6 +14,7 @@ import java.io.*;
  */
 public class FileUtil {
     private static final Logger LOGGER = LoggerFactory.getLogger(FileUtil.class);
+    private static final String CLASSPATH_PREFIX = "classpath:";
 
     /**
      * 将指定的byte数组以指定长度，填充到指定的流中。
@@ -88,7 +89,15 @@ public class FileUtil {
      * @return 文件中的内容
      */
     public static String readAll(String filePath) {
-        try (FileReader fr = new FileReader(new File(filePath)); BufferedReader reader = new BufferedReader(fr)) {
+
+        if (filePath.startsWith(CLASSPATH_PREFIX)) {
+            filePath = filePath.substring(CLASSPATH_PREFIX.length());
+            filePath = FileUtil.class.getResource(filePath).getFile();
+        }
+
+        File file = new File(filePath);
+
+        try (FileReader fr = new FileReader(file); BufferedReader reader = new BufferedReader(fr)) {
             StringBuilder sb = new StringBuilder();
             String tmp;
             while ((tmp = reader.readLine()) != null) {
