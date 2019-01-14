@@ -34,6 +34,8 @@ public class Xml2JsonParser implements Parser<Node, String> {
         MULTI_NODE_TYPE.addAll(multiNodeType);
     }
 
+    private final Stack<?> flag = new Stack<>();
+
     public Xml2JsonParser() {
     }
 
@@ -54,7 +56,11 @@ public class Xml2JsonParser implements Parser<Node, String> {
                     jsonBuilder.beginObject();
                 }
             } else if (!isSimpleNode(ele)) {
-                jsonBuilder.beginObject();
+                if (isArray) {
+                    jsonBuilder.beginArray();
+                } else {
+                    jsonBuilder.beginObject();
+                }
             }
             List<Node> rootChildren = ((Element)root).content();
 
@@ -71,7 +77,11 @@ public class Xml2JsonParser implements Parser<Node, String> {
                 jsonBuilder.endObject();
 
             } else if (!isSimpleNode(ele)) {
-                jsonBuilder.endObject();
+                if (isArray) {
+                    jsonBuilder.endArray();
+                } else {
+                    jsonBuilder.endObject();
+                }
             }
             return write.toString();
         } catch (IOException e) {
@@ -192,5 +202,12 @@ public class Xml2JsonParser implements Parser<Node, String> {
             return new BigDecimal(numberStr);
         }
 
+    }
+
+    enum JsonFlag {
+        Object_Begin,
+        Object_End,
+        Array_Begin,
+        Array_End
     }
 }
