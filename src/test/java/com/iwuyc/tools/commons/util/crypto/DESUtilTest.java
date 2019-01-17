@@ -35,7 +35,25 @@ public class DESUtilTest {
     @Test
     public void decrypt() {
         String str = "ceFw43yk+ODb7n2TRJNpamKVo+Wj33YXpoVeQX+DAoxX0nZBeVafOjWCxGDb+FWPx4Unh/8KjSy3U+cKUOcltqxd++0BTkqvMtc4TdDZI5dkfT2vTWbxb0Hmfz3MIK3vJQ3zjEcwiquUwcHCYwQZuUzrbMEtC2VxFMzGF8+njjs=";
-        String decrypt = DESUtil.decrypt(str, "1234567890abcdefgijklmnopqrstsdfsdfsdfsdfsdjfljldajlkjaslfjaSLKDAHSLKFHALKSFJLKASDHAJKSLKjlkjslkdjfaklsjdlkajl");
+        String decrypt = DESUtil.decrypt(str,
+                "1234567890abcdefgijklmnopqrstsdfsdfsdfsdfsdjfljldajlkjaslfjaSLKDAHSLKFHALKSFJLKASDHAJKSLKjlkjslkdjfaklsjdlkajl");
         System.out.println(decrypt);
+    }
+
+    @Test
+    public void base64() {
+
+        String key = "e1e9ff738e6db54782fbe828b2753163";
+        String encryptStr = "JRcqm7EDXU6qTQ3pBlV6DAwv5rmmIJBXOvySYVrksDl82ejbTR4EjLh9Lzzj+M6ZdtcTrnuQKL5q"
+                + "LBk2CuqVCRoer+Sb7vkpCxOdxzEqcNp21xOue5AovuHfwiVTjsk2/46Rb5xSao7JxMoH4wGsYAde"
+                + "GlGffnS3S+Kv0KaN8y6iGBtJUHdUgjPzxDWrevGj";
+        String decreyptStr = DESUtil.decrypt(encryptStr, key);
+        System.out.println(decreyptStr);
+
+        String encryptStrNew = DESUtil.encrypt(decreyptStr, key);
+        System.out.println(encryptStr);
+        System.out.println(encryptStrNew);
+        System.out.println(encryptStr.equals(encryptStrNew));
+
     }
 }

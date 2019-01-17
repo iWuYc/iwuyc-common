@@ -31,7 +31,7 @@ public class DESUtil {
             DESedeKeySpec dks = new DESedeKeySpec(key.getBytes(charset));
             Cipher cipher = getCipher(dks, Cipher.ENCRYPT_MODE);
             byte[] b = cipher.doFinal(str.getBytes(charset));
-            Base64.Encoder encoder = Base64.getEncoder();
+            Base64.Encoder encoder = Base64.getMimeEncoder();
             return encoder.encodeToString(b);
         } catch (Exception e) {
             LOGGER.warn("DESUtil encrypt error:", e);
@@ -61,7 +61,7 @@ public class DESUtil {
     public static String decrypt(String str, String key, String charset) {
         try {
             // --通过base64,将字符串转成byte数组
-            Base64.Decoder decoder = Base64.getDecoder();
+            Base64.Decoder decoder = Base64.getMimeDecoder();
             byte[] bytesrc = decoder.decode(str);
 
             // --解密的key
@@ -72,6 +72,7 @@ public class DESUtil {
             return new String(retByte, charset);
         } catch (Exception e) {
             LOGGER.warn("DESUtil decrypt error:", e);
+            e.printStackTrace();
             return null;
         }
 
