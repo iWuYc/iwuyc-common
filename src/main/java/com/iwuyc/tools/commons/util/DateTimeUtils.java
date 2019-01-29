@@ -82,4 +82,8 @@ public class DateTimeUtils {
     public static Date parse(String dateStr) {
         return parse(dateStr, DateFormatterConstants.DEFAULT);
     }
+
+    public static String now() {
+        return DateTimeBuilder.withTime(new Date()).format();
+    }
 }
