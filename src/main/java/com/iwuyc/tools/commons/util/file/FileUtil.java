@@ -1,4 +1,4 @@
-package com.iwuyc.tools.commons.util;
+package com.iwuyc.tools.commons.util.file;
 
 import com.iwuyc.tools.commons.basic.AbstractStringUtils;
 import org.slf4j.Logger;

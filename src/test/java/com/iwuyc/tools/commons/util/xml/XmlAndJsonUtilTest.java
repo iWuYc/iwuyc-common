@@ -1,6 +1,6 @@
 package com.iwuyc.tools.commons.util.xml;
 
-import com.iwuyc.tools.commons.util.FileUtil;
+import com.iwuyc.tools.commons.util.file.FileUtil;
 import org.junit.Test;
 
 public class XmlAndJsonUtilTest {
