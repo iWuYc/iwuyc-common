@@ -1,10 +1,11 @@
 package com.iwuyc.tools.commons.util.json;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonElement;
+import com.google.gson.*;
+import com.iwuyc.tools.commons.basic.AbstractStringUtils;
 
 /**
  * Gson 的封装工具包
+ *
  * @author Neil
  */
 public class GsonUtil {
@@ -12,6 +13,7 @@ public class GsonUtil {
 
     /**
      * 将对象转换为json字符串
+     *
      * @param obj 待转换的对象
      * @return json字符串
      */
@@ -21,10 +23,60 @@ public class GsonUtil {
 
     /**
      * 将json转换为Object对象
+     *
      * @param json 待转换的json字符串
      * @return 转换后的对象
      */
     public static JsonElement jsonToObj(String json) {
-        return GSON.fromJson(json, JsonElement.class);
+        return toObject(json, JsonElement.class);
+    }
+
+    /**
+     * 将json转换为Object对象
+     *
+     * @param json 待转换的json字符串
+     * @param targetClass 目标类型
+     * @return 转换后的对象
+     */
+    public static <T> T toObject(String json, Class<T> targetClass) {
+        return GSON.fromJson(json, targetClass);
+    }
+
+    /**
+     * 判断Json对象是否为空
+     *
+     * @param json 待判断的json对象
+     * @return 如果为空，则返回true，否则返回false
+     */
+    public static boolean isEmpty(JsonElement json) {
+        if (json == null || JsonNull.INSTANCE.equals(json)) {
+            return true;
+        }
+        if (json instanceof JsonObject) {
+            return ((JsonObject) json).size() == 0;
+        }
+        if (json instanceof JsonArray) {
+            return ((JsonArray) json).size() == 0;
+        }
+        if (json instanceof JsonPrimitive) {
+            return json.isJsonNull() || AbstractStringUtils.isEmpty(json.getAsString());
+        }
+        throw new IllegalArgumentException("Unknown Type:" + json.getClass().getName());
+    }
+
+    /**
+     * 判断Json对象是否不为空
+     *
+     * @param json 待判断的json对象
+     * @return 如果不为空，则返回true，否则返回false
+     */
+
+    public static boolean isNotEmpty(JsonElement json) {
+        return !isEmpty(json);
+    }
+
+    public static <T> T deepCopy(T source) {
+        String json = objToJson(source);
+        return (T) toObject(json, source.getClass());
     }
 }
