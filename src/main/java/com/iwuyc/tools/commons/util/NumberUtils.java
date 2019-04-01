@@ -117,4 +117,13 @@ public abstract class NumberUtils {
         return (T)result;
     }
 
+    public static Number parse(String val) {
+        Number result;
+        if (isInteger(val)) {
+            result = parse(val, Integer.TYPE);
+        } else {
+            result = parse(val, Double.TYPE);
+        }
+        return result;
+    }
 }
