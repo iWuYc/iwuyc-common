@@ -38,11 +38,11 @@ public class XmlAndJsonUtil {
      */
     public static JsonElement xml2JsonObj(String xml) {
         String json = xml2JsonStr(xml);
-        return GsonUtil.jsonToObj(json);
+        return GsonUtil.toObject(json);
     }
 
     public static Node json2XmlObj(String json) {
-        return json2XmlObj(GsonUtil.jsonToObj(json));
+        return json2XmlObj(GsonUtil.toObject(json));
     }
 
     private static Node json2XmlObj(JsonElement json) {
