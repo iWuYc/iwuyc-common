@@ -409,10 +409,10 @@ public abstract class AbstractClassUtils {
 
         if (firstType.isPrimitive()) {
             firstType = PRIMITIVE_TYPES_MAPPING_WRAPPED_TYPES.get(firstType);
-            return firstType == null ? false : firstType.equals(another);
+            return firstType != null && firstType.equals(another);
         } else if (another.isPrimitive()) {
             another = PRIMITIVE_TYPES_MAPPING_WRAPPED_TYPES.get(another);
-            return another == null ? false : another.equals(firstType);
+            return another != null && another.equals(firstType);
         }
         if (isAssignale) {
             return firstType.isAssignableFrom(another) || another.isAssignableFrom(firstType);
