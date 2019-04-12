@@ -32,7 +32,7 @@ public void test()
 @Test
 public void translatorTest() {
     long num = -1111123456789L;
-    System.out.println(NumberUtils.numberTranslation(num));
+    System.out.println(MathUtils.numberTranslation(num));
 }
 ```
 
