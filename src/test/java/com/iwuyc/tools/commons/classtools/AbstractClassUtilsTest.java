@@ -1,6 +1,5 @@
 package com.iwuyc.tools.commons.classtools;
 
-import com.iwuyc.tools.commons.basic.AbstractStringUtils;
 import org.junit.Assert;
 import org.junit.Test;
 

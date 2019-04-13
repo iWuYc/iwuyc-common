@@ -1,6 +1,6 @@
 package com.iwuyc.tools.commons.classtools.typeconverter;
 
-import com.iwuyc.tools.commons.basic.AbstractStringUtils;
+import com.iwuyc.tools.commons.basic.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,7 +38,7 @@ public abstract class AbstractStringConverter<T> implements TypeConverter<String
 
     @Override
     public T convert(String from, Class<? extends T> targetType) {
-        if (AbstractStringUtils.isEmpty(from)) {
+        if (StringUtils.isEmpty(from)) {
             throw new IllegalArgumentException("Argument can't be null.");
         }
         return converterData(from, targetType);

@@ -1,6 +1,6 @@
 package com.iwuyc.tools.commons.thread.conf;
 
-import com.iwuyc.tools.commons.basic.AbstractStringUtils;
+import com.iwuyc.tools.commons.basic.StringUtils;
 import com.iwuyc.tools.commons.basic.type.TimeTuple;
 
 import java.util.Collections;
@@ -45,12 +45,12 @@ public class ThreadPoolConfig {
 
     public ThreadPoolConfig(String factory, String threadPoolsName) {
 
-        if (AbstractStringUtils.isEmpty(factory)) {
+        if (StringUtils.isEmpty(factory)) {
             factory = "com.iwuyc.tools.commons.thread.impl.ThreadPoolExecutor";
         }
         this.factory = factory;
 
-        if (AbstractStringUtils.isEmpty(threadPoolsName)) {
+        if (StringUtils.isEmpty(threadPoolsName)) {
             threadPoolsName = "thframe";
         }
         this.threadPoolsName = threadPoolsName;

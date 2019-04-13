@@ -1,5 +1,6 @@
 package com.iwuyc.tools.commons.util.crypto;
 
+import com.iwuyc.tools.commons.basic.StringUtils;
 import org.junit.Test;
 import sun.misc.BASE64Decoder;
 import sun.misc.BASE64Encoder;
@@ -7,6 +8,7 @@ import sun.misc.BASE64Encoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Base64;
+import java.util.List;
 
 public class DESUtilTest {
 
@@ -34,9 +36,8 @@ public class DESUtilTest {
 
     @Test
     public void decrypt() {
-        String str = "ceFw43yk+ODb7n2TRJNpamKVo+Wj33YXpoVeQX+DAoxX0nZBeVafOjWCxGDb+FWPx4Unh/8KjSy3U+cKUOcltqxd++0BTkqvMtc4TdDZI5dkfT2vTWbxb0Hmfz3MIK3vJQ3zjEcwiquUwcHCYwQZuUzrbMEtC2VxFMzGF8+njjs=";
-        String decrypt = DESUtil.decrypt(str,
-                "1234567890abcdefgijklmnopqrstsdfsdfsdfsdfsdjfljldajlkjaslfjaSLKDAHSLKFHALKSFJLKASDHAJKSLKjlkjslkdjfaklsjdlkajl");
+        String str = "923c01b8c5ee9485758b82d0da07111743710147a72a963d7921cf1cc2dbd29fbff69339e008b1cdc4d4f591bc02050f5e196e5f3c5c9467c9db0be5b4cf2b3934e99587475e14b51b05ffc7d8ed4f851c5d7d4e0e91ea8bef7b07f6edc7ccf474dcb4ab557e95b391e76cf0785204eafdc229e777bf88f9038e1dc76806db24";
+        String decrypt = DESUtil.decrypt(str, "19930826199308261993082619930826");
         System.out.println(decrypt);
     }
 
@@ -55,5 +56,21 @@ public class DESUtilTest {
         System.out.println(encryptStrNew);
         System.out.println(encryptStr.equals(encryptStrNew));
 
+    }
+
+    @Test
+    public void encryptTest() {
+        String key = "19930826199308261993082619930826";
+        String username = "root";
+        String password = "19930826";
+        String url = "jdbc:log4jdbc:mysql://127.0.0.1:3306/mock_server?useUnicode=true&characterEncoding=UTF-8&zeroDateTimeBehavior=convertToNull";
+
+        List<String> strs = Arrays.asList(username, password, url);
+        for (String item : strs) {
+            String encryptStr = DESUtil.encrypt(item, key).replaceAll(StringUtils.NEW_LINE, "");
+            System.out.println(encryptStr);
+            String decryptStr = DESUtil.decrypt(encryptStr, key);
+            System.out.println(decryptStr);
+        }
     }
 }

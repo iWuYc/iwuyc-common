@@ -1,6 +1,6 @@
 package com.iwuyc.tools.commons.math;
 
-import com.iwuyc.tools.commons.basic.AbstractStringUtils;
+import com.iwuyc.tools.commons.basic.StringUtils;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -113,7 +113,7 @@ public class Range {
         RangeItem rangeItem = null;
         for (String rangeStrItem : rangeStrArr) {
             rangeStrItem = rangeStrItem.trim();
-            if (AbstractStringUtils.isEmpty(rangeStrItem)) {
+            if (StringUtils.isEmpty(rangeStrItem)) {
                 continue;
             }
             rangeItem = itemCompiler(rangeStrItem);

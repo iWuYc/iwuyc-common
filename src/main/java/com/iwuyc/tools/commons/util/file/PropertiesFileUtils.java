@@ -1,7 +1,7 @@
 package com.iwuyc.tools.commons.util.file;
 
 import com.iwuyc.tools.commons.basic.AbstractMapUtil;
-import com.iwuyc.tools.commons.basic.AbstractStringUtils;
+import com.iwuyc.tools.commons.basic.StringUtils;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.*;
@@ -19,7 +19,7 @@ public class PropertiesFileUtils {
      * @return 是否替换成功
      */
     public static boolean replacePropertiesFile(String path, Map<String, Object> properties) {
-        if (AbstractStringUtils.isEmpty(path) || AbstractMapUtil.isEmpty(properties)) {
+        if (StringUtils.isEmpty(path) || AbstractMapUtil.isEmpty(properties)) {
             throw new IllegalArgumentException("Argument can't be empty.");
         }
 
@@ -36,7 +36,7 @@ public class PropertiesFileUtils {
             String line = null;
 
             while ((line = reader.readLine()) != null) {
-                if (AbstractStringUtils.isEmpty(line) || line.charAt(0) == '#') {
+                if (StringUtils.isEmpty(line) || line.charAt(0) == '#') {
                     newContent.append(line);
                     continue;
                 }

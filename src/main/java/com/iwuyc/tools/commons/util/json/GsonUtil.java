@@ -1,7 +1,7 @@
 package com.iwuyc.tools.commons.util.json;
 
 import com.google.gson.*;
-import com.iwuyc.tools.commons.basic.AbstractStringUtils;
+import com.iwuyc.tools.commons.basic.StringUtils;
 
 /**
  * Gson 的封装工具包
@@ -72,7 +72,7 @@ public class GsonUtil {
             return ((JsonArray) json).size() == 0;
         }
         if (json instanceof JsonPrimitive) {
-            return json.isJsonNull() || AbstractStringUtils.isEmpty(json.getAsString());
+            return json.isJsonNull() || StringUtils.isEmpty(json.getAsString());
         }
         throw new IllegalArgumentException("Unknown Type:" + json.getClass().getName());
     }

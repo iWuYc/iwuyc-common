@@ -1,6 +1,6 @@
 package com.iwuyc.tools.commons.util.file;
 
-import com.iwuyc.tools.commons.basic.AbstractStringUtils;
+import com.iwuyc.tools.commons.basic.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -112,7 +112,7 @@ public class FileUtil {
         } catch (Exception e) {
             LOGGER.error("Read file raise an error.Cause:{}", e);
         }
-        return AbstractStringUtils.NIL_STRING;
+        return StringUtils.NIL_STRING;
     }
 
     /**
@@ -122,7 +122,7 @@ public class FileUtil {
      * @return 绝对路径
      */
     public static Optional<String> absoluteLocation(String location) {
-        if (AbstractStringUtils.isEmpty(location)) {
+        if (StringUtils.isEmpty(location)) {
             return Optional.empty();
         }
 
@@ -147,7 +147,7 @@ public class FileUtil {
     }
 
     public static boolean fileExists(String location) {
-        if (AbstractStringUtils.isEmpty(location)) {
+        if (StringUtils.isEmpty(location)) {
             return false;
         }
         Optional<String> absoluteLocationOpt = absoluteLocation(location);

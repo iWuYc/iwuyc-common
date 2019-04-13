@@ -1,6 +1,6 @@
 package com.iwuyc.tools.commons.thread.impl;
 
-import com.iwuyc.tools.commons.basic.AbstractStringUtils;
+import com.iwuyc.tools.commons.basic.StringUtils;
 
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicLong;
@@ -26,7 +26,7 @@ public class DefaultThreadFactory implements ThreadFactory {
      * @param threadPreName 线程名前缀
      */
     public DefaultThreadFactory(String threadPreName) {
-        if (AbstractStringUtils.isEmpty(threadPreName)) {
+        if (StringUtils.isEmpty(threadPreName)) {
             threadPreName = "thframe";
         }
         this.threadPreName = threadPreName + "-%s";
