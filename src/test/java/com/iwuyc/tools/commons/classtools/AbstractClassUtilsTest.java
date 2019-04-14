@@ -1,5 +1,6 @@
 package com.iwuyc.tools.commons.classtools;
 
+import lombok.Data;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -24,9 +25,15 @@ public class AbstractClassUtilsTest {
 
     }
 
+    @Test(expected = Exception.class)
+    public void getLambdaMethodName() {
+        System.out.println(AbstractClassUtils.getLambdaMethodName(A::getName));
+    }
+
     interface I {
     }
 
+    @Data
     static class A {
         private String name;
 
@@ -36,10 +43,5 @@ public class AbstractClassUtilsTest {
     }
 
     static class B extends A implements I {
-    }
-
-    @Test(expected = Exception.class)
-    public void getLambdaMethodName() {
-        System.out.println(AbstractClassUtils.getLambdaMethodName(A::getName));
     }
 }

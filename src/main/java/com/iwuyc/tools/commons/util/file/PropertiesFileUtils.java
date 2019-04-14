@@ -8,8 +8,12 @@ import java.io.*;
 import java.util.Map;
 import java.util.Properties;
 
+import static com.iwuyc.tools.commons.util.file.FileUtil.DEFAULT_CHARSET_ENCODING;
+
 @Slf4j
 public class PropertiesFileUtils {
+
+    private static final Character defaultSplitChar = '=';
 
     /**
      * 替换指定properties文件中的数据
@@ -19,6 +23,17 @@ public class PropertiesFileUtils {
      * @return 是否替换成功
      */
     public static boolean replacePropertiesFile(String path, Map<?, ?> properties) {
+        return replacePropertiesFile(path, properties, "UTF-8");
+    }
+
+    /**
+     * 替换指定properties文件中的数据
+     *
+     * @param path       properties文件的路径
+     * @param properties 待替换的数据
+     * @return 是否替换成功
+     */
+    public static boolean replacePropertiesFile(String path, Map<?, ?> properties, String charsetEncoding) {
         if (StringUtils.isEmpty(path) || AbstractMapUtil.isEmpty(properties)) {
             throw new IllegalArgumentException("Argument can't be empty.");
         }
@@ -28,7 +43,8 @@ public class PropertiesFileUtils {
 
         StringBuilder newContent = new StringBuilder();
         Character splitChar = null;
-        try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
+        try (FileInputStream fileReader = new FileInputStream(file);
+            BufferedReader reader = new BufferedReader(new InputStreamReader(fileReader, charsetEncoding))) {
             String line = null;
 
             while ((line = reader.readLine()) != null) {
@@ -54,12 +70,13 @@ public class PropertiesFileUtils {
             System.exit(-1);
         }
 
-        splitChar = splitChar == null ? '=' : splitChar;
+        splitChar = splitChar == null ? defaultSplitChar : splitChar;
 
         for (Map.Entry<?, ?> item : properties.entrySet()) {
             newContent.append(item.getKey()).append(splitChar).append(item.getValue()).append('\n');
         }
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
+        try (FileOutputStream fileWriter = new FileOutputStream(file);
+            BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(fileWriter, charsetEncoding))) {
             writer.write(newContent.toString());
             writer.flush();
         } catch (IOException e) {
@@ -69,10 +86,28 @@ public class PropertiesFileUtils {
         return true;
     }
 
+    /**
+     * 将指定位置的文件读取为properties类，默认按UTF-8读取文件
+     *
+     * @param propertiesLocation properties文件的位置
+     * @return properties的实例
+     */
     public static Properties propertiesReader(String propertiesLocation) {
+        return propertiesReader(propertiesLocation, DEFAULT_CHARSET_ENCODING);
+    }
+
+    /**
+     * 将指定位置的文件读取为properties类
+     *
+     * @param propertiesLocation properties文件的位置
+     * @param charsetEncoding    编码格式
+     * @return properties的实例
+     */
+    public static Properties propertiesReader(String propertiesLocation, String charsetEncoding) {
         String absolutePropertiesPath = FileUtil.absoluteLocation(propertiesLocation);
         Properties properties = new Properties();
-        try (FileReader reader = new FileReader(new File(absolutePropertiesPath))) {
+        try (FileInputStream fileInputStream = new FileInputStream(new File(absolutePropertiesPath));
+            InputStreamReader reader = new InputStreamReader(fileInputStream, charsetEncoding)) {
             properties.load(reader);
         } catch (IOException e) {
             throw new IllegalArgumentException("Read properties make a mistake.", e);

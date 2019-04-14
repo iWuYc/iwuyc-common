@@ -11,7 +11,8 @@ import java.nio.file.Paths;
 import java.util.Stack;
 
 public class CompressFileUtil {
-    public static void archive(String sourcePath, String targetPathStr, String targetName, boolean isDelete, boolean isOverride) {
+    public static void archive(String sourcePath, String targetPathStr, String targetName, boolean isDelete,
+        boolean isOverride) {
         if (!targetName.endsWith(".tar")) {
             targetName = targetName + ".tar";
         }
@@ -31,7 +32,7 @@ public class CompressFileUtil {
         if (createFile(targetFile, isOverride)) {
             return;
         }
-        new Archive(targetFile, sourceFile);
+        new Archive(targetFile, sourceFile).archive();
     }
 
     private static boolean createFile(File file, boolean isOverride) {
@@ -39,7 +40,9 @@ public class CompressFileUtil {
             File dir = file.getParentFile();
             if (dir.exists() || dir.mkdirs()) {
                 if (file.exists() && isOverride) {
-                    file.delete();
+                    if (!file.delete()) {
+                        throw new IllegalArgumentException("Delete file fault.file:[" + file.getAbsolutePath() + "]");
+                    }
                 }
                 return file.exists() || file.createNewFile();
             }

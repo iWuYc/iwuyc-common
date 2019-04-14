@@ -19,6 +19,7 @@ import java.nio.file.Paths;
 @Slf4j
 public class FileUtil {
 
+    public static final String DEFAULT_CHARSET_ENCODING = "UTF-8";
     private static final Logger LOGGER = LoggerFactory.getLogger(FileUtil.class);
     private static final String CLASSPATH_PREFIX = "classpath:";
 
@@ -95,10 +96,22 @@ public class FileUtil {
      * @return 文件中的内容
      */
     public static String readAll(String filePath) {
+        return readAll(filePath, DEFAULT_CHARSET_ENCODING);
+    }
+
+    /**
+     * 读取整个文件的数据，调用该方法应当提前校验过文件的大小，不建议将大文件一次性读取出来
+     *
+     * @param filePath    文件路径
+     * @param charsetName 编码类型
+     * @return 文件中的内容
+     */
+    public static String readAll(String filePath, String charsetName) {
 
         String fileAbsolutePath = absoluteLocation(filePath);
         File file = new File(fileAbsolutePath);
-        try (FileReader fr = new FileReader(file); BufferedReader reader = new BufferedReader(fr)) {
+        try (FileInputStream fr = new FileInputStream(file);
+            BufferedReader reader = new BufferedReader(new InputStreamReader(fr, charsetName))) {
             StringBuilder sb = new StringBuilder();
             String tmp;
             while ((tmp = reader.readLine()) != null) {
