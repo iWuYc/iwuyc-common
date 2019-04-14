@@ -6,7 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.io.*;
 import java.util.Map;
-import java.util.Optional;
+import java.util.Properties;
 
 @Slf4j
 public class PropertiesFileUtils {
@@ -18,16 +18,12 @@ public class PropertiesFileUtils {
      * @param properties 待替换的数据
      * @return 是否替换成功
      */
-    public static boolean replacePropertiesFile(String path, Map<String, Object> properties) {
+    public static boolean replacePropertiesFile(String path, Map<?, ?> properties) {
         if (StringUtils.isEmpty(path) || AbstractMapUtil.isEmpty(properties)) {
             throw new IllegalArgumentException("Argument can't be empty.");
         }
 
-        Optional<String> filePathOpt = FileUtil.absoluteLocation(path);
-        if (!filePathOpt.isPresent()) {
-            return false;
-        }
-        String fileLocation = filePathOpt.get();
+        String fileLocation = FileUtil.absoluteLocation(path);
         File file = new File(fileLocation);
 
         StringBuilder newContent = new StringBuilder();
@@ -37,7 +33,7 @@ public class PropertiesFileUtils {
 
             while ((line = reader.readLine()) != null) {
                 if (StringUtils.isEmpty(line) || line.charAt(0) == '#') {
-                    newContent.append(line);
+                    newContent.append(line).append('\n');
                     continue;
                 }
                 int splitIndex = line.indexOf('=');
@@ -60,7 +56,7 @@ public class PropertiesFileUtils {
 
         splitChar = splitChar == null ? '=' : splitChar;
 
-        for (Map.Entry<String, Object> item : properties.entrySet()) {
+        for (Map.Entry<?, ?> item : properties.entrySet()) {
             newContent.append(item.getKey()).append(splitChar).append(item.getValue()).append('\n');
         }
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
@@ -71,5 +67,16 @@ public class PropertiesFileUtils {
             System.exit(-1);
         }
         return true;
+    }
+
+    public static Properties propertiesReader(String propertiesLocation) {
+        String absolutePropertiesPath = FileUtil.absoluteLocation(propertiesLocation);
+        Properties properties = new Properties();
+        try (FileReader reader = new FileReader(new File(absolutePropertiesPath))) {
+            properties.load(reader);
+        } catch (IOException e) {
+            throw new IllegalArgumentException("Read properties make a mistake.", e);
+        }
+        return properties;
     }
 }

@@ -6,7 +6,6 @@ import org.junit.Test;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
-import java.util.Optional;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -33,7 +32,7 @@ public class FileUtilTest {
 
     @Test
     public void absoluteLocation(){
-        Optional<String> result = FileUtil.absoluteLocation("classpath:/test.properties");
+        String result = FileUtil.absoluteLocation("classpath:/test.properties");
         System.out.println(result);
     }
 }

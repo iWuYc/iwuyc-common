@@ -1,6 +1,7 @@
 package com.iwuyc.tools.commons.util.file;
 
 import com.iwuyc.tools.commons.basic.StringUtils;
+import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -8,7 +9,6 @@ import java.io.*;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Paths;
-import java.util.Optional;
 
 /**
  * 文件处理工具类
@@ -16,6 +16,7 @@ import java.util.Optional;
  * @author Neil
  * @since @Sep 3, 2017
  */
+@Slf4j
 public class FileUtil {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FileUtil.class);
@@ -95,13 +96,8 @@ public class FileUtil {
      */
     public static String readAll(String filePath) {
 
-        Optional<String> filePathOpt = absoluteLocation(filePath);
-        if (!filePathOpt.isPresent()) {
-            return "";
-        }
-
-        File file = new File(filePath);
-
+        String fileAbsolutePath = absoluteLocation(filePath);
+        File file = new File(fileAbsolutePath);
         try (FileReader fr = new FileReader(file); BufferedReader reader = new BufferedReader(fr)) {
             StringBuilder sb = new StringBuilder();
             String tmp;
@@ -121,9 +117,9 @@ public class FileUtil {
      * @param location 路径，“classpath:”前缀将查找
      * @return 绝对路径
      */
-    public static Optional<String> absoluteLocation(String location) {
+    public static String absoluteLocation(String location) {
         if (StringUtils.isEmpty(location)) {
-            return Optional.empty();
+            throw new IllegalArgumentException("Wrong Argument.The location can't be nil.");
         }
 
         if (location.startsWith(CLASSPATH_PREFIX)) {
@@ -134,27 +130,24 @@ public class FileUtil {
                 try {
                     String classpath = Paths.get(resource.toURI()).toAbsolutePath().toString();
                     location = Paths.get(classpath, location).toAbsolutePath().toString();
-                    return Optional.ofNullable(location);
+                    return location;
                 } catch (URISyntaxException e) {
                     //do nothing
+                    log.warn("URI:{};Wrong:{}", location, e.getMessage());
+                    throw new IllegalArgumentException(e.getMessage(), e);
                 }
-                return Optional.empty();
             }
             location = resource.getFile();
         }
-        String absoluteLocation = new File(location).getAbsolutePath();
-        return Optional.of(absoluteLocation);
+        return new File(location).getAbsolutePath();
     }
 
     public static boolean fileExists(String location) {
         if (StringUtils.isEmpty(location)) {
             return false;
         }
-        Optional<String> absoluteLocationOpt = absoluteLocation(location);
-        if (!absoluteLocationOpt.isPresent()) {
-            return false;
-        }
-        return new File(absoluteLocationOpt.get()).exists();
+        String absoluteLocation = absoluteLocation(location);
+        return new File(absoluteLocation).exists();
     }
 
 }
