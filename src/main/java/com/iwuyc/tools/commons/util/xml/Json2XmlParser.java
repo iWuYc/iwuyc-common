@@ -3,7 +3,7 @@ package com.iwuyc.tools.commons.util.xml;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
-import com.iwuyc.tools.commons.util.PatternCacheUtils;
+import com.iwuyc.tools.commons.util.string.RegexUtils;
 import org.dom4j.CharacterData;
 import org.dom4j.*;
 
@@ -32,10 +32,8 @@ public class Json2XmlParser implements Parser<JsonElement, Node> {
     private void parserCalculator(String name, JsonElement ele) {
         if (ele.isJsonPrimitive()) {
             leafCreate(name, (JsonPrimitive) ele);
-            return;
         } else if (ele.isJsonObject()) {
             multiCreate(name, (JsonObject) ele);
-            return;
         }
 
     }
@@ -71,7 +69,7 @@ public class Json2XmlParser implements Parser<JsonElement, Node> {
     }
 
     private boolean isCDATA(String val) {
-        Pattern isCDATAPattern = PatternCacheUtils.getPattern("[<>{}&]+");
+        Pattern isCDATAPattern = RegexUtils.getPattern("[<>{}&]+");
         return isCDATAPattern.matcher(val).find();
     }
 
@@ -80,8 +78,6 @@ public class Json2XmlParser implements Parser<JsonElement, Node> {
             Element root = DocumentHelper.createElement(rootName);
             this.document.setRootElement(root);
             documents.push(root);
-        } else {
-
         }
     }
 }

@@ -1,7 +1,8 @@
-package com.iwuyc.tools.commons.util;
+package com.iwuyc.tools.commons.util.string;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
+import com.iwuyc.tools.commons.basic.StringUtils;
 
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -12,7 +13,7 @@ import java.util.regex.Pattern;
  *
  * @author Neil
  */
-public class PatternCacheUtils {
+public class RegexUtils {
     private static final Cache<String, Pattern> PATTERN_CACHE = CacheBuilder.newBuilder()
             .expireAfterAccess(10, TimeUnit.MINUTES).maximumSize(1_000).build();
 
@@ -28,5 +29,13 @@ public class PatternCacheUtils {
 
     public static Pattern getPattern(String pattern) {
         return getPattern(pattern, 0);
+    }
+
+    public static boolean match(String regexStr, String str) {
+        if (StringUtils.isEmpty(regexStr) || null == str) {
+            return false;
+        }
+        Pattern pattern = getPattern(regexStr);
+        return pattern.matcher(str).matches();
     }
 }

@@ -2,7 +2,7 @@ package com.iwuyc.tools.commons.util.xml;
 
 import com.google.gson.stream.JsonWriter;
 import com.iwuyc.tools.commons.util.NumberUtils;
-import com.iwuyc.tools.commons.util.PatternCacheUtils;
+import com.iwuyc.tools.commons.util.string.RegexUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.dom4j.Branch;
 import org.dom4j.CharacterData;
@@ -41,8 +41,8 @@ public class Xml2JsonParser implements Parser<Node, String> {
 
     @Override
     public String parser(Node ele) {
-        try (StringWriter write = new StringWriter(); JsonWriter jsonBuilder = new JsonWriter(write);) {
-            Node root = ele.getDocument().getRootElement();
+        try (StringWriter write = new StringWriter(); JsonWriter jsonBuilder = new JsonWriter(write)) {
+            Element root = ele.getDocument().getRootElement();
             String rootName = root.getName();
             boolean isRootNamed = "root".equalsIgnoreCase(rootName);
             boolean isArray = isArray(rootName);
@@ -62,7 +62,7 @@ public class Xml2JsonParser implements Parser<Node, String> {
                     jsonBuilder.beginObject();
                 }
             }
-            List<Node> rootChildren = ((Element)root).content();
+            List<Node> rootChildren = root.content();
 
             cleanTextNode(rootChildren);
             for (Node item : rootChildren) {
@@ -177,7 +177,7 @@ public class Xml2JsonParser implements Parser<Node, String> {
 
     private boolean isArray(String name) {
         String innerName = name.toLowerCase();
-        Pattern isArr = PatternCacheUtils.getPattern("(arr|list|array|collection)+");
+        Pattern isArr = RegexUtils.getPattern("(arr|list|array|collection)+");
         return isArr.matcher(innerName).find();
     }
 

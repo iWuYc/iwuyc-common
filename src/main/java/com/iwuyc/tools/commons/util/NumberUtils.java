@@ -1,6 +1,7 @@
 package com.iwuyc.tools.commons.util;
 
 import com.iwuyc.tools.commons.classtools.AbstractClassUtils;
+import com.iwuyc.tools.commons.util.string.RegexUtils;
 
 import java.util.regex.Pattern;
 
@@ -10,7 +11,7 @@ import java.util.regex.Pattern;
  */
 public abstract class NumberUtils {
 
-    private static final Pattern INTEGER_PATTERN = PatternCacheUtils.getPattern("^[0-9]+$");
+    private static final Pattern INTEGER_PATTERN = RegexUtils.getPattern("^[0-9]+$");
 
     public static boolean isByteClass(Class<?> target) {
         return Byte.class.equals(target) || byte.class.equals(target);
@@ -62,7 +63,7 @@ public abstract class NumberUtils {
      * @return 如果是整型则返回true，否则返回false
      */
     public static boolean isInteger(String numStr) {
-        Pattern integerPattern = PatternCacheUtils.getPattern("^[0-9]+$");
+        Pattern integerPattern = RegexUtils.getPattern("^[0-9]+$");
         return integerPattern.matcher(numStr).find();
     }
 
@@ -73,7 +74,7 @@ public abstract class NumberUtils {
      * @return 如果是整型则返回true，否则返回false
      */
     public static boolean isDouble(String numStr) {
-        Pattern integerPattern = PatternCacheUtils.getPattern("^[0-9]+\\.[0-9]+$");
+        Pattern integerPattern = RegexUtils.getPattern("^[0-9]+\\.[0-9]+$");
         return integerPattern.matcher(numStr).find();
     }
 
@@ -90,9 +91,9 @@ public abstract class NumberUtils {
     /**
      * 将字符串类型转换成目标的数字类型
      *
-     * @param numberFormat
-     * @param target
-     * @return
+     * @param numberFormat 待转换的数字字符串
+     * @param target 目标类型
+     * @return 转换后的值
      */
     @SuppressWarnings("unchecked")
     public static <T extends Number> T parse(String numberFormat, Class<T> target) {
