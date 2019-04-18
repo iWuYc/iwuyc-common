@@ -28,7 +28,6 @@ public class PlaceholderExtract {
             }
             push(indexStart);
             position = indexStart + 2;
-            System.out.println("left:" + this.source.substring(position));
             indexEnd = this.source.indexOf(endStr, position);
             if (indexEnd >= 0) {
                 push(indexEnd);
