@@ -8,7 +8,18 @@ public abstract class StringUtils {
     public static final String NIL_STRING = "";
     public static final String EMPTY_STRING = " ";
     public static final char BLANK_CHAR = ' ';
-    public static final String NEW_LINE = System.getProperty("line.separator");
+    public static final String SYSTEM_NEW_LINE = System.getProperty("line.separator");
+    public static final String LINUX_NEW_LINE = "\n";
+    public static final String WINDOWS_NEW_LINE = "\r\n";
+
+    /**
+     * 回车
+     */
+    public static final String CR = "\r";
+    /**
+     * 换行
+     */
+    public static final String LF = "\n";
 
     /**
      * @param str 待判断的字符
@@ -42,7 +53,7 @@ public abstract class StringUtils {
         if (firstChar < 'A' || firstChar > 'Z') {
             return source;
         }
-        firstChar = (char)(firstChar - 'A' + 'a');
+        firstChar = (char) (firstChar - 'A' + 'a');
         return source.length() > 1 ? firstChar + source.substring(1) : String.valueOf(firstChar);
     }
 }
