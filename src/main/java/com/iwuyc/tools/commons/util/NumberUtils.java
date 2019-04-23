@@ -1,6 +1,6 @@
 package com.iwuyc.tools.commons.util;
 
-import com.iwuyc.tools.commons.classtools.AbstractClassUtils;
+import com.iwuyc.tools.commons.classtools.ClassUtils;
 import com.iwuyc.tools.commons.util.string.RegexUtils;
 
 import java.util.regex.Pattern;
@@ -110,7 +110,7 @@ public abstract class NumberUtils {
             result = Double.parseDouble(numberFormat);
         } else {
             // 如果是其他类型，则该类型必须要有String作为入参的构造函数。如：BigDecimal、BigInteger
-            result = AbstractClassUtils.instance(Number.class, target, numberFormat);
+            result = ClassUtils.instance(Number.class, target, numberFormat);
             if (null == result) {
                 throw new UnsupportedOperationException("The target type unsupport.Target type:" + target);
             }

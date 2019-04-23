@@ -1,7 +1,7 @@
 package com.iwuyc.tools.commons.thread;
 
 import com.iwuyc.tools.commons.basic.AbstractMapUtil;
-import com.iwuyc.tools.commons.classtools.AbstractClassUtils;
+import com.iwuyc.tools.commons.classtools.ClassUtils;
 import com.iwuyc.tools.commons.thread.conf.ThreadConfigConstant;
 import com.iwuyc.tools.commons.thread.conf.ThreadPoolConfig;
 import com.iwuyc.tools.commons.thread.conf.UsingConfig;
@@ -116,7 +116,7 @@ public class ThreadConfig {
         injectFieldVal.put("threadPoolsName", threadPoolsName);
 
         ThreadPoolConfig config = new ThreadPoolConfig();
-        Map<Object, Object> otherSetting = AbstractClassUtils.injectFields(config, injectFieldVal);
+        Map<Object, Object> otherSetting = ClassUtils.injectFields(config, injectFieldVal);
         config.setOtherSetting(otherSetting);
 
         threadConfigCache.put(config.getThreadPoolsName(), config);

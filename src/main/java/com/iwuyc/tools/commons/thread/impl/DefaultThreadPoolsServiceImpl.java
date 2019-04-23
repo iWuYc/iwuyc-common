@@ -1,6 +1,6 @@
 package com.iwuyc.tools.commons.thread.impl;
 
-import com.iwuyc.tools.commons.classtools.AbstractClassUtils;
+import com.iwuyc.tools.commons.classtools.ClassUtils;
 import com.iwuyc.tools.commons.thread.ExecutorServiceFactory;
 import com.iwuyc.tools.commons.thread.ThreadConfig;
 import com.iwuyc.tools.commons.thread.ThreadPoolsService;
@@ -12,8 +12,6 @@ import org.slf4j.LoggerFactory;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
@@ -88,7 +86,7 @@ public class DefaultThreadPoolsServiceImpl implements ThreadPoolsService {
     }
 
     private <T extends ExecutorService> T createNewThreadPoolFactory(ThreadPoolConfig threadPoolConfig) {
-        ExecutorServiceFactory factory = AbstractClassUtils
+        ExecutorServiceFactory factory = ClassUtils
                 .instance(ExecutorServiceFactory.class, threadPoolConfig.getFactory());
         return (T) factory.create(threadPoolConfig);
     }

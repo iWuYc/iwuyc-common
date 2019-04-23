@@ -2,6 +2,8 @@ package com.iwuyc.tools.commons.classtools;
 
 import com.iwuyc.tools.commons.basic.MultiMap;
 import com.iwuyc.tools.commons.classtools.typeconverter.TypeConverter;
+import lombok.Data;
+import org.junit.Assert;
 import org.junit.Test;
 
 import java.lang.reflect.Field;
@@ -58,16 +60,16 @@ public class ClassUtilsTest {
     }
 
     @Test
-    public void test() {
+    public void test1   () {
         Parameter1 p1 = new Parameter1();
         Parameter2 p2 = new Parameter2();
-        TestClass tc = AbstractClassUtils.instance(TestClass.class, TestClass.class.getName(), p1, p2);
+        TestClass tc = ClassUtils.instance(TestClass.class, TestClass.class.getName(), p1, p2);
         System.out.println(tc.print());
     }
 
     @Test
     public void testModifiers() {
-        Field nameField = AbstractClassUtils.findField(TestClassCase.class, "name");
+        Field nameField = ClassUtils.findField(TestClassCase.class, "name");
         System.out.println(nameField);
         TestClassCase testClazz = new TestClassCase("Tom");
         Map<String, Object> fieldAndVal = new HashMap<>();
@@ -75,13 +77,13 @@ public class ClassUtilsTest {
 
         MultiMap<Class<? extends Object>, TypeConverter<? extends Object, ? extends Object>> typeConverters = new MultiMap<>();
 
-        AbstractClassUtils.injectFields(testClazz, fieldAndVal, typeConverters);
+        ClassUtils.injectFields(testClazz, fieldAndVal, typeConverters);
         System.out.println(testClazz);
     }
 
     @Test
     public void testInjectNull() {
-        Field nameField = AbstractClassUtils.findField(TestClassCase.class, "name");
+        Field nameField = ClassUtils.findField(TestClassCase.class, "name");
         System.out.println(nameField);
         TestClassCase testClazz = new TestClassCase("Tom");
         System.out.println(testClazz);
@@ -91,16 +93,16 @@ public class ClassUtilsTest {
 
         MultiMap<Class<? extends Object>, TypeConverter<? extends Object, ? extends Object>> typeConverters = new MultiMap<>();
 
-        AbstractClassUtils.injectFields(testClazz, fieldAndVal, typeConverters);
+        ClassUtils.injectFields(testClazz, fieldAndVal, typeConverters);
         System.out.println(testClazz);
     }
 
     @Test
     public void testInstance() {
         Object num = 10;
-        Object obj = AbstractClassUtils.instance(TestInstanceCase.class, num);
+        Object obj = ClassUtils.instance(TestInstanceCase.class, num);
         System.out.println(obj);
-        obj = AbstractClassUtils.instance(TestInstanceCase.class, new Object[]{"String"});
+        obj = ClassUtils.instance(TestInstanceCase.class, new Object[]{"String"});
         System.out.println(obj);
     }
 
@@ -141,14 +143,55 @@ public class ClassUtilsTest {
 
     @Test
     public void testCallMethod() {
-        AbstractClassUtils.callMethod(TestInstanceCase.class, "staticMethod");
-        AbstractClassUtils.callMethod(TestInstanceCase.class, "staticMethod", "parameter");
+        ClassUtils.callMethod(TestInstanceCase.class, "staticMethod");
+        ClassUtils.callMethod(TestInstanceCase.class, "staticMethod", "parameter");
 
     }
 
     @Test
     public void testCompareType() {
-        assert AbstractClassUtils.compareType(Object.class, TestClassCase.class, true);
-        assert !AbstractClassUtils.compareType(Object.class, TestClassCase.class, false);
+        assert ClassUtils.compareType(Object.class, TestClassCase.class, true);
+        assert !ClassUtils.compareType(Object.class, TestClassCase.class, false);
     }
+
+    @Test
+    public void test() {
+        Field field = ClassUtils.findField(String.class, "valueOf");
+        System.out.println(field);
+    }
+
+    @Test
+    public void compareType() {
+        Assert.assertTrue(ClassUtils.compareType(B.class, I.class, true));
+        Assert.assertFalse(ClassUtils.compareType(null, I.class, true));
+        Assert.assertFalse(ClassUtils.compareType(B.class, null, true));
+        Assert.assertTrue(ClassUtils.compareType(null, null, true));
+
+        Assert.assertTrue(ClassUtils.compareType(int.class, Integer.class, true));
+        Assert.assertTrue(ClassUtils.compareType(Integer.class, int.class, true));
+
+    }
+
+    @Test(expected = Exception.class)
+    public void getLambdaMethodName() {
+        for (int i=0 ; i <10;i++) {
+            System.out.println(ClassUtils.getLambdaMethodName(A::getName));
+        }
+    }
+
+    interface I {
+    }
+
+    @Data
+    public static class A {
+        private String name;
+
+        public String getName() {
+            return this.name;
+        }
+    }
+
+    static class B extends A implements I {
+    }
+
 }

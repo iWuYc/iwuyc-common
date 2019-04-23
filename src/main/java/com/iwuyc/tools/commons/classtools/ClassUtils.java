@@ -5,6 +5,8 @@
  */
 package com.iwuyc.tools.commons.classtools;
 
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import com.iwuyc.tools.commons.basic.AbstractArrayUtil;
 import com.iwuyc.tools.commons.basic.MultiMap;
 import com.iwuyc.tools.commons.classtools.typeconverter.TypeConverter;
@@ -17,7 +19,6 @@ import java.lang.reflect.*;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * 类对象的工具类。
@@ -26,7 +27,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * @date 2017-08-07 16:25
  * @since JDK8
  */
-public abstract class AbstractClassUtils {
+public abstract class ClassUtils {
 
     /**
      * 基础类型 跟 包装类型 的映射关系。
@@ -36,8 +37,8 @@ public abstract class AbstractClassUtils {
     public final static Map<Class<?>, Class<?>> PRIMITIVE_TYPES_MAPPING_WRAPPED_TYPES;
 
     private final static Field MODIFIERS_FIELD;
-    private static final Logger LOG = LoggerFactory.getLogger(AbstractClassUtils.class);
-    private static final Map<SerializedLambda, String> CACHE_LAMBDA_INFO = new ConcurrentHashMap<>();
+    private static final Logger LOG = LoggerFactory.getLogger(ClassUtils.class);
+    private static final Cache<TypeFunction, String> CACHE_LAMBDA_INFO = CacheBuilder.newBuilder().build();
 
     static {
 
@@ -78,7 +79,7 @@ public abstract class AbstractClassUtils {
 
     public static Optional<Class<?>> loadClass(String classPath, boolean isInitialize, ClassLoader loader) {
         if (null == loader) {
-            loader = AbstractClassUtils.class.getClassLoader();
+            loader = ClassUtils.class.getClassLoader();
         }
         return AccessController.doPrivileged(new ClassLoadPrivilegedAction(classPath, isInitialize, loader));
     }
@@ -96,7 +97,7 @@ public abstract class AbstractClassUtils {
      * @return 未注入成功的字段跟值，一般是，不存在这个字段，或者，在注入的时候出问题了
      */
     public static Map<Object, Object> injectFields(Object instance, Map<String, Object> fieldAndVal,
-        MultiMap<Class<? extends Object>, TypeConverter<? extends Object, ? extends Object>> typeConverters) {
+            MultiMap<Class<? extends Object>, TypeConverter<? extends Object, ? extends Object>> typeConverters) {
         if (null == instance || null == fieldAndVal) {
             return Collections.emptyMap();
         }
@@ -125,7 +126,7 @@ public abstract class AbstractClassUtils {
     }
 
     private static boolean injectField(Object instance, Field field, Object val,
-        MultiMap<Class<? extends Object>, TypeConverter<? extends Object, ? extends Object>> typeConverters) {
+            MultiMap<Class<? extends Object>, TypeConverter<? extends Object, ? extends Object>> typeConverters) {
         try {
             // 字段属性修改，以便可以进行属性设置
             fieldModifier(field);
@@ -183,9 +184,9 @@ public abstract class AbstractClassUtils {
      * @param typeConverters 类型转换器集合
      * @return
      */
-    @SuppressWarnings({"unchecked", "rawtypes"})
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     private static Object convert(Class<? extends Object> sourceType, Class targetType, Object val,
-        MultiMap<Class<? extends Object>, TypeConverter<? extends Object, ? extends Object>> typeConverters) {
+            MultiMap<Class<? extends Object>, TypeConverter<? extends Object, ? extends Object>> typeConverters) {
         if (sourceType == targetType) {
             return val;
         }
@@ -197,16 +198,16 @@ public abstract class AbstractClassUtils {
         Object rejectVal = null;
         Collection<TypeConverter<? extends Object, ? extends Object>> converters = typeConverters.get(sourceType);
         // 筛选支持转换的转换器，并且返回第一个。
-        Optional<TypeConverter<? extends Object, ? extends Object>> supportConverterOpt =
-            converters.stream().filter((item) -> {
-                return item.support(targetType);
-            }).findFirst();
+        Optional<TypeConverter<? extends Object, ? extends Object>> supportConverterOpt = converters.stream()
+                .filter((item) -> {
+                    return item.support(targetType);
+                }).findFirst();
         // 如果没有找到转换器，则直接将源数据返回。
         if (!supportConverterOpt.isPresent()) {
             LOG.warn("Can't find any convert for this type[{}]", targetType);
             return val;
         }
-        rejectVal = ((TypeConverter<Object, Object>)supportConverterOpt.get()).convert(val, targetType);
+        rejectVal = ((TypeConverter<Object, Object>) supportConverterOpt.get()).convert(val, targetType);
         return rejectVal;
     }
 
@@ -340,19 +341,19 @@ public abstract class AbstractClassUtils {
 
     private static Object callMethod0(Object instance, String methodName, boolean declared, Object... parameters) {
 
-        Class<?> instanceType = null;
+        Class<?> instanceType;
         if (instance instanceof Class) {
-            instanceType = (Class<?>)instance;
+            instanceType = (Class<?>) instance;
         } else {
             instanceType = instance.getClass();
         }
         Class<?>[] parameterTypeList = typeList(parameters);
-        MethodPrivilegedAction action =
-            new MethodPrivilegedAction(instanceType, methodName, parameterTypeList, declared);
+        MethodPrivilegedAction action = new MethodPrivilegedAction(instanceType, methodName, parameterTypeList,
+                declared);
         Optional<Method> methodOpt = AccessController.doPrivileged(action);
         if (!methodOpt.isPresent()) {
             LOG.warn("Can't found any method for name:[{}];Parameter Type List:{}", methodName,
-                Arrays.toString(parameterTypeList));
+                    Arrays.toString(parameterTypeList));
             return null;
         }
 
@@ -366,7 +367,7 @@ public abstract class AbstractClassUtils {
         try {
             result = method.invoke(instance, parameters);
         } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
-            LOG.error("Call [{}] raise an error.Cause:[{}]", methodName, e);
+            LOG.error("Call [{}] raise an error.Cause:[{}]", methodName, e.getMessage());
         }
         return result;
 
@@ -431,32 +432,39 @@ public abstract class AbstractClassUtils {
     }
 
     public static <T, R> String getLambdaMethodName(TypeFunction<T, R> function) {
-        Method writeReplaceMethod = null;
-        for (Class<?> clazz = function.getClass(); clazz != null; clazz = clazz.getSuperclass()) {
-            Method[] methods = clazz.getDeclaredMethods();
-            for (Method method : methods) {
-                if ("writeReplace".equals(method.getName())) {
-                    writeReplaceMethod = method;
-                    break;
-                }
-            }
-        }
-
-        if (writeReplaceMethod == null) {
-            return "";
-        }
         try {
+            return CACHE_LAMBDA_INFO.get(function, () -> {
+                System.out.println(function.toString());
+                Method writeReplaceMethod = null;
+                findout:
+                for (Class<?> clazz = function.getClass(); clazz != null; clazz = clazz.getSuperclass()) {
+                    Method[] methods = clazz.getDeclaredMethods();
+                    for (Method method : methods) {
+                        if ("writeReplace".equals(method.getName())) {
+                            writeReplaceMethod = method;
+                            break findout;
+                        }
+                    }
+                }
 
-            Object replacement = writeReplaceMethod.invoke(function);
-            if (!(replacement instanceof SerializedLambda)) {
-                return "";
-            }
-            SerializedLambda lambdaSerialized = (SerializedLambda)replacement;
-            return lambdaSerialized.getImplMethodName();
+                if (writeReplaceMethod == null) {
+                    return "";
+                }
+                if (!writeReplaceMethod.isAccessible()) {
+                    writeReplaceMethod.setAccessible(true);
+                }
+                Object replacement = writeReplaceMethod.invoke(function);
+                if (!(replacement instanceof SerializedLambda)) {
+                    return "";
+                }
+                SerializedLambda lambdaSerialized = (SerializedLambda) replacement;
+                return lambdaSerialized.getImplMethodName();
+
+            });
         } catch (Exception e) {
-            e.printStackTrace();
+            // do nothing
+            throw new IllegalStateException("获取方法名失败。", e);
         }
-        return "";
     }
 
     private static class FieldPrivilegedAction implements PrivilegedAction<Field> {
@@ -505,7 +513,7 @@ public abstract class AbstractClassUtils {
                     constructor.setAccessible(true);
                 }
                 Object i = constructor.newInstance(args);
-                return (I)i;
+                return (I) i;
             } catch (Exception e) {
                 LOG.debug("error:{}", e);
                 LOG.error("Can't init class[{}]", clazz);
@@ -522,8 +530,8 @@ public abstract class AbstractClassUtils {
                 parameterTypes[i] = args[i].getClass();
             }
 
-            Constructor<?> bestMatch =
-                (Constructor<?>)chooseBestMatchExecutable(clazz.getDeclaredConstructors(), parameterTypes);
+            Constructor<?> bestMatch = (Constructor<?>) chooseBestMatchExecutable(clazz.getDeclaredConstructors(),
+                    parameterTypes);
             return bestMatch;
         }
 
@@ -562,7 +570,7 @@ public abstract class AbstractClassUtils {
         private boolean declared;
 
         public MethodPrivilegedAction(Class<?> targetClazz, String methodName, Class<?>[] parameterTypeList,
-            boolean declared) {
+                boolean declared) {
             this.targetClazz = targetClazz;
             this.methodName = methodName;
             this.parameterTypeList = parameterTypeList;
@@ -583,7 +591,7 @@ public abstract class AbstractClassUtils {
                 cursor++;
             }
             nameMatchMethod = Arrays.copyOf(nameMatchMethod, cursor);
-            Method bestMatchMethod = (Method)chooseBestMatchExecutable(nameMatchMethod, this.parameterTypeList);
+            Method bestMatchMethod = (Method) chooseBestMatchExecutable(nameMatchMethod, this.parameterTypeList);
             return Optional.ofNullable(bestMatchMethod);
         }
     }

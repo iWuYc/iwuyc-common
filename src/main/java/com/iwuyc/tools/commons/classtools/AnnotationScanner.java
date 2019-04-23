@@ -181,7 +181,7 @@ public class AnnotationScanner implements Runnable {
         if (anonymityClassLocation >= 0 && className.substring(anonymityClassLocation).matches(NUMBER_REGEX)) {
             return;
         }
-        Optional<Class<?>> clazzOpt = AbstractClassUtils.loadClass(className, true, null);
+        Optional<Class<?>> clazzOpt = ClassUtils.loadClass(className, true, null);
         if (!clazzOpt.isPresent()) {
             return;
         }
