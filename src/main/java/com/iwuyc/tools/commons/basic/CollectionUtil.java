@@ -16,6 +16,21 @@ public abstract class CollectionUtil {
         return !isEmpty(coll);
     }
 
+    public static String join(Collection<?> data) {
+        return join(data, null);
+    }
+
+    public static String join(Collection<?> data, Character splitChar) {
+        StringBuilder sb = new StringBuilder();
+        for (Object item : data) {
+            if (null != splitChar) {
+                sb.append(splitChar);
+            }
+            sb.append(item);
+        }
+        return sb.toString();
+    }
+
     public static int sizeOf(Collection<?> collection) {
         if (isEmpty(collection)) {
             return 0;
