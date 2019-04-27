@@ -16,23 +16,14 @@ import java.util.regex.Pattern;
 
 public class SmartDateTimeFormatter {
 
-    private static final class SmartDateTimeFormatterLoader extends CacheLoader<DateTimeFormatterTuple, SmartDateTimeFormatter> {
-
-        @Override
-        public SmartDateTimeFormatter load(DateTimeFormatterTuple tuple) throws Exception {
-            SmartDateTimeFormatter formatter = new SmartDateTimeFormatter(tuple.getPattern(), tuple.getLocale());
-            return formatter;
-        }
-    }
-
     private static final Pattern DATE_PATTERN = Pattern.compile(".*([yMd]+.*)+");
     private static final Pattern TIME_PATTERN = Pattern.compile(".*([HhmsS]+.*)+");
     private static final Pattern ZONE_DATE_TIME_PATTERN = Pattern.compile(".*'T'.*((Z)|(\\+[0-9]{4}))");
-
     private static final LoadingCache<DateTimeFormatterTuple, SmartDateTimeFormatter> DATE_TIME_SMART_FORMATTER_CACHE;
 
     static {
-        CacheLoader<DateTimeFormatterTuple, SmartDateTimeFormatter> smartCacheLoader = new SmartDateTimeFormatterLoader();
+        CacheLoader<DateTimeFormatterTuple, SmartDateTimeFormatter> smartCacheLoader =
+            new SmartDateTimeFormatterLoader();
         CacheBuilder<Object, Object> smartCacheBuilder = CacheBuilder.newBuilder();
         smartCacheBuilder.expireAfterAccess(10, TimeUnit.MINUTES);
         DATE_TIME_SMART_FORMATTER_CACHE = smartCacheBuilder.build(smartCacheLoader);
@@ -44,19 +35,6 @@ public class SmartDateTimeFormatter {
      * 日期格式的模式，左起算：第一位是表示是否为时区时间；第二位表示是时间格式；第三位为日期格式
      */
     private final int modFlag;
-
-    public static boolean isDatePattern(String pattern) {
-        return DATE_PATTERN.matcher(pattern).find();
-    }
-
-    public static boolean isTimePattern(String pattern) {
-        return TIME_PATTERN.matcher(pattern).find();
-    }
-
-    public static boolean isDateTimePattern(String pattern) {
-        return isDatePattern(pattern) && isTimePattern(pattern);
-    }
-
     SmartDateTimeFormatter(String pattern, Locale locale) {
         this.pattern = pattern;
         int modTemp = 0;
@@ -77,6 +55,18 @@ public class SmartDateTimeFormatter {
         this.formatter = DateTimeFormatter.ofPattern(pattern, locale);
     }
 
+    public static boolean isDatePattern(String pattern) {
+        return DATE_PATTERN.matcher(pattern).find();
+    }
+
+    public static boolean isTimePattern(String pattern) {
+        return TIME_PATTERN.matcher(pattern).find();
+    }
+
+    public static boolean isDateTimePattern(String pattern) {
+        return isDatePattern(pattern) && isTimePattern(pattern);
+    }
+
     public static boolean isZoneDateTimePattern(String pattern) {
         return ZONE_DATE_TIME_PATTERN.matcher(pattern).matches();
     }
@@ -92,7 +82,7 @@ public class SmartDateTimeFormatter {
     public String format(TemporalAccessor time) {
         if (this.modFlag == 1) {
             if (ChronoLocalDateTime.class.isAssignableFrom(time.getClass())) {
-                ChronoLocalDateTime localDateTime = (ChronoLocalDateTime) time;
+                ChronoLocalDateTime localDateTime = (ChronoLocalDateTime)time;
                 ChronoZonedDateTime zonedDateTime = localDateTime.atZone(DateFormatterConstants.DEFAULT_ZONE_OFFSET);
                 return zonedDateTime.format(this.formatter);
             }
@@ -136,5 +126,15 @@ public class SmartDateTimeFormatter {
 
     interface DateParser {
         TemporalAccessor parse(String time, DateTimeFormatter formatter);
+    }
+
+    private static final class SmartDateTimeFormatterLoader
+        extends CacheLoader<DateTimeFormatterTuple, SmartDateTimeFormatter> {
+
+        @Override
+        public SmartDateTimeFormatter load(DateTimeFormatterTuple tuple) throws Exception {
+            SmartDateTimeFormatter formatter = new SmartDateTimeFormatter(tuple.getPattern(), tuple.getLocale());
+            return formatter;
+        }
     }
 }

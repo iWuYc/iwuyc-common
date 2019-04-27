@@ -3,6 +3,7 @@ package com.iwuyc.tools.commons.util;
 import com.iwuyc.tools.commons.basic.type.DateTimeTuple;
 import com.iwuyc.tools.commons.util.time.DateFormatterConstants;
 import com.iwuyc.tools.commons.util.time.DateTimeBuilder;
+import com.iwuyc.tools.commons.util.time.DateTimeFormatterPattern;
 import org.junit.Test;
 
 import java.time.LocalDateTime;
@@ -10,6 +11,7 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
+import java.util.Date;
 import java.util.Locale;
 
 public class DateTimeBuilderTest {
@@ -41,7 +43,7 @@ public class DateTimeBuilderTest {
     @Test
     public void testLocale() {
         DateTimeBuilder builder =
-                DateTimeBuilder.withTime("2018-08-25T00:26:20+0000", DateFormatterConstants.DEFAULT, Locale.US);
+            DateTimeBuilder.withTime("2018-08-25T00:26:20+0000", DateFormatterConstants.DEFAULT, Locale.US);
         builder = builder.nextDayOfMonth(26);
         LocalDateTime localDateTime = builder.getLocalDateTime();
         ZonedDateTime zoneTime = localDateTime.atZone(ZoneId.of("+08"));
@@ -70,4 +72,16 @@ public class DateTimeBuilderTest {
         System.out.println(builder.toDate());
     }
 
+    @Test
+    public void name() {
+        String date = "03";
+        String todayStr = todayDate();
+        todayStr = todayStr.substring(0, todayStr.length() - date.length());
+        System.out.println(todayStr + date);
+    }
+
+    private String todayDate() {
+        DateTimeBuilder builder = DateTimeBuilder.withTime(new Date());
+        return builder.format(DateTimeFormatterPattern.TIMEZONE_SHORT_DATE_YEAR_FORMATTER_WITHOUT_SPLIT);
+    }
 }
