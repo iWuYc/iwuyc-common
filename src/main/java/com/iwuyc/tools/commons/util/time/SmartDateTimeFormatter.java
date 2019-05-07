@@ -111,7 +111,7 @@ public class SmartDateTimeFormatter {
         for(ChronoField item : chronoFields){
 
             if(temporal.isSupported(item)){
-                zonedDateTimeTemplates.with(item, item.getFrom(temporal));
+                zonedDateTimeTemplates = zonedDateTimeTemplates.with(item, item.getFrom(temporal));
             }
         }
 
