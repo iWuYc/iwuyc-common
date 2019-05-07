@@ -7,7 +7,6 @@ import com.iwuyc.tools.commons.basic.type.DateTimeFormatterTuple;
 import com.iwuyc.tools.commons.util.string.RegexUtils;
 import com.iwuyc.tools.commons.util.time.converter.TemporalConverterCache;
 
-import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.time.chrono.ChronoLocalDateTime;
 import java.time.chrono.ChronoZonedDateTime;
@@ -25,7 +24,7 @@ import java.util.regex.Pattern;
 
 public class SmartDateTimeFormatter {
 
-    public static final Integer YEAR_MOD = 1 << 0;
+    public static final Integer YEAR_MOD = 1;
     public static final Integer MONTH_MOD = 1 << 1;
     public static final Integer DAY_MOD = 1 << 2;
     public static final Integer HOURS_MOD = 1 << 3;
@@ -34,11 +33,13 @@ public class SmartDateTimeFormatter {
     public static final Integer MILLISECONDS_MOD = 1 << 6;
     public static final Integer ZONE_DATE_MOD = 1 << 7;
 
+    private static final Pattern ZONE_DATE_PATTERN = RegexUtils.getPattern(".*'T'.*((Z)|(\\+[0-9]{4}))");
+
     private static final LoadingCache<DateTimeFormatterTuple, SmartDateTimeFormatter> DATE_TIME_SMART_FORMATTER_CACHE;
 
     private static final Map<Integer, Pattern> DATE_TIME_PATTERN_CACHE = new HashMap<>();
 
-    static {
+    static{
         DATE_TIME_PATTERN_CACHE.put(YEAR_MOD, RegexUtils.getPattern("([y]+)"));
         DATE_TIME_PATTERN_CACHE.put(MONTH_MOD, RegexUtils.getPattern("([M]+)"));
         DATE_TIME_PATTERN_CACHE.put(DAY_MOD, RegexUtils.getPattern("([d]+)"));
@@ -46,49 +47,53 @@ public class SmartDateTimeFormatter {
         DATE_TIME_PATTERN_CACHE.put(MINUTES_MOD, RegexUtils.getPattern("([m]+)"));
         DATE_TIME_PATTERN_CACHE.put(SECONDS_MOD, RegexUtils.getPattern("([s]+)"));
         DATE_TIME_PATTERN_CACHE.put(MILLISECONDS_MOD, RegexUtils.getPattern("([S]+)"));
-        DATE_TIME_PATTERN_CACHE.put(ZONE_DATE_MOD, RegexUtils.getPattern(".*'T'.*((Z)|(\\+[0-9]{4}))"));
 
-        CacheLoader<DateTimeFormatterTuple, SmartDateTimeFormatter> smartCacheLoader =
-            new SmartDateTimeFormatterLoader();
+        CacheLoader<DateTimeFormatterTuple, SmartDateTimeFormatter> smartCacheLoader = new SmartDateTimeFormatterLoader();
         CacheBuilder<Object, Object> smartCacheBuilder = CacheBuilder.newBuilder();
         smartCacheBuilder.expireAfterAccess(10, TimeUnit.MILLISECONDS);
         DATE_TIME_SMART_FORMATTER_CACHE = smartCacheBuilder.build(smartCacheLoader);
     }
 
-    private final String pattern;
     private final DateTimeFormatter formatter;
     /**
      * 日期格式的模式，左起算：第一位是表示是否为时区时间；第二位表示是时间格式；第三位为日期格式
      */
     private final int modFlag;
 
-    SmartDateTimeFormatter(String pattern, Locale locale) {
-        this.pattern = pattern;
+    SmartDateTimeFormatter(String pattern, Locale locale){
         int modTemp = 0;
-
-        for (Map.Entry<Integer, Pattern> item : DATE_TIME_PATTERN_CACHE.entrySet()) {
-            Pattern patternItem = item.getValue();
-            Matcher matcher = patternItem.matcher(pattern);
-            if (matcher.find()) {
-                modTemp |= item.getKey();
+        if(isZoneDate(pattern)){
+            modTemp = ZONE_DATE_MOD;
+        }else {
+            // 计算pattern的模式
+            for(Map.Entry<Integer, Pattern> item : DATE_TIME_PATTERN_CACHE.entrySet()){
+                Pattern patternItem = item.getValue();
+                Matcher matcher = patternItem.matcher(pattern);
+                if(matcher.find()){
+                    modTemp |= item.getKey();
+                }
             }
         }
-
         modFlag = modTemp;
         this.formatter = DateTimeFormatter.ofPattern(pattern, locale);
     }
 
-    public static SmartDateTimeFormatter create(String pattern, Locale locale) {
+    public static SmartDateTimeFormatter create(String pattern, Locale locale){
         return create(DateTimeFormatterTuple.create(pattern, locale));
     }
 
-    public static SmartDateTimeFormatter create(DateTimeFormatterTuple tuple) {
+    public static SmartDateTimeFormatter create(DateTimeFormatterTuple tuple){
         return DATE_TIME_SMART_FORMATTER_CACHE.getUnchecked(tuple);
     }
 
-    public String format(TemporalAccessor time) {
-        if (this.modFlag == 1) {
-            if (ChronoLocalDateTime.class.isAssignableFrom(time.getClass())) {
+    private boolean isZoneDate(String pattern){
+        Matcher matcher = ZONE_DATE_PATTERN.matcher(pattern);
+        return matcher.matches();
+    }
+
+    public String format(TemporalAccessor time){
+        if(this.modFlag == 1){
+            if(ChronoLocalDateTime.class.isAssignableFrom(time.getClass())){
                 ChronoLocalDateTime localDateTime = (ChronoLocalDateTime)time;
                 ChronoZonedDateTime zonedDateTime = localDateTime.atZone(DateFormatterConstants.DEFAULT_ZONE_OFFSET);
                 return zonedDateTime.format(this.formatter);
@@ -97,55 +102,36 @@ public class SmartDateTimeFormatter {
         return this.formatter.format(time);
     }
 
-    public LocalDateTime parse(String time) {
+    public ZonedDateTime parse(String time){
         TemporalConverterCache.TemporalConverter converter = TemporalConverterCache.getTemporalConverter(this.modFlag);
         Temporal temporal = converter.parse(time, this.formatter);
-        ZonedDateTime now = ZonedDateTime.now();
+        ZonedDateTime zonedDateTimeTemplates = ZonedDateTime.now();
 
-        if (temporal.isSupported(ChronoUnit.YEARS)) {
-            now.with(ChronoField.YEAR, temporal.get(ChronoField.YEAR));
+        ChronoField[] chronoFields = ChronoField.values();
+        for(ChronoField item : chronoFields){
+
+            if(temporal.isSupported(item)){
+                zonedDateTimeTemplates.with(item, item.getFrom(temporal));
+            }
         }
 
-        if (temporal.isSupported(ChronoUnit.MONTHS)) {
-            now.with(ChronoField.MONTH_OF_YEAR, temporal.get(ChronoField.MONTH_OF_YEAR));
-        }
-
-        if (temporal.isSupported(ChronoUnit.DAYS)) {
-            now.with(ChronoField.DAY_OF_MONTH, temporal.get(ChronoField.DAY_OF_MONTH));
-        }
-
-        if (temporal.isSupported(ChronoUnit.HOURS)) {
-            now.with(ChronoField.HOUR_OF_DAY, temporal.get(ChronoField.HOUR_OF_DAY));
-        }
-
-        if (temporal.isSupported(ChronoUnit.MINUTES)) {
-            now.with(ChronoField.MINUTE_OF_HOUR, temporal.get(ChronoField.MINUTE_OF_HOUR));
-        }
-
-        if (temporal.isSupported(ChronoUnit.SECONDS)) {
-            now.with(ChronoField.SECOND_OF_MINUTE, temporal.get(ChronoField.SECOND_OF_MINUTE));
-        }
-
-        if (temporal.isSupported(ChronoUnit.MILLIS)) {
-            now.with(ChronoField.NANO_OF_SECOND, temporal.get(ChronoField.NANO_OF_SECOND));
-        }
-        return now.toLocalDateTime();
+        return zonedDateTimeTemplates;
 
     }
 
-    TemporalAccessor parse(String time, DateParser parser) {
+    TemporalAccessor parse(String time, DateParser parser){
         return parser.parse(time, this.formatter);
     }
 
     interface DateParser {
+
         TemporalAccessor parse(String time, DateTimeFormatter formatter);
     }
 
-    private static final class SmartDateTimeFormatterLoader
-        extends CacheLoader<DateTimeFormatterTuple, SmartDateTimeFormatter> {
+    private static final class SmartDateTimeFormatterLoader extends CacheLoader<DateTimeFormatterTuple, SmartDateTimeFormatter> {
 
         @Override
-        public SmartDateTimeFormatter load(DateTimeFormatterTuple tuple) throws Exception {
+        public SmartDateTimeFormatter load(DateTimeFormatterTuple tuple) throws Exception{
             SmartDateTimeFormatter formatter = new SmartDateTimeFormatter(tuple.getPattern(), tuple.getLocale());
             return formatter;
         }

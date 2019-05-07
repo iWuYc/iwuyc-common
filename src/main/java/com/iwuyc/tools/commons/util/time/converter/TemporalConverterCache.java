@@ -4,10 +4,7 @@ import com.iwuyc.tools.commons.util.NumberUtils;
 import com.iwuyc.tools.commons.util.time.SmartDateTimeFormatter;
 import lombok.extern.slf4j.Slf4j;
 
-import java.time.LocalDate;
-import java.time.LocalTime;
-import java.time.Year;
-import java.time.YearMonth;
+import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.Temporal;
 import java.util.HashMap;
@@ -26,6 +23,7 @@ public class TemporalConverterCache {
         TEMPORAL_CONVERTER_CACHE.put(SmartDateTimeFormatter.MINUTES_MOD, new MinutesConverter());
         TEMPORAL_CONVERTER_CACHE.put(SmartDateTimeFormatter.SECONDS_MOD, new SecondsConverter());
         TEMPORAL_CONVERTER_CACHE.put(SmartDateTimeFormatter.MILLISECONDS_MOD, new MillisecondsConverter());
+        TEMPORAL_CONVERTER_CACHE.put(SmartDateTimeFormatter.ZONE_DATE_MOD, ZonedDateTime::parse);
         // multy
         int modFlag = SmartDateTimeFormatter.YEAR_MOD | SmartDateTimeFormatter.MONTH_MOD;
         TEMPORAL_CONVERTER_CACHE.put(modFlag, YearMonth::parse);
