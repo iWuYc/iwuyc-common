@@ -25,21 +25,24 @@ public class TemporalConverterCache {
         TEMPORAL_CONVERTER_CACHE.put(SmartDateTimeFormatter.MILLISECONDS_MOD, new MillisecondsConverter());
         TEMPORAL_CONVERTER_CACHE.put(SmartDateTimeFormatter.ZONE_DATE_MOD, ZonedDateTime::parse);
         // multy
-        int modFlag = SmartDateTimeFormatter.YEAR_MOD | SmartDateTimeFormatter.MONTH_MOD;
-        TEMPORAL_CONVERTER_CACHE.put(modFlag, YearMonth::parse);
+        int yearDateModFlag = SmartDateTimeFormatter.YEAR_MOD | SmartDateTimeFormatter.MONTH_MOD;
+        TEMPORAL_CONVERTER_CACHE.put(yearDateModFlag, YearMonth::parse);
 
-        modFlag |= SmartDateTimeFormatter.DAY_MOD;
-        TEMPORAL_CONVERTER_CACHE.put(modFlag, LocalDate::parse);
+        yearDateModFlag |= SmartDateTimeFormatter.DAY_MOD;
+        TEMPORAL_CONVERTER_CACHE.put(yearDateModFlag, LocalDate::parse);
 
-        modFlag = 0;
-        modFlag = SmartDateTimeFormatter.HOURS_MOD | SmartDateTimeFormatter.MINUTES_MOD;
-        TEMPORAL_CONVERTER_CACHE.put(modFlag, LocalTime::parse);
+        int timeModFlag = 0;
+        timeModFlag = SmartDateTimeFormatter.HOURS_MOD | SmartDateTimeFormatter.MINUTES_MOD;
+        TEMPORAL_CONVERTER_CACHE.put(timeModFlag, LocalTime::parse);
+        TEMPORAL_CONVERTER_CACHE.put(yearDateModFlag|timeModFlag, LocalDateTime::parse);
 
-        modFlag |= SmartDateTimeFormatter.SECONDS_MOD;
-        TEMPORAL_CONVERTER_CACHE.put(modFlag, LocalTime::parse);
+        timeModFlag |= SmartDateTimeFormatter.SECONDS_MOD;
+        TEMPORAL_CONVERTER_CACHE.put(timeModFlag, LocalTime::parse);
+        TEMPORAL_CONVERTER_CACHE.put(yearDateModFlag|timeModFlag, LocalDateTime::parse);
 
-        modFlag |= SmartDateTimeFormatter.MILLISECONDS_MOD;
-        TEMPORAL_CONVERTER_CACHE.put(modFlag, LocalTime::parse);
+        timeModFlag |= SmartDateTimeFormatter.MILLISECONDS_MOD;
+        TEMPORAL_CONVERTER_CACHE.put(timeModFlag, LocalTime::parse);
+        TEMPORAL_CONVERTER_CACHE.put(yearDateModFlag|timeModFlag, LocalDateTime::parse);
 
     }
 

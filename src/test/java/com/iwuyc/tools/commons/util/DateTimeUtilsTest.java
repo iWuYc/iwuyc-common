@@ -25,4 +25,16 @@ public class DateTimeUtilsTest {
         builder.after(DateTimeTuple.create(100, ChronoUnit.DAYS));
         System.out.println(builder.format());
     }
+
+    @Test
+    public void testDatetime() {
+        Date now = new Date();
+        DateTimeBuilder dateTimeBuilder = DateTimeBuilder.withTime(now);
+        String pattern = "yyyy-MM-dd HH:mm:ss";
+        String dateTimeStr = dateTimeBuilder.format(pattern);
+        System.out.println(dateTimeStr);
+
+        dateTimeBuilder = DateTimeBuilder.withTime(dateTimeStr, pattern);
+        System.out.println(dateTimeBuilder.toDate());
+    }
 }
