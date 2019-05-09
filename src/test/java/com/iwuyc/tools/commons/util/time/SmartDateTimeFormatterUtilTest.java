@@ -1,14 +1,10 @@
 package com.iwuyc.tools.commons.util.time;
 
-import com.iwuyc.tools.commons.util.time.converter.TemporalConverterCache;
 import org.junit.Test;
 
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
-import java.time.Year;
 import java.time.format.DateTimeFormatter;
-import java.time.temporal.ChronoField;
-import java.time.temporal.Temporal;
 import java.util.Date;
 import java.util.regex.Pattern;
 
@@ -50,12 +46,5 @@ public class SmartDateTimeFormatterUtilTest {
 
     @Test
     public void testIsDateTime() {
-        Year year = Year.now();
-        System.out.println(year.isSupported(ChronoField.YEAR));
-        System.out.println(year.isSupported(ChronoField.MONTH_OF_YEAR));
-
-        Temporal result = new TemporalConverterCache.MonthConverter().parse("1", null);
-        System.out.println(result.isSupported(ChronoField.YEAR));
-        System.out.println(result.isSupported(ChronoField.MONTH_OF_YEAR));
     }
 }

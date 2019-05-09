@@ -1,23 +1,18 @@
 package com.iwuyc.tools.commons.util;
 
 import com.iwuyc.tools.commons.basic.type.DateTimeTuple;
-import com.iwuyc.tools.commons.util.time.DateFormatterConstants;
 import com.iwuyc.tools.commons.util.time.DateTimeBuilder;
-import com.iwuyc.tools.commons.util.time.DateTimeFormatterPattern;
+import org.junit.Assert;
 import org.junit.Test;
 
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
+import java.util.Calendar;
 import java.util.Date;
-import java.util.Locale;
 
 public class DateTimeBuilderTest {
 
     @Test
-    public void nextDayOfMonth() {
+    public void nextDayOfMonth(){
         DateTimeBuilder builder = DateTimeBuilder.withTime("2020-10-25T00:26:20+0800");
         builder = builder.nextDayOfMonth(26);
         System.out.println(builder.getZonedDateTime());
@@ -41,46 +36,124 @@ public class DateTimeBuilderTest {
     }
 
     @Test
-    public void testLocale() {
-        DateTimeBuilder builder =
-            DateTimeBuilder.withTime("2018-08-25T00:26:20+0000", DateFormatterConstants.DEFAULT, Locale.US);
-        builder = builder.nextDayOfMonth(26);
-        ZonedDateTime zoneTime = builder.getZonedDateTime();;
-        System.out.println(zoneTime);
-        System.out.println(zoneTime.withZoneSameInstant(ZoneId.of("+18")));
-        System.out.println(builder.toDate());
-
-        System.out.println(builder.format(DateFormatterConstants.DEFAULT));
+    public void name(){
     }
 
     @Test
-    public void testZoneDateTime() {
-        // TODO Neil zone time turn to localtime
-        ZonedDateTime time = ZonedDateTime.now().withZoneSameInstant(ZoneId.of("+09"));
-        DateTimeFormatter pattern = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
-        System.out.println(time.format(pattern));
-        System.out.println(time.withZoneSameInstant(ZoneId.systemDefault()).toLocalDateTime());
+    public void testTime(){
+        // 1970-01-01 23:59:59.999
+        Date sourceTime = new Date(2735999999L);
+
+        String timeStr = "23";
+        DateTimeBuilder dateTimeBuilder = DateTimeBuilder.withTime(timeStr, "HH");
+        Date result = dateTimeBuilder.toDate();
+        Assert.assertTrue("格式化[HH]的数据异常。", equal(sourceTime, result, Calendar.HOUR_OF_DAY));
+        Assert.assertEquals(timeStr, dateTimeBuilder.format());
+
+        timeStr = "11 PM";
+        dateTimeBuilder = DateTimeBuilder.withTime(timeStr, "hh a");
+        result = dateTimeBuilder.toDate();
+        Assert.assertTrue("格式化[hh a]的数据异常。", equal(sourceTime, result, Calendar.HOUR_OF_DAY, Calendar.AM_PM));
+        Assert.assertEquals(timeStr, dateTimeBuilder.format());
+
+        timeStr = "11:59 PM";
+        dateTimeBuilder = DateTimeBuilder.withTime(timeStr, "hh:mm a");
+        result = dateTimeBuilder.toDate();
+        Assert.assertTrue("格式化[hh:mm a]的数据异常。", equal(sourceTime, result, Calendar.HOUR_OF_DAY, Calendar.AM_PM, Calendar.MINUTE));
+        Assert.assertEquals(timeStr, dateTimeBuilder.format());
+
+        timeStr = "11:59:59 PM";
+        dateTimeBuilder = DateTimeBuilder.withTime(timeStr, "hh:mm:ss a");
+        result = dateTimeBuilder.toDate();
+        Assert.assertTrue("格式化[hh:mm:ss a]的数据异常。",
+                equal(sourceTime, result, Calendar.HOUR_OF_DAY, Calendar.AM_PM, Calendar.MINUTE, Calendar.SECOND));
+        Assert.assertEquals(timeStr, dateTimeBuilder.format());
+
+        timeStr = "11:59:59.999 PM";
+        dateTimeBuilder = DateTimeBuilder.withTime(timeStr, "hh:mm:ss.SSS a");
+        result = dateTimeBuilder.toDate();
+        Assert.assertTrue("格式化[hh:mm:ss.SSS a]的数据异常。",
+                equal(sourceTime, result, Calendar.HOUR_OF_DAY, Calendar.AM_PM, Calendar.MINUTE, Calendar.SECOND));
+        Assert.assertEquals(timeStr, dateTimeBuilder.format());
+
+        timeStr = "59";
+        dateTimeBuilder = DateTimeBuilder.withTime(timeStr, "mm");
+        result = dateTimeBuilder.toDate();
+        Assert.assertTrue("格式化[mm]的数据异常。", equal(sourceTime, result, Calendar.MINUTE));
+        Assert.assertEquals(timeStr, dateTimeBuilder.format());
+
+        timeStr = "59:59";
+        dateTimeBuilder = DateTimeBuilder.withTime(timeStr, "mm:ss");
+        result = dateTimeBuilder.toDate();
+        Assert.assertTrue("格式化[mm:ss]的数据异常。", equal(sourceTime, result, Calendar.MINUTE, Calendar.SECOND));
+        Assert.assertEquals(timeStr, dateTimeBuilder.format());
+
+        timeStr = "59";
+        dateTimeBuilder = DateTimeBuilder.withTime(timeStr, "ss");
+        result = dateTimeBuilder.toDate();
+        Assert.assertTrue("格式化[mm]的数据异常。", equal(sourceTime, result, Calendar.SECOND));
+        Assert.assertEquals(timeStr, dateTimeBuilder.format());
+
+        timeStr = "999";
+        dateTimeBuilder = DateTimeBuilder.withTime(timeStr, "SSS");
+        result = dateTimeBuilder.toDate();
+        Assert.assertTrue("格式化[SSS]的数据异常。", equal(sourceTime, result, Calendar.MILLISECOND));
+        Assert.assertEquals(timeStr, dateTimeBuilder.format());
     }
 
     @Test
-    public void testTimeCalculator() {
-        DateTimeBuilder builder = DateTimeBuilder.withTime("2018-07-27T00:00:00+0000", "yyyy-MM-dd'T'HH:mm:ssZ");
-        builder.after(DateTimeTuple.create(1, ChronoUnit.DAYS));
-        System.out.println(builder.format());
-        System.out.println(builder.toDate(ZoneId.of("+07")));
-        System.out.println(builder.toDate());
+    public void testYearMonthDay(){
+        Date sourceDate = new Date(0);
+
+        String dateStr = "1970";
+        DateTimeBuilder dateTimeBuilder = DateTimeBuilder.withTime(dateStr, "yyyy");
+        Date result = dateTimeBuilder.toDate();
+        Assert.assertTrue("格式化[yyyy]的数据异常。", equal(sourceDate, result, Calendar.YEAR));
+        Assert.assertEquals(dateStr, dateTimeBuilder.format());
+
+        dateStr = "1970/01";
+        dateTimeBuilder = DateTimeBuilder.withTime(dateStr, "yyyy/MM");
+        result = dateTimeBuilder.toDate();
+        Assert.assertTrue("格式化[yyyy/MM]的数据异常。", equal(sourceDate, result, Calendar.YEAR, Calendar.MONTH));
+        Assert.assertEquals(dateStr, dateTimeBuilder.format());
+
+        dateStr = "1970/01/01";
+        dateTimeBuilder = DateTimeBuilder.withTime(dateStr, "yyyy/MM/dd");
+        result = dateTimeBuilder.toDate();
+        Assert.assertTrue("格式化[yyyy/MM/dd]的数据异常。", equal(sourceDate, result, Calendar.YEAR, Calendar.MONTH, Calendar.DAY_OF_MONTH));
+        Assert.assertEquals(dateStr, dateTimeBuilder.format());
+
+        dateStr = "01/01";
+        dateTimeBuilder = DateTimeBuilder.withTime(dateStr, "MM/dd");
+        result = dateTimeBuilder.toDate();
+        Assert.assertTrue("格式化[MM/dd]的数据异常。", equal(sourceDate, result, Calendar.MONTH, Calendar.DAY_OF_MONTH));
+        Assert.assertEquals(dateStr, dateTimeBuilder.format());
+
+        dateStr = "01";
+        dateTimeBuilder = DateTimeBuilder.withTime(dateStr, "dd");
+        result = dateTimeBuilder.toDate();
+        Assert.assertTrue("格式化[dd]的数据异常。", equal(sourceDate, result, Calendar.DAY_OF_MONTH));
+        Assert.assertEquals(dateStr, dateTimeBuilder.format());
+
+        dateStr = "01";
+        dateTimeBuilder = DateTimeBuilder.withTime(dateStr, "MM");
+        result = dateTimeBuilder.toDate();
+        Assert.assertTrue("格式化[MM]的数据异常。", equal(sourceDate, result, Calendar.MONTH));
+        Assert.assertEquals(dateStr, dateTimeBuilder.format());
     }
 
-    @Test
-    public void name() {
-        String date = "03";
-        String todayStr = todayDate();
-        todayStr = todayStr.substring(0, todayStr.length() - date.length());
-        System.out.println(todayStr + date);
-    }
+    private boolean equal(Date date1, Date date2, int... calendarFlag){
+        Calendar date1Calendar = Calendar.getInstance();
+        date1Calendar.setTime(date1);
 
-    private String todayDate() {
-        DateTimeBuilder builder = DateTimeBuilder.withTime(new Date());
-        return builder.format(DateTimeFormatterPattern.TIMEZONE_SHORT_DATE_YEAR_FORMATTER_WITHOUT_SPLIT);
+        Calendar date2Calendar = Calendar.getInstance();
+        date2Calendar.setTime(date2);
+
+        for(int i : calendarFlag){
+            if(date1Calendar.get(i) != date2Calendar.get(i)){
+                return false;
+            }
+        }
+        return true;
     }
 }
