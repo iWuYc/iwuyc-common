@@ -11,7 +11,7 @@ import java.util.Locale;
  * @author Neil
  */
 public interface DateFormatterConstants {
-    String DEFAULT = DateTimeFormatterPattern.TIMEZONE_LONG_DATE_SECOND_FORMATTER;
+    String DEFAULT_PATTERN = DateTimeFormatterPattern.TIMEZONE_LONG_DATE_SECOND_FORMATTER;
     Locale DEFAULT_LOCALE = Locale.getDefault();
     ZoneId DEFAULT_ZONE_ID = ZoneId.systemDefault();
     ZoneOffset DEFAULT_ZONE_OFFSET = DEFAULT_ZONE_ID.getRules().getOffset(Instant.now());

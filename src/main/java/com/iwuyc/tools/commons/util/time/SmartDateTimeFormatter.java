@@ -4,16 +4,17 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.iwuyc.tools.commons.basic.type.DateTimeFormatterTuple;
+import lombok.extern.slf4j.Slf4j;
 
+import javax.annotation.ParametersAreNonnullByDefault;
 import java.time.ZonedDateTime;
-import java.time.chrono.ChronoLocalDateTime;
-import java.time.chrono.ChronoZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoField;
 import java.time.temporal.TemporalAccessor;
 import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 
+@Slf4j
 public class SmartDateTimeFormatter {
 
     private static final LoadingCache<DateTimeFormatterTuple, SmartDateTimeFormatter> DATE_TIME_SMART_FORMATTER_CACHE;
@@ -27,17 +28,11 @@ public class SmartDateTimeFormatter {
     }
 
     private final DateTimeFormatter formatter;
-    /**
-     * 日期格式的模式，左起算：第一位是表示是否为时区时间；第二位表示是时间格式；第三位为日期格式
-     */
-    private final int modFlag;
-    private final String pattern;
+    private final DateTimeFormatterTuple tuple;
 
-    SmartDateTimeFormatter(String pattern, Locale locale){
-        int modTemp = 0;
-        modFlag = modTemp;
-        this.pattern = pattern;
-        this.formatter = DateTimeFormatter.ofPattern(pattern, locale);
+    public SmartDateTimeFormatter(DateTimeFormatterTuple tuple){
+        this.tuple = tuple;
+        this.formatter = DateTimeFormatter.ofPattern(tuple.getPattern(), tuple.getLocale());
     }
 
     public static SmartDateTimeFormatter create(String pattern, Locale locale){
@@ -45,28 +40,28 @@ public class SmartDateTimeFormatter {
     }
 
     public static SmartDateTimeFormatter create(DateTimeFormatterTuple tuple){
+        if(tuple == null){
+            throw new NullPointerException("tuple can't null.");
+        }
         return DATE_TIME_SMART_FORMATTER_CACHE.getUnchecked(tuple);
     }
 
     public String format(TemporalAccessor time){
-        if(this.modFlag == 1){
-            if(ChronoLocalDateTime.class.isAssignableFrom(time.getClass())){
-                ChronoLocalDateTime localDateTime = (ChronoLocalDateTime)time;
-                ChronoZonedDateTime zonedDateTime = localDateTime.atZone(DateFormatterConstants.DEFAULT_ZONE_OFFSET);
-                return zonedDateTime.format(this.formatter);
-            }
-        }
         return this.formatter.format(time);
     }
 
     public ZonedDateTime parse(String time){
-
+        log.debug("Parse method,pattern:{},time:{}", this.tuple.getPattern(), time);
         TemporalAccessor temporal = this.formatter.parse(time, temporalAccessor -> temporalAccessor);
-        ZonedDateTime zonedDateTimeTemplates = ZonedDateTime.now();
+        ZonedDateTime zonedDateTimeTemplates;
+        if(this.tuple.getBaseTime() == null){
+            zonedDateTimeTemplates = ZonedDateTime.now();
+        }else {
+            zonedDateTimeTemplates = ZonedDateTime.ofInstant(this.tuple.getBaseTime().toInstant(), DateFormatterConstants.DEFAULT_ZONE_ID);
+        }
 
         ChronoField[] chronoFields = ChronoField.values();
         for(ChronoField item : chronoFields){
-
             if(temporal.isSupported(item)){
                 zonedDateTimeTemplates = zonedDateTimeTemplates.with(item, item.getFrom(temporal));
             }
@@ -79,9 +74,8 @@ public class SmartDateTimeFormatter {
     private static final class SmartDateTimeFormatterLoader extends CacheLoader<DateTimeFormatterTuple, SmartDateTimeFormatter> {
 
         @Override
-        public SmartDateTimeFormatter load(DateTimeFormatterTuple tuple) throws Exception{
-            SmartDateTimeFormatter formatter = new SmartDateTimeFormatter(tuple.getPattern(), tuple.getLocale());
-            return formatter;
+        public SmartDateTimeFormatter load(@ParametersAreNonnullByDefault DateTimeFormatterTuple tuple) throws Exception{
+            return new SmartDateTimeFormatter(tuple);
         }
     }
 }
