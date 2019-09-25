@@ -6,20 +6,19 @@
 package com.iwuyc.tools.commons.classtools;
 
 import com.iwuyc.tools.commons.basic.AbstractArrayUtil;
+import com.iwuyc.tools.commons.basic.AbstractStringUtils;
 import com.iwuyc.tools.commons.basic.MultiMap;
 import com.iwuyc.tools.commons.classtools.typeconverter.TypeConverter;
 import com.iwuyc.tools.commons.classtools.typeconverter.TypeConverterConstant;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.lang.annotation.Annotation;
 import java.lang.invoke.SerializedLambda;
 import java.lang.reflect.*;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Function;
 
 /**
  * 类对象的工具类。
@@ -165,7 +164,7 @@ public abstract class AbstractClassUtils {
         private boolean declared;
 
         public MethodPrivilegedAction(Class<?> targetClazz, String methodName, Class<?>[] parameterTypeList,
-                boolean declared) {
+                                      boolean declared) {
             this.targetClazz = targetClazz;
             this.methodName = methodName;
             this.parameterTypeList = parameterTypeList;
@@ -227,7 +226,7 @@ public abstract class AbstractClassUtils {
      * @return 未注入成功的字段跟值，一般是，不存在这个字段，或者，在注入的时候出问题了
      */
     public static Map<Object, Object> injectFields(Object instance, Map<String, Object> fieldAndVal,
-            MultiMap<Class<? extends Object>, TypeConverter<? extends Object, ? extends Object>> typeConverters) {
+                                                   MultiMap<Class<? extends Object>, TypeConverter<? extends Object, ? extends Object>> typeConverters) {
         if (null == instance || null == fieldAndVal) {
             return Collections.emptyMap();
         }
@@ -256,7 +255,7 @@ public abstract class AbstractClassUtils {
     }
 
     private static boolean injectField(Object instance, Field field, Object val,
-            MultiMap<Class<? extends Object>, TypeConverter<? extends Object, ? extends Object>> typeConverters) {
+                                       MultiMap<Class<? extends Object>, TypeConverter<? extends Object, ? extends Object>> typeConverters) {
         try {
             // 字段属性修改，以便可以进行属性设置
             fieldModifier(field);
@@ -314,9 +313,9 @@ public abstract class AbstractClassUtils {
      * @param typeConverters 类型转换器集合
      * @return
      */
-    @SuppressWarnings({ "unchecked", "rawtypes" })
+    @SuppressWarnings({"unchecked", "rawtypes"})
     private static Object convert(Class<? extends Object> sourceType, Class targetType, Object val,
-            MultiMap<Class<? extends Object>, TypeConverter<? extends Object, ? extends Object>> typeConverters) {
+                                  MultiMap<Class<? extends Object>, TypeConverter<? extends Object, ? extends Object>> typeConverters) {
         if (sourceType == targetType) {
             return val;
         }
@@ -564,30 +563,46 @@ public abstract class AbstractClassUtils {
     private static final Map<SerializedLambda, String> CACHE_LAMBDA_INFO = new ConcurrentHashMap<>();
 
     public static <T, R> String getLambdaMethodName(TypeFunction<T, R> function) {
+        Optional<SerializedLambda> serializedLambdaOpt = getSerializedLambda(function);
+        if (!serializedLambdaOpt.isPresent()) {
+            return AbstractStringUtils.EMPTY_STRING;
+        }
+        return serializedLambdaOpt.get().getImplMethodName();
+    }
+
+    /**
+     * 获取SerializedLambda信息实例
+     *
+     * @param function 待获取的lambda方法对象
+     * @return 获取出来的lambda方法的详细信息
+     */
+    public static Optional<SerializedLambda> getSerializedLambda(Object function) {
         Method writeReplaceMethod = null;
+        End:
         for (Class<?> clazz = function.getClass(); clazz != null; clazz = clazz.getSuperclass()) {
             Method[] methods = clazz.getDeclaredMethods();
             for (Method method : methods) {
                 if ("writeReplace".equals(method.getName())) {
                     writeReplaceMethod = method;
-                    break;
+                    break End;
                 }
             }
         }
 
         if (writeReplaceMethod == null) {
-            return "";
+            return Optional.empty();
         }
         try {
-
+            writeReplaceMethod.setAccessible(true);
             Object replacement = writeReplaceMethod.invoke(function);
             if (!(replacement instanceof SerializedLambda)) {
-                return "";
+                return Optional.empty();
             }
             SerializedLambda lambdaSerialized = (SerializedLambda) replacement;
+            return Optional.of(lambdaSerialized);
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return "";
+        return Optional.empty();
     }
 }

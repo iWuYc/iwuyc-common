@@ -18,6 +18,14 @@ public interface ThreadPoolsService {
     ExecutorService getExecutorService(Class<?> clazz);
 
     /**
+     * 提供过字符串获取相应的线程池实例。
+     *
+     * @param domain 作用域，以半角“.”字符作为分隔符，可以是包名，类全限定名。
+     * @return 线程池实例
+     */
+    ExecutorService getExecutorService(String domain);
+
+    /**
      * 获取配置信息
      *
      * @return 配置实例

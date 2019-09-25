@@ -2,7 +2,7 @@ package com.iwuyc.tools.commons.thread;
 
 import java.util.concurrent.ExecutorService;
 
-public class ThreadPoolFactory {
+public class ThreadPoolServiceHolder {
 
     private static ThreadPoolsService threadPoolsService;
 
@@ -19,6 +19,6 @@ public class ThreadPoolFactory {
     }
 
     public static void setThreadPoolsService(ThreadPoolsService threadPoolsService) {
-        ThreadPoolFactory.threadPoolsService = threadPoolsService;
+        ThreadPoolServiceHolder.threadPoolsService = threadPoolsService;
     }
 }
