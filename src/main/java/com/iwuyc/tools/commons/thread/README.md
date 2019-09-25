@@ -52,9 +52,9 @@ public class YamlConfigTest
 
 ```
 默认实现了jdk中的两种线程池的构造器：
-```java
-com.iwuyc.tools.commons.thread.impl.ScheduledExecutorServiceFactory
-com.iwuyc.tools.commons.thread.impl.ThreadPoolExecutorFactory
+```
+com.iwuyc.tools.commons.thread.impl.ScheduledExecutorServiceFactory;
+com.iwuyc.tools.commons.thread.impl.ThreadPoolExecutorFactory;
 ```
 以上两个类实现了```java com.iwuyc.tools.commons.thread.ExecutorServiceFactory```接口，如果有需要支持拓展第三方的线程池（必须实现```java.util.concurrent.ExecutorService```接口）生成，则可以继承该接口，然后在```create(ThreadPoolConfig config)```方法中实现相应的线程池构造。
 

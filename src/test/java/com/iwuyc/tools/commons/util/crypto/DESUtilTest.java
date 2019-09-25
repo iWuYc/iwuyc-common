@@ -3,8 +3,6 @@ package com.iwuyc.tools.commons.util.crypto;
 import com.iwuyc.tools.commons.basic.StringUtils;
 import com.iwuyc.tools.commons.util.file.FileUtil;
 import org.junit.Test;
-import sun.misc.BASE64Decoder;
-import sun.misc.BASE64Encoder;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
@@ -12,13 +10,23 @@ import java.util.Base64;
 import java.util.List;
 
 public class DESUtilTest {
+    static String src = "hello world.hello world.hello world.hello world.hello world.hello world.hello world.hello world.hello world.hello world.hello world.hello world.hello world.hello world.hello world.hello world.hello world.hello world.hello world.hello world.hello world.hello world.hello world.hello world.hello world.hello world.hello world.hello world.hello world.hello world.";
+
+    @Test
+    public void encryptMime() throws Exception {
+        Base64.Encoder mimeEncoder = Base64.getMimeEncoder();
+        String str = mimeEncoder.encodeToString(src.getBytes(StandardCharsets.UTF_8));
+        System.out.println(str);
+
+        Base64.Decoder mimeDecoder = Base64.getMimeDecoder();
+        byte[] result = mimeDecoder.decode(str);
+        System.out.println(new String(result));
+    }
 
     @Test
     public void encrypt() throws Exception {
-        String src = "hello world.";
-
-        BASE64Encoder encoder = new BASE64Encoder();
-        String encodeResult = encoder.encode(src.getBytes(StandardCharsets.UTF_8));
+        Base64.Encoder encoder = Base64.getEncoder();
+        String encodeResult = encoder.encodeToString(src.getBytes(StandardCharsets.UTF_8));
 
         Base64.Encoder encoderNew = Base64.getEncoder();
         String encodeResultNew = encoderNew.encodeToString(src.getBytes(StandardCharsets.UTF_8));
@@ -26,8 +34,8 @@ public class DESUtilTest {
         System.out.println(encodeResult);
         System.out.println(encodeResultNew);
 
-        BASE64Decoder decoder = new BASE64Decoder();
-        byte[] bytesrc = decoder.decodeBuffer(encodeResultNew);
+        Base64.Decoder decoder = Base64.getDecoder();
+        byte[] bytesrc = decoder.decode(encodeResultNew);
 
         Base64.Decoder decoderNew = Base64.getDecoder();
         byte[] bytesrcNew = decoderNew.decode(encodeResultNew);

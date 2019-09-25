@@ -15,7 +15,7 @@ public class NumberUtilsTest {
         assertTrue(NumberUtils.isNumberClass(int.class));
         assertTrue(NumberUtils.isNumberClass(Integer.class));
 
-        assertFalse(NumberUtils.isNumber("1"));
+        assertTrue(NumberUtils.isNumber("1"));
         assertTrue(NumberUtils.isNumber(1));
         assertTrue(NumberUtils.isNumber(1L));
         assertTrue(NumberUtils.isNumber(1.1D));

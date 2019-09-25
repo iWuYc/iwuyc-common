@@ -172,7 +172,7 @@ public class ClassUtilsTest {
 
     }
 
-    @Test(expected = Exception.class)
+    @Test
     public void getLambdaMethodName() {
         for (int i=0 ; i <10;i++) {
             System.out.println(ClassUtils.getLambdaMethodName(A::getName));

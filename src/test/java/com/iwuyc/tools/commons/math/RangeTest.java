@@ -1,5 +1,6 @@
 package com.iwuyc.tools.commons.math;
 
+import com.google.common.util.concurrent.UncheckedExecutionException;
 import org.junit.Test;
 
 import java.math.BigDecimal;
@@ -90,7 +91,7 @@ public class RangeTest {
 
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test(expected = UncheckedExecutionException.class)
     public void test3() {
         Range range = Range.compiler("[100,10)||[20,30]|||(40,50]||(min,max)|[10,min)");
         assertNotNull(range);

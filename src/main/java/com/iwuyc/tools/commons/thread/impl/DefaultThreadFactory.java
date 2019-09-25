@@ -1,6 +1,9 @@
 package com.iwuyc.tools.commons.thread.impl;
 
 import com.iwuyc.tools.commons.basic.StringUtils;
+import lombok.AccessLevel;
+import lombok.Data;
+import lombok.Getter;
 
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicLong;
@@ -9,16 +12,18 @@ import java.util.concurrent.atomic.AtomicLong;
  * @author @Neil
  * @since @2017年10月15日
  */
+@Data
 public class DefaultThreadFactory implements ThreadFactory {
     /**
      * 线程名字前缀
      */
-    public final String threadPreName;
+    private final String threadPreName;
 
     /**
      * 线程标志位，每产生一个线程则自增1
      */
-    public final AtomicLong flag = new AtomicLong();
+    @Getter(AccessLevel.NONE)
+    private final AtomicLong flag = new AtomicLong();
 
     /**
      * 线程工厂

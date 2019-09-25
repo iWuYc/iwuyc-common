@@ -6,6 +6,8 @@ import com.iwuyc.tools.commons.thread.conf.ThreadConfigConstant;
 import com.iwuyc.tools.commons.thread.conf.ThreadPoolConfig;
 import com.iwuyc.tools.commons.thread.conf.UsingConfig;
 import com.iwuyc.tools.commons.thread.impl.DefaultThreadPoolsServiceImpl;
+import lombok.Data;
+import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -14,11 +16,9 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Properties;
-import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * 线程池的配置项
@@ -26,8 +26,9 @@ import java.util.Set;
  * @author @Neil
  * @since @2017年10月15日
  */
+@Slf4j
 public class ThreadConfig {
-    private static final Logger LOG = LoggerFactory.getLogger(ThreadConfig.class);
+    public static final String DEFAULT_CONF = "/thread/thread.properties";
 
     /**
      * 线程池配置缓存。key是线程池的名字，val为线程池的配置实例。
@@ -37,7 +38,7 @@ public class ThreadConfig {
     /**
      * 使用于配置缓存。key是范围，val为线程池名字。
      */
-    private final Map<String, UsingConfig> usingConfigCache = new HashMap<>();
+    private final Map<String, UsingConfig> usingConfigCache = new ConcurrentHashMap<>();
 
     private Properties propertis;
 
@@ -52,19 +53,20 @@ public class ThreadConfig {
      */
     public static ThreadPoolsService config(File file) {
         if (null == file) {
-            LOG.error("file can't be null.");
-            //            return null;
-            URL defaultConfigFile = ThreadConfig.class.getResource("/thread/thread.properties");
+            log.warn("未指定配置文件，将使用默认配置进行配置。[classpath:{}]", DEFAULT_CONF);
+            URL defaultConfigFile = ThreadConfig.class.getResource(DEFAULT_CONF);
+            log.info("默认配置文件全路径为：[{}]", defaultConfigFile.getFile());
             file = new File(defaultConfigFile.getFile());
         }
 
         ThreadConfig config = new ThreadConfig();
         try (InputStream in = new FileInputStream(file)) {
             config.load(in);
-            ThreadPoolFactory.setThreadPoolsService(new DefaultThreadPoolsServiceImpl(config));
-            return ThreadPoolFactory.getThreadPoolsService();
+            ThreadPoolServiceHolder.setThreadPoolsService(new DefaultThreadPoolsServiceImpl(config));
+            log.info("初始化线程池框架完成。");
+            return ThreadPoolServiceHolder.getThreadPoolsService();
         } catch (IOException e) {
-            LOG.error("Config thread pool service raise an error:", e);
+            log.error("Config thread pool service raise an error:", e);
         }
         return null;
     }
@@ -129,22 +131,26 @@ public class ThreadConfig {
     }
 
     public UsingConfig findUsingSetting(String domain) {
+        String innerDomain = domain;
         UsingConfig config;
         int lastDotIndex;
         do {
-            config = usingConfigCache.get(domain);
+            config = usingConfigCache.get(innerDomain);
             if (null != config) {
-                return config;
+                break;
             }
-            lastDotIndex = domain.lastIndexOf('.');
+            lastDotIndex = innerDomain.lastIndexOf('.');
             if (lastDotIndex < 0) {
                 break;
             }
-            domain = domain.substring(0, lastDotIndex);
+            innerDomain = innerDomain.substring(0, lastDotIndex);
         } while (true);
 
-        config = usingConfigCache.get("root");
-
+        if (null == config) {
+            log.debug("未找到匹配的命名空间[{}]配置。使用默认配置:[root]", domain);
+            config = usingConfigCache.get("root");
+        }
+        usingConfigCache.put(domain, config);
         return config;
     }
 
@@ -165,13 +171,15 @@ public class ThreadConfig {
      */
     public void load(InputStream in) throws IOException {
         if (null == this.propertis) {
+            log.debug("未初始化过，进行初始化。");
             this.propertis = new Properties();
 
             // 加载默认配置。
             try (InputStream defaultSettings = DefaultThreadPoolsServiceImpl.class
-                    .getResourceAsStream("/thread/thread.properties")) {
+                    .getResourceAsStream(DEFAULT_CONF)) {
                 this.propertis.load(defaultSettings);
                 this.propertis.putAll(InitDefaultProperties.DEFAULT_SETTING);
+                log.info("加载默认的配置完成。[{}]", this.propertis);
             }
         }
         if (null != in) {
@@ -188,17 +196,18 @@ public class ThreadConfig {
     }
 
     private static class InitDefaultProperties {
-        private final static Map<String, String> DEFAULT_SETTING = new HashMap<>();
+        private final static Map<String, String> DEFAULT_SETTING;
         private static final String DEFAULT_CORE_POOL_SIZE = "thread.conf.default.corePoolSize";
         private static final String DEFAULT_MAX_POOL_SIZE = "thread.conf.default.maximumPoolSize";
         private static final String DEFAULT_SCHEDULE_CORE_POOL_SIZE = "thread.conf.defaultSchedule.corePoolSize";
 
         static {
             int availableProcessors = Runtime.getRuntime().availableProcessors();
-            DEFAULT_SETTING.put(DEFAULT_CORE_POOL_SIZE, String.valueOf(availableProcessors));
-            DEFAULT_SETTING.put(DEFAULT_MAX_POOL_SIZE, String.valueOf(availableProcessors * 4));
-            DEFAULT_SETTING.put(DEFAULT_SCHEDULE_CORE_POOL_SIZE, String.valueOf(availableProcessors));
-
+            HashMap<String, String> temp = new HashMap<>();
+            temp.put(DEFAULT_CORE_POOL_SIZE, String.valueOf(availableProcessors));
+            temp.put(DEFAULT_MAX_POOL_SIZE, String.valueOf(availableProcessors * 4));
+            temp.put(DEFAULT_SCHEDULE_CORE_POOL_SIZE, String.valueOf(availableProcessors));
+            DEFAULT_SETTING = Collections.unmodifiableMap(temp);
         }
     }
 

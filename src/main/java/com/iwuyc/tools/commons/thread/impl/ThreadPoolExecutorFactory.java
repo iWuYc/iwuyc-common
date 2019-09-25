@@ -20,11 +20,10 @@ public class ThreadPoolExecutorFactory implements ExecutorServiceFactory {
         TimeTuple keepalive = config.getKeepAliveTime();
 
         BlockingQueue<Runnable> workQueue = builderBlockingQueue(config);
-        ThreadFactory handler = new DefaultThreadFactory(config.getThreadPoolsName());
-        ExecutorService service = new java.util.concurrent.ThreadPoolExecutor(config.getCorePoolSize(), config
-                .getMaximumPoolSize(), keepalive.getTime(), keepalive.getTimeUnit(), workQueue, handler);
+        ThreadFactory threadFactory = new DefaultThreadFactory(config.getThreadPoolsName());
 
-        return service;
+        return new java.util.concurrent.ThreadPoolExecutor(config.getCorePoolSize(), config
+                .getMaximumPoolSize(), keepalive.getTime(), keepalive.getTimeUnit(), workQueue, threadFactory);
     }
 
     private BlockingQueue<Runnable> builderBlockingQueue(ThreadPoolConfig config) {
@@ -32,6 +31,6 @@ public class ThreadPoolExecutorFactory implements ExecutorServiceFactory {
         if (maxQueueSize < 1) {
             throw new IllegalArgumentException("Queue size can't be less than 1.");
         }
-        return new ArrayBlockingQueue<Runnable>(maxQueueSize, true);
+        return new ArrayBlockingQueue<>(maxQueueSize, true);
     }
 }
