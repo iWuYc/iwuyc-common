@@ -5,8 +5,9 @@
  */
 package com.iwuyc.tools.commons.classtools;
 
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import com.iwuyc.tools.commons.basic.AbstractArrayUtil;
-import com.iwuyc.tools.commons.basic.AbstractStringUtils;
 import com.iwuyc.tools.commons.basic.MultiMap;
 import com.iwuyc.tools.commons.classtools.typeconverter.TypeConverter;
 import com.iwuyc.tools.commons.classtools.typeconverter.TypeConverterConstant;
@@ -18,7 +19,6 @@ import java.lang.reflect.*;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * 类对象的工具类。
@@ -27,7 +27,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * @date 2017-08-07 16:25
  * @since JDK8
  */
-public abstract class AbstractClassUtils {
+public abstract class ClassUtils {
 
     /**
      * 基础类型 跟 包装类型 的映射关系。
@@ -37,6 +37,8 @@ public abstract class AbstractClassUtils {
     public final static Map<Class<?>, Class<?>> PRIMITIVE_TYPES_MAPPING_WRAPPED_TYPES;
 
     private final static Field MODIFIERS_FIELD;
+    private static final Logger LOG = LoggerFactory.getLogger(ClassUtils.class);
+    private static final Cache<TypeFunction, String> CACHE_LAMBDA_INFO = CacheBuilder.newBuilder().build();
 
     static {
 
@@ -61,137 +63,6 @@ public abstract class AbstractClassUtils {
         PRIMITIVE_TYPES_MAPPING_WRAPPED_TYPES = Collections.unmodifiableMap(temp);
     }
 
-    private static class FieldPrivilegedAction implements PrivilegedAction<Field> {
-        private Class<?> clazz;
-        private String fieldName;
-
-        public FieldPrivilegedAction(Class<?> clazz, String fieldName) {
-            this.clazz = clazz;
-            this.fieldName = fieldName;
-        }
-
-        @Override
-        public Field run() {
-            Field[] fields = clazz.getDeclaredFields();
-            for (Field field : fields) {
-                if (field.getName().equals(fieldName)) {
-                    return field;
-                }
-            }
-            return null;
-        }
-    }
-
-    private static class InstancePrivilegedAction<I> implements PrivilegedAction<I> {
-
-        private Class<I> targetClass;
-        private Class<?> clazz;
-        private Object[] args;
-
-        public InstancePrivilegedAction(Class<I> targetClass, Class<?> clazz, Object[] args) {
-            this.targetClass = targetClass;
-            this.clazz = clazz;
-            this.args = args;
-        }
-
-        @SuppressWarnings("unchecked")
-        @Override
-        public I run() {
-            try {
-                if (!targetClass.isAssignableFrom(clazz)) {
-                    return null;
-                }
-                Constructor<?> constructor = getConstructor(clazz);
-                if (!constructor.isAccessible()) {
-                    LOG.debug("The constructor can't visit.Set it true for accessible.");
-                    constructor.setAccessible(true);
-                }
-                Object i = constructor.newInstance(args);
-                return (I) i;
-            } catch (Exception e) {
-                LOG.debug("error:{}", e);
-                LOG.error("Can't init class[{}]", clazz);
-            }
-            return null;
-        }
-
-        private Constructor<?> getConstructor(Class<?> clazz) throws NoSuchMethodException, SecurityException {
-            if (AbstractArrayUtil.isEmpty(args)) {
-                return clazz.getDeclaredConstructor();
-            }
-            Class<?>[] parameterTypes = new Class<?>[args.length];
-            for (int i = 0; i < parameterTypes.length; i++) {
-                parameterTypes[i] = args[i].getClass();
-            }
-
-            Constructor<?> bestMatch = (Constructor<?>) chooseBestMatchExecutable(clazz.getDeclaredConstructors(),
-                    parameterTypes);
-            return bestMatch;
-        }
-
-    }
-
-    private static class ClassLoadPrivilegedAction implements PrivilegedAction<Optional<Class<? extends Object>>> {
-
-        private ClassLoader loader;
-        private String classPath;
-        private boolean isInitialize;
-
-        public ClassLoadPrivilegedAction(String classPath, boolean isInitialize, ClassLoader loader) {
-            this.classPath = classPath;
-            this.isInitialize = isInitialize;
-            this.loader = loader;
-        }
-
-        @Override
-        public Optional<Class<? extends Object>> run() {
-
-            Class<?> result = null;
-            try {
-                result = Class.forName(this.classPath, this.isInitialize, this.loader);
-            } catch (ClassNotFoundException e) {
-                LOG.error("Can't found class:[{}]", classPath);
-            }
-            return Optional.ofNullable(result);
-        }
-    }
-
-    private static class MethodPrivilegedAction implements PrivilegedAction<Optional<Method>> {
-
-        private Class<?> targetClazz;
-        private String methodName;
-        private Class<?>[] parameterTypeList;
-        private boolean declared;
-
-        public MethodPrivilegedAction(Class<?> targetClazz, String methodName, Class<?>[] parameterTypeList,
-                                      boolean declared) {
-            this.targetClazz = targetClazz;
-            this.methodName = methodName;
-            this.parameterTypeList = parameterTypeList;
-            this.declared = declared;
-        }
-
-        @Override
-        public Optional<Method> run() {
-            Method[] declaredMethods = declared ? targetClazz.getDeclaredMethods() : targetClazz.getMethods();
-
-            Method[] nameMatchMethod = new Method[declaredMethods.length];
-            int cursor = 0;
-            for (Method method : declaredMethods) {
-                if (!this.methodName.equals(method.getName())) {
-                    continue;
-                }
-                nameMatchMethod[cursor] = method;
-                cursor++;
-            }
-            nameMatchMethod = Arrays.copyOf(nameMatchMethod, cursor);
-            Method bestMatchMethod = (Method) chooseBestMatchExecutable(nameMatchMethod, this.parameterTypeList);
-            return Optional.ofNullable(bestMatchMethod);
-        }
-    }
-
-    private static final Logger LOG = LoggerFactory.getLogger(AbstractClassUtils.class);
-
     /**
      * 获取class类对象，不做类的初始化。以屏蔽讨厌的try……catch块。
      *
@@ -208,7 +79,7 @@ public abstract class AbstractClassUtils {
 
     public static Optional<Class<?>> loadClass(String classPath, boolean isInitialize, ClassLoader loader) {
         if (null == loader) {
-            loader = AbstractClassUtils.class.getClassLoader();
+            loader = ClassUtils.class.getClassLoader();
         }
         return AccessController.doPrivileged(new ClassLoadPrivilegedAction(classPath, isInitialize, loader));
     }
@@ -226,7 +97,7 @@ public abstract class AbstractClassUtils {
      * @return 未注入成功的字段跟值，一般是，不存在这个字段，或者，在注入的时候出问题了
      */
     public static Map<Object, Object> injectFields(Object instance, Map<String, Object> fieldAndVal,
-                                                   MultiMap<Class<? extends Object>, TypeConverter<? extends Object, ? extends Object>> typeConverters) {
+            MultiMap<Class<? extends Object>, TypeConverter<? extends Object, ? extends Object>> typeConverters) {
         if (null == instance || null == fieldAndVal) {
             return Collections.emptyMap();
         }
@@ -255,7 +126,7 @@ public abstract class AbstractClassUtils {
     }
 
     private static boolean injectField(Object instance, Field field, Object val,
-                                       MultiMap<Class<? extends Object>, TypeConverter<? extends Object, ? extends Object>> typeConverters) {
+            MultiMap<Class<? extends Object>, TypeConverter<? extends Object, ? extends Object>> typeConverters) {
         try {
             // 字段属性修改，以便可以进行属性设置
             fieldModifier(field);
@@ -313,9 +184,9 @@ public abstract class AbstractClassUtils {
      * @param typeConverters 类型转换器集合
      * @return
      */
-    @SuppressWarnings({"unchecked", "rawtypes"})
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     private static Object convert(Class<? extends Object> sourceType, Class targetType, Object val,
-                                  MultiMap<Class<? extends Object>, TypeConverter<? extends Object, ? extends Object>> typeConverters) {
+            MultiMap<Class<? extends Object>, TypeConverter<? extends Object, ? extends Object>> typeConverters) {
         if (sourceType == targetType) {
             return val;
         }
@@ -470,7 +341,7 @@ public abstract class AbstractClassUtils {
 
     private static Object callMethod0(Object instance, String methodName, boolean declared, Object... parameters) {
 
-        Class<?> instanceType = null;
+        Class<?> instanceType;
         if (instance instanceof Class) {
             instanceType = (Class<?>) instance;
         } else {
@@ -496,7 +367,7 @@ public abstract class AbstractClassUtils {
         try {
             result = method.invoke(instance, parameters);
         } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
-            LOG.error("Call [{}] raise an error.Cause:[{}]", methodName, e);
+            LOG.error("Call [{}] raise an error.Cause:[{}]", methodName, e.getMessage());
         }
         return result;
 
@@ -560,49 +431,168 @@ public abstract class AbstractClassUtils {
 
     }
 
-    private static final Map<SerializedLambda, String> CACHE_LAMBDA_INFO = new ConcurrentHashMap<>();
-
     public static <T, R> String getLambdaMethodName(TypeFunction<T, R> function) {
-        Optional<SerializedLambda> serializedLambdaOpt = getSerializedLambda(function);
-        if (!serializedLambdaOpt.isPresent()) {
-            return AbstractStringUtils.EMPTY_STRING;
+        try {
+            return CACHE_LAMBDA_INFO.get(function, () -> {
+                System.out.println(function.toString());
+                Method writeReplaceMethod = null;
+                findout:
+                for (Class<?> clazz = function.getClass(); clazz != null; clazz = clazz.getSuperclass()) {
+                    Method[] methods = clazz.getDeclaredMethods();
+                    for (Method method : methods) {
+                        if ("writeReplace".equals(method.getName())) {
+                            writeReplaceMethod = method;
+                            break findout;
+                        }
+                    }
+                }
+
+                if (writeReplaceMethod == null) {
+                    return "";
+                }
+                if (!writeReplaceMethod.isAccessible()) {
+                    writeReplaceMethod.setAccessible(true);
+                }
+                Object replacement = writeReplaceMethod.invoke(function);
+                if (!(replacement instanceof SerializedLambda)) {
+                    return "";
+                }
+                SerializedLambda lambdaSerialized = (SerializedLambda) replacement;
+                return lambdaSerialized.getImplMethodName();
+
+            });
+        } catch (Exception e) {
+            // do nothing
+            throw new IllegalStateException("获取方法名失败。", e);
         }
-        return serializedLambdaOpt.get().getImplMethodName();
     }
 
-    /**
-     * 获取SerializedLambda信息实例
-     *
-     * @param function 待获取的lambda方法对象
-     * @return 获取出来的lambda方法的详细信息
-     */
-    public static Optional<SerializedLambda> getSerializedLambda(Object function) {
-        Method writeReplaceMethod = null;
-        End:
-        for (Class<?> clazz = function.getClass(); clazz != null; clazz = clazz.getSuperclass()) {
-            Method[] methods = clazz.getDeclaredMethods();
-            for (Method method : methods) {
-                if ("writeReplace".equals(method.getName())) {
-                    writeReplaceMethod = method;
-                    break End;
-                }
-            }
+    private static class FieldPrivilegedAction implements PrivilegedAction<Field> {
+        private Class<?> clazz;
+        private String fieldName;
+
+        public FieldPrivilegedAction(Class<?> clazz, String fieldName) {
+            this.clazz = clazz;
+            this.fieldName = fieldName;
         }
 
-        if (writeReplaceMethod == null) {
-            return Optional.empty();
-        }
-        try {
-            writeReplaceMethod.setAccessible(true);
-            Object replacement = writeReplaceMethod.invoke(function);
-            if (!(replacement instanceof SerializedLambda)) {
-                return Optional.empty();
+        @Override
+        public Field run() {
+            Field[] fields = clazz.getDeclaredFields();
+            for (Field field : fields) {
+                if (field.getName().equals(fieldName)) {
+                    return field;
+                }
             }
-            SerializedLambda lambdaSerialized = (SerializedLambda) replacement;
-            return Optional.of(lambdaSerialized);
-        } catch (Exception e) {
-            e.printStackTrace();
+            return null;
         }
-        return Optional.empty();
+    }
+
+    private static class InstancePrivilegedAction<I> implements PrivilegedAction<I> {
+
+        private Class<I> targetClass;
+        private Class<?> clazz;
+        private Object[] args;
+
+        public InstancePrivilegedAction(Class<I> targetClass, Class<?> clazz, Object[] args) {
+            this.targetClass = targetClass;
+            this.clazz = clazz;
+            this.args = args;
+        }
+
+        @SuppressWarnings("unchecked")
+        @Override
+        public I run() {
+            try {
+                if (!targetClass.isAssignableFrom(clazz)) {
+                    return null;
+                }
+                Constructor<?> constructor = getConstructor(clazz);
+                if (!constructor.isAccessible()) {
+                    LOG.debug("The constructor can't visit.Set it true for accessible.");
+                    constructor.setAccessible(true);
+                }
+                Object i = constructor.newInstance(args);
+                return (I) i;
+            } catch (Exception e) {
+                LOG.debug("error:{}", e);
+                LOG.error("Can't init class[{}]", clazz);
+            }
+            return null;
+        }
+
+        private Constructor<?> getConstructor(Class<?> clazz) throws NoSuchMethodException, SecurityException {
+            if (AbstractArrayUtil.isEmpty(args)) {
+                return clazz.getDeclaredConstructor();
+            }
+            Class<?>[] parameterTypes = new Class<?>[args.length];
+            for (int i = 0; i < parameterTypes.length; i++) {
+                parameterTypes[i] = args[i].getClass();
+            }
+
+            Constructor<?> bestMatch = (Constructor<?>) chooseBestMatchExecutable(clazz.getDeclaredConstructors(),
+                    parameterTypes);
+            return bestMatch;
+        }
+
+    }
+
+    private static class ClassLoadPrivilegedAction implements PrivilegedAction<Optional<Class<? extends Object>>> {
+
+        private ClassLoader loader;
+        private String classPath;
+        private boolean isInitialize;
+
+        public ClassLoadPrivilegedAction(String classPath, boolean isInitialize, ClassLoader loader) {
+            this.classPath = classPath;
+            this.isInitialize = isInitialize;
+            this.loader = loader;
+        }
+
+        @Override
+        public Optional<Class<? extends Object>> run() {
+
+            Class<?> result = null;
+            try {
+                result = Class.forName(this.classPath, this.isInitialize, this.loader);
+            } catch (ClassNotFoundException e) {
+                LOG.error("Can't found class:[{}]", classPath);
+            }
+            return Optional.ofNullable(result);
+        }
+    }
+
+    private static class MethodPrivilegedAction implements PrivilegedAction<Optional<Method>> {
+
+        private Class<?> targetClazz;
+        private String methodName;
+        private Class<?>[] parameterTypeList;
+        private boolean declared;
+
+        public MethodPrivilegedAction(Class<?> targetClazz, String methodName, Class<?>[] parameterTypeList,
+                boolean declared) {
+            this.targetClazz = targetClazz;
+            this.methodName = methodName;
+            this.parameterTypeList = parameterTypeList;
+            this.declared = declared;
+        }
+
+        @Override
+        public Optional<Method> run() {
+            Method[] declaredMethods = declared ? targetClazz.getDeclaredMethods() : targetClazz.getMethods();
+
+            Method[] nameMatchMethod = new Method[declaredMethods.length];
+            int cursor = 0;
+            for (Method method : declaredMethods) {
+                if (!this.methodName.equals(method.getName())) {
+                    continue;
+                }
+                nameMatchMethod[cursor] = method;
+                cursor++;
+            }
+            nameMatchMethod = Arrays.copyOf(nameMatchMethod, cursor);
+            Method bestMatchMethod = (Method) chooseBestMatchExecutable(nameMatchMethod, this.parameterTypeList);
+            return Optional.ofNullable(bestMatchMethod);
+        }
     }
 }

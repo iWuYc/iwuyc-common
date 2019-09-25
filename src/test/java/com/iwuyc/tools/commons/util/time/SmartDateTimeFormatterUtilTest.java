@@ -34,21 +34,17 @@ public class SmartDateTimeFormatterUtilTest {
         System.out.println(pattern.matcher("yyyy-MM-ddMM").matches());
         System.out.println(pattern.matcher("hh:mm:ss.SSS").matches());
         System.out.println(pattern.matcher("yyyy-MM-dd hh:mm:ss.SSS").matches());
-//        System.out.println(pattern.matcher("HHHhhh").matches());
+        //        System.out.println(pattern.matcher("HHHhhh").matches());
 
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy HH");
         SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         Date date = format.parse("2018-09-02 13:28:27");
-        LocalDateTime localDateTime = LocalDateTime.ofInstant(date.toInstant(), DateFormatterConstants.DEFAULT_ZONE_OFFSET);
+        LocalDateTime localDateTime =
+            LocalDateTime.ofInstant(date.toInstant(), DateFormatterConstants.DEFAULT_ZONE_OFFSET);
         System.out.println(localDateTime.format(formatter));
     }
 
     @Test
     public void testIsDateTime() {
-        System.out.println(SmartDateTimeFormatter.isZoneDateTimePattern("yyyy-MM-dd'T'hh:mm:ss.SSSZ"));
-        System.out.println(SmartDateTimeFormatter.isZoneDateTimePattern("yyyy-MM-dd'T'hh:mm:ss.SSS+0800"));
-        System.out.println(SmartDateTimeFormatter.isZoneDateTimePattern("yyyy-MM-dd'T'hh:mm:ss.SSS+080"));
-        System.out.println(SmartDateTimeFormatter.isZoneDateTimePattern("yyyy-MM-dd'T'hh:mm:ss.SSS"));
-        System.out.println(SmartDateTimeFormatter.isZoneDateTimePattern("yyyy-MM-dd hh:mm:ss.SSS+0800"));
     }
 }

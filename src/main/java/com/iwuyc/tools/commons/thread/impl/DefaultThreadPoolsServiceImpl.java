@@ -1,7 +1,7 @@
 package com.iwuyc.tools.commons.thread.impl;
 
-import com.iwuyc.tools.commons.basic.AbstractStringUtils;
-import com.iwuyc.tools.commons.classtools.AbstractClassUtils;
+import com.iwuyc.tools.commons.basic.StringUtils;
+import com.iwuyc.tools.commons.classtools.ClassUtils;
 import com.iwuyc.tools.commons.thread.ExecutorServiceFactory;
 import com.iwuyc.tools.commons.thread.ThreadConfig;
 import com.iwuyc.tools.commons.thread.ThreadPoolsService;
@@ -14,6 +14,8 @@ import org.slf4j.LoggerFactory;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
@@ -26,9 +28,9 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 @Slf4j
 public class DefaultThreadPoolsServiceImpl implements ThreadPoolsService {
 
-    public static final String DEFAULT_DOMAIN = "root";
+    private static final String DEFAULT_DOMAIN = "root";
 
-    public Map<String, ExecutorService> executorServiceCache = new ConcurrentHashMap<>();
+    private Map<String, ExecutorService> executorServiceCache = new ConcurrentHashMap<>();
     private ReadWriteLock lock = new ReentrantReadWriteLock(true);
     private ThreadConfig config;
     private AtomicBoolean isShutdown = new AtomicBoolean();
@@ -55,7 +57,7 @@ public class DefaultThreadPoolsServiceImpl implements ThreadPoolsService {
     }
 
     private <T extends ExecutorService> T getExecutorServiceByMap(String domain, Map<String, T> container) {
-        if (AbstractStringUtils.isEmpty(domain)) {
+        if (StringUtils.isEmpty(domain)) {
             log.debug("未指定domain，将使用默认的domain：{}", DEFAULT_DOMAIN);
             domain = DEFAULT_DOMAIN;
         }
@@ -102,8 +104,12 @@ public class DefaultThreadPoolsServiceImpl implements ThreadPoolsService {
     }
 
     private <T extends ExecutorService> T createNewThreadPoolFactory(ThreadPoolConfig threadPoolConfig) {
-        ExecutorServiceFactory factory = AbstractClassUtils
+        ExecutorServiceFactory factory = ClassUtils
                 .instance(ExecutorServiceFactory.class, threadPoolConfig.getFactory());
+        if (null == factory) {
+            log.error("无法实例化指定的工厂类[{}]。", threadPoolConfig.getFactory());
+            throw new IllegalArgumentException("无法实例化工厂类[" + threadPoolConfig.getFactory() + "]");
+        }
         return (T) factory.create(threadPoolConfig);
     }
 

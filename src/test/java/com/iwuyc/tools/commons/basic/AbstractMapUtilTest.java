@@ -24,7 +24,7 @@ public class AbstractMapUtilTest {
         Collection<String> val = AbstractMapUtil.findKeyByVal(map, "99");
         Assert.assertTrue(val.contains("99"));
         val = AbstractMapUtil.findKeyByVal(null, "99");
-        Assert.assertTrue(AbstractCollectionUtil.isEmpty(val));
+        Assert.assertTrue(CollectionUtil.isEmpty(val));
 
         val = AbstractMapUtil.findKeyByVal(map, "null");
         Assert.assertTrue(val.contains(null));

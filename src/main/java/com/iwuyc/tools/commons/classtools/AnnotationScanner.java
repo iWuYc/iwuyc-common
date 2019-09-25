@@ -1,6 +1,6 @@
 package com.iwuyc.tools.commons.classtools;
 
-import com.iwuyc.tools.commons.basic.AbstractStringUtils;
+import com.iwuyc.tools.commons.basic.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -43,7 +43,7 @@ public class AnnotationScanner implements Runnable {
     public AnnotationScanner(Class<? extends Annotation> annotation, String... packages) {
         this.annotation = annotation;
         for (String packageName : packages) {
-            if (AbstractStringUtils.isEmpty(packageName)) {
+            if (StringUtils.isEmpty(packageName)) {
                 continue;
             }
             this.packages.push(packageName);
@@ -181,7 +181,7 @@ public class AnnotationScanner implements Runnable {
         if (anonymityClassLocation >= 0 && className.substring(anonymityClassLocation).matches(NUMBER_REGEX)) {
             return;
         }
-        Optional<Class<?>> clazzOpt = AbstractClassUtils.loadClass(className, true, null);
+        Optional<Class<?>> clazzOpt = ClassUtils.loadClass(className, true, null);
         if (!clazzOpt.isPresent()) {
             return;
         }

@@ -1,6 +1,6 @@
 package com.iwuyc.tools.commons.thread.impl;
 
-import com.iwuyc.tools.commons.basic.AbstractStringUtils;
+import com.iwuyc.tools.commons.basic.StringUtils;
 import lombok.AccessLevel;
 import lombok.Data;
 import lombok.Getter;
@@ -31,7 +31,7 @@ public class DefaultThreadFactory implements ThreadFactory {
      * @param threadPreName 线程名前缀
      */
     public DefaultThreadFactory(String threadPreName) {
-        if (AbstractStringUtils.isEmpty(threadPreName)) {
+        if (StringUtils.isEmpty(threadPreName)) {
             threadPreName = "thframe";
         }
         this.threadPreName = threadPreName + "-%s";
@@ -44,6 +44,6 @@ public class DefaultThreadFactory implements ThreadFactory {
     }
 
     private String builderThreadName() {
-        return String.format(threadPreName, flag.getAndIncrement());
+        return String.format(threadPreName,flag.getAndIncrement());
     }
 }

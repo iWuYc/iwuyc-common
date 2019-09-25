@@ -9,7 +9,7 @@ public class DateTimeFormatterTupleTest {
 
     @Test
     public void test() {
-        DateTimeFormatterTuple tuple = DateTimeFormatterTuple.create(DateFormatterConstants.DEFAULT, Locale.CHINA);
+        DateTimeFormatterTuple tuple = DateTimeFormatterTuple.create(DateFormatterConstants.DEFAULT_PATTERN, Locale.CHINA);
         System.out.println(tuple);
     }
 }

@@ -14,24 +14,24 @@ import java.util.Locale;
  */
 @Data
 public class DateTimeBuilder {
-    private LocalDateTime localDateTime;
+    private ZonedDateTime zonedDateTime;
     private SmartDateTimeFormatter formatter;
 
-    public DateTimeBuilder(LocalDateTime localDateTime) {
-        this.localDateTime = localDateTime;
+    public DateTimeBuilder(ZonedDateTime zonedDateTime) {
+        this.zonedDateTime = zonedDateTime;
     }
 
     public static DateTimeBuilder withTime(Date time) {
         Instant instant = time.toInstant();
-        return withTime(LocalDateTime.ofInstant(instant,ZoneId.systemDefault()));
+        return withTime(ZonedDateTime.ofInstant(instant,ZoneId.systemDefault()));
     }
 
-    public static DateTimeBuilder withTime(LocalDateTime time) {
+    public static DateTimeBuilder withTime(ZonedDateTime time) {
         return new DateTimeBuilder(time);
     }
 
     public static DateTimeBuilder withTime(String time, SmartDateTimeFormatter formatter) {
-        LocalDateTime dateTime = formatter.parse(time);
+        ZonedDateTime dateTime = formatter.parse(time);
         DateTimeBuilder builder = withTime(dateTime);
         builder.setFormatter(formatter);
         return builder;
@@ -47,41 +47,41 @@ public class DateTimeBuilder {
     }
 
     public static DateTimeBuilder withTime(String time) {
-        return withTime(time, DateFormatterConstants.DEFAULT, DateFormatterConstants.DEFAULT_LOCALE);
+        return withTime(time, DateFormatterConstants.DEFAULT_PATTERN, DateFormatterConstants.DEFAULT_LOCALE);
     }
 
     public DateTimeBuilder withYears(int years) {
-        this.localDateTime = this.localDateTime.withYear(years);
+        this.zonedDateTime = this.zonedDateTime.withYear(years);
         return this;
     }
 
     public DateTimeBuilder withMonthOfYear(long months) {
-        this.localDateTime = this.localDateTime.withMonth(1).plusMonths(months);
+        this.zonedDateTime = this.zonedDateTime.withMonth(1).plusMonths(months);
         return this;
     }
 
     public DateTimeBuilder withDayOfMonth(long day) {
-        this.localDateTime = this.localDateTime.withDayOfMonth(1).plusDays(day);
+        this.zonedDateTime = this.zonedDateTime.withDayOfMonth(1).plusDays(day);
         return this;
     }
 
     public DateTimeBuilder withHourOfDay(long hour) {
-        this.localDateTime = this.localDateTime.withHour(0).plusHours(hour);
+        this.zonedDateTime = this.zonedDateTime.withHour(0).plusHours(hour);
         return this;
     }
 
     public DateTimeBuilder withMinuteOfHour(long minute) {
-        this.localDateTime = this.localDateTime.withMinute(0).plusMinutes(minute);
+        this.zonedDateTime = this.zonedDateTime.withMinute(0).plusMinutes(minute);
         return this;
     }
 
     public DateTimeBuilder withSecondOfMinute(long second) {
-        this.localDateTime = this.localDateTime.withSecond(0).plusSeconds(second);
+        this.zonedDateTime = this.zonedDateTime.withSecond(0).plusSeconds(second);
         return this;
     }
 
     public DateTimeBuilder withNanosecondOfSecond(long nanosecond) {
-        this.localDateTime = this.localDateTime.withNano(0).plusNanos(nanosecond);
+        this.zonedDateTime = this.zonedDateTime.withNano(0).plusNanos(nanosecond);
         return this;
     }
 
@@ -92,7 +92,7 @@ public class DateTimeBuilder {
      * @return 当前的构建实例
      */
     public DateTimeBuilder after(DateTimeTuple timeTuple) {
-        this.localDateTime = this.localDateTime.plus(timeTuple.getTime(), timeTuple.getTemporalUnit());
+        this.zonedDateTime = this.zonedDateTime.plus(timeTuple.getTime(), timeTuple.getTemporalUnit());
         return this;
     }
 
@@ -103,7 +103,7 @@ public class DateTimeBuilder {
      * @return 当前的构建实例
      */
     public DateTimeBuilder before(DateTimeTuple timeTuple) {
-        this.localDateTime = this.localDateTime.plus(-timeTuple.getTime(), timeTuple.getTemporalUnit());
+        this.zonedDateTime = this.zonedDateTime.plus(-timeTuple.getTime(), timeTuple.getTemporalUnit());
         return this;
     }
 
@@ -114,7 +114,7 @@ public class DateTimeBuilder {
      * @return 当前的构建实例
      */
     public DateTimeBuilder startWithDay() {
-        this.localDateTime = localDateTime.with(LocalTime.MIN);
+        this.zonedDateTime = zonedDateTime.with(LocalTime.MIN);
         return this;
     }
 
@@ -131,28 +131,28 @@ public class DateTimeBuilder {
     /**
      * 获取当前时间为起点，下一个指定“day”的时间。<br />
      * Example:<br />
-     * this.localDateTime = 2018-08-26 13:14:00;<br />
+     * this.zonedDateTime = 2018-08-26 13:14:00;<br />
      * input:dayOfMonth = 26; <br />
-     * output:this.localDateTime = 2018-09-26 13:14:00;
+     * output:this.zonedDateTime = 2018-09-26 13:14:00;
      *
      * @param dayOfMonth 指定的“day”
      * @return 获取到的时间
      */
     public DateTimeBuilder nextDayOfMonth(int dayOfMonth) {
-        LocalDateTime originTime = this.localDateTime;
-        LocalDateTime next = originTime.withDayOfMonth(1).plusDays(dayOfMonth - 1);
+        ZonedDateTime originTime = this.zonedDateTime;
+        ZonedDateTime next = originTime.withDayOfMonth(1).plusDays(dayOfMonth - 1);
         LocalDate nowDate = originTime.toLocalDate();
         LocalDate nextDate = next.toLocalDate();
         if (nextDate.isAfter(nowDate)) {
-            this.localDateTime = next;
+            this.zonedDateTime = next;
         } else {
-            this.localDateTime = next.plusMonths(1);
+            this.zonedDateTime = next.plusMonths(1);
         }
         return this;
     }
 
     public String format(SmartDateTimeFormatter formatter) {
-        return formatter.format(this.localDateTime);
+        return formatter.format(this.zonedDateTime);
     }
 
     public String format(String pattern, Locale locale) {
@@ -166,13 +166,13 @@ public class DateTimeBuilder {
     public String format() {
         if (null == this.formatter) {
             this.formatter =
-                    SmartDateTimeFormatter.create(DateFormatterConstants.DEFAULT, DateFormatterConstants.DEFAULT_LOCALE);
+                    SmartDateTimeFormatter.create(DateFormatterConstants.DEFAULT_PATTERN, DateFormatterConstants.DEFAULT_LOCALE);
         }
         return format(this.formatter);
     }
 
-    public LocalDateTime getLocalDateTime() {
-        return localDateTime;
+    public ZonedDateTime getZonedDateTime() {
+        return zonedDateTime;
     }
 
     public SmartDateTimeFormatter getFormatter() {
@@ -188,7 +188,7 @@ public class DateTimeBuilder {
     }
 
     public Date toDate(ZoneId zoneId) {
-        ZonedDateTime zonedDateTime = this.localDateTime.atZone(ZoneId.systemDefault()).withZoneSameInstant(zoneId);
+        ZonedDateTime zonedDateTime = this.zonedDateTime.withZoneSameInstant(zoneId);
         ZoneOffset zoneOffset = zonedDateTime.getOffset();
         return Date.from(zonedDateTime.toLocalDateTime().toInstant(zoneOffset));
     }
