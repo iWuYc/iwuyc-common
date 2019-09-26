@@ -13,7 +13,7 @@ public class MathUtils {
 
     private static final char[] NumChinese = {'零', '壹', '贰', '叁', '肆', '伍', '陆', '柒', '捌', '玖'};
     private static final char[] UNITS = {' ', '拾', '佰', '仟'};
-    private static final String[] BIGUNITS = {"万", "亿", "亿万", "兆"};
+    private static final char[] BIGUNITS = {'万', '亿', '万', '兆'};
 
     /**
      * 将数字转换为繁体文字
@@ -38,13 +38,30 @@ public class MathUtils {
                 sb.append(BIGUNITS[unitsCount / 4 - 1]);
             }
             int temp = (int) (num % 10);
-            sb.append(NumChinese[temp]);
+            if (temp == 0) {
+                if (sb.length() > 0) {
+                    sb.deleteCharAt(sb.length() - 1);
+                }
+                if (sb.length() > 0) {
+                    if (sb.charAt(sb.length() - 1) != NumChinese[0]) {
+                        sb.append(NumChinese[temp]);
+                    }
+                } else {
+                    sb.append(NumChinese[temp]);
+                }
+            } else {
+                sb.append(NumChinese[temp]);
+            }
             num /= 10;
             unitsCount++;
         } while (num != 0);
 
         if (minus) {
             sb.append('负');
+        }
+        char ch;
+        while (sb.length() > 1 && (ch = sb.charAt(0)) == NumChinese[0]) {
+            sb.deleteCharAt(0);
         }
         String result = sb.reverse().toString();
         LOGGER.debug("Result:{}", result);
