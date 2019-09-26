@@ -1,8 +1,8 @@
 package com.iwuyc.tools.commons.util.file;
 
-import com.iwuyc.tools.commons.basic.AbstractMapUtil;
-import com.iwuyc.tools.commons.basic.CollectionUtil;
-import com.iwuyc.tools.commons.basic.StringUtils;
+import com.iwuyc.tools.commons.util.collection.MapUtil;
+import com.iwuyc.tools.commons.util.collection.CollectionUtil;
+import com.iwuyc.tools.commons.util.string.StringUtils;
 import com.iwuyc.tools.commons.util.Constants;
 import lombok.extern.slf4j.Slf4j;
 
@@ -40,7 +40,7 @@ public class PropertiesFileUtils {
     }
 
     public static boolean replacePropertiesFile(String path, Map<?, ?> properties, ReadWriteLock lock){
-        if(StringUtils.isEmpty(path) || AbstractMapUtil.isEmpty(properties)){
+        if(StringUtils.isEmpty(path) || MapUtil.isEmpty(properties)){
             throw new IllegalArgumentException("Argument can't be empty.");
         }
 

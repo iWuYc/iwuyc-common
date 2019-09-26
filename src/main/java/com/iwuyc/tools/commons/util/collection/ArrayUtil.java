@@ -1,10 +1,10 @@
-package com.iwuyc.tools.commons.basic;
+package com.iwuyc.tools.commons.util.collection;
 
 /**
  * @author @Neil
  * @since @2017年10月15日
  */
-public abstract class AbstractArrayUtil {
+public abstract class ArrayUtil {
 
     public static <T> boolean isEmpty(T[] arrays) {
         return arrayLength(arrays) == 0;

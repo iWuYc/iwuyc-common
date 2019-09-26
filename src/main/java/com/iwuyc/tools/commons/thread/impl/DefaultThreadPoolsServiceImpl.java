@@ -1,6 +1,6 @@
 package com.iwuyc.tools.commons.thread.impl;
 
-import com.iwuyc.tools.commons.basic.StringUtils;
+import com.iwuyc.tools.commons.util.string.StringUtils;
 import com.iwuyc.tools.commons.classtools.ClassUtils;
 import com.iwuyc.tools.commons.thread.ExecutorServiceFactory;
 import com.iwuyc.tools.commons.thread.ThreadConfig;
@@ -8,14 +8,10 @@ import com.iwuyc.tools.commons.thread.ThreadPoolsService;
 import com.iwuyc.tools.commons.thread.conf.ThreadPoolConfig;
 import com.iwuyc.tools.commons.thread.conf.UsingConfig;
 import lombok.extern.slf4j.Slf4j;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;

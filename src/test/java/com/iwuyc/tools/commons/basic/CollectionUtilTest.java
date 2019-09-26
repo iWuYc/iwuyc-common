@@ -1,5 +1,6 @@
 package com.iwuyc.tools.commons.basic;
 
+import com.iwuyc.tools.commons.util.collection.CollectionUtil;
 import org.junit.Assert;
 import org.junit.Test;
 

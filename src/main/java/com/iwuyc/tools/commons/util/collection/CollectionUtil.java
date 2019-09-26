@@ -1,4 +1,6 @@
-package com.iwuyc.tools.commons.basic;
+package com.iwuyc.tools.commons.util.collection;
+
+import com.iwuyc.tools.commons.util.string.StringUtils;
 
 import java.util.Collection;
 

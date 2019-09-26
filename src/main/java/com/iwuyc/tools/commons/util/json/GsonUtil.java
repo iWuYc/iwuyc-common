@@ -1,7 +1,7 @@
 package com.iwuyc.tools.commons.util.json;
 
 import com.google.gson.*;
-import com.iwuyc.tools.commons.basic.StringUtils;
+import com.iwuyc.tools.commons.util.string.StringUtils;
 
 /**
  * Gson 的封装工具包

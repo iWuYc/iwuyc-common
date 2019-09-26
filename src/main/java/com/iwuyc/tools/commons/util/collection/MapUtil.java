@@ -1,4 +1,4 @@
-package com.iwuyc.tools.commons.basic;
+package com.iwuyc.tools.commons.util.collection;
 
 import java.util.*;
 
@@ -7,7 +7,7 @@ import java.util.*;
  * @date 2017-08-04 14:31
  * @since JDK 8
  */
-public abstract class AbstractMapUtil {
+public abstract class MapUtil {
 
     /**
      * 根据map的值获取map中的key
