@@ -1,6 +1,6 @@
 package com.iwuyc.tools.commons.util.crypto;
 
-import com.iwuyc.tools.commons.basic.StringUtils;
+import com.iwuyc.tools.commons.util.string.StringUtils;
 import com.iwuyc.tools.commons.util.file.FileUtil;
 import org.junit.Test;
 

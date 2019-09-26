@@ -1,6 +1,6 @@
 package com.iwuyc.tools.commons.thread.impl;
 
-import com.iwuyc.tools.commons.basic.StringUtils;
+import com.iwuyc.tools.commons.util.string.StringUtils;
 import lombok.AccessLevel;
 import lombok.Data;
 import lombok.Getter;

@@ -1,6 +1,6 @@
 package com.iwuyc.tools.commons.classtools.typeconverter;
 
-import com.iwuyc.tools.commons.basic.StringUtils;
+import com.iwuyc.tools.commons.util.string.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

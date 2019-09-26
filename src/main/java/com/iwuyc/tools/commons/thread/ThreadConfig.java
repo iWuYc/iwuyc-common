@@ -1,15 +1,12 @@
 package com.iwuyc.tools.commons.thread;
 
-import com.iwuyc.tools.commons.basic.AbstractMapUtil;
+import com.iwuyc.tools.commons.util.collection.MapUtil;
 import com.iwuyc.tools.commons.classtools.ClassUtils;
 import com.iwuyc.tools.commons.thread.conf.ThreadConfigConstant;
 import com.iwuyc.tools.commons.thread.conf.ThreadPoolConfig;
 import com.iwuyc.tools.commons.thread.conf.UsingConfig;
 import com.iwuyc.tools.commons.thread.impl.DefaultThreadPoolsServiceImpl;
-import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -98,7 +95,7 @@ public class ThreadConfig {
         while (!keys.isEmpty()) {
             key = String.valueOf(keys.iterator().next());
             threadPoolsNamePrefix = findThreadNameIncludePrefix(key);
-            threadPoolFacotryConfig = AbstractMapUtil.findEntryByPrefixKey(configInfo, threadPoolsNamePrefix + '.');
+            threadPoolFacotryConfig = MapUtil.findEntryByPrefixKey(configInfo, threadPoolsNamePrefix + '.');
 
             threadPoolFacotryConfig.forEach(configInfo::remove);
 
@@ -186,11 +183,11 @@ public class ThreadConfig {
             propertis.load(in);
         }
 
-        Map<Object, Object> configInfo = AbstractMapUtil
+        Map<Object, Object> configInfo = MapUtil
                 .findEntryByPrefixKey(this.propertis, ThreadConfigConstant.THREAD_CONFIG_PRENAME);
         config(configInfo);
 
-        Map<Object, Object> usingInfo = AbstractMapUtil
+        Map<Object, Object> usingInfo = MapUtil
                 .findEntryByPrefixKey(this.propertis, ThreadConfigConstant.THREAD_USING_PRENAME);
         usingConfig(usingInfo);
     }

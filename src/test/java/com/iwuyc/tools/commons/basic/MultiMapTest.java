@@ -1,5 +1,6 @@
 package com.iwuyc.tools.commons.basic;
 
+import com.iwuyc.tools.commons.util.collection.MultiMap;
 import org.junit.Before;
 import org.junit.Test;
 

@@ -1,4 +1,4 @@
-package com.iwuyc.tools.commons.basic;
+package com.iwuyc.tools.commons.util.string;
 
 /**
  * @author @Neil

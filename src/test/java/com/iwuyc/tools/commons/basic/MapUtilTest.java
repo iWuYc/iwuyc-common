@@ -5,6 +5,9 @@
  */
 package com.iwuyc.tools.commons.basic;
 
+import com.iwuyc.tools.commons.util.collection.CollectionUtil;
+import com.iwuyc.tools.commons.util.collection.MapUtil;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -18,12 +21,57 @@ import java.util.Map;
  * @time 2017-08-07 13:45
  */
 public class MapUtilTest {
+    private Map<String, String> map = new HashMap<>();
+
+
+    @Test
+    public void findKeyByVal() {
+        Collection<String> val = MapUtil.findKeyByVal(map, "99");
+        Assert.assertTrue(val.contains("99"));
+        val = MapUtil.findKeyByVal(null, "99");
+        Assert.assertTrue(CollectionUtil.isEmpty(val));
+
+        val = MapUtil.findKeyByVal(map, "null");
+        Assert.assertTrue(val.contains(null));
+    }
+
+    @Test
+    public void findEntryByPrefixKey() {
+        Map<String, String> result = MapUtil.findEntryByPrefixKey(map, "1");
+        Assert.assertEquals(11, result.size());
+
+        result = MapUtil.findEntryByPrefixKey(map, null);
+        Assert.assertEquals(1, result.size());
+
+        result = MapUtil.findEntryByPrefixKey(null, "1");
+        Assert.assertEquals(0, result.size());
+    }
+
+    @Test
+    public void isEmpty() {
+        Map<String, String> map = null;
+        Assert.assertTrue(MapUtil.isEmpty(map));
+        map = new HashMap<>();
+        Assert.assertTrue(MapUtil.isEmpty(map));
+        map.put("1", "1");
+        Assert.assertFalse(MapUtil.isEmpty(map));
+
+        Assert.assertTrue(MapUtil.isNotEmpty(map));
+    }
+
+    @Test
+    public void isNotEmpty() {
+    }
 
     /**
      * @throws java.lang.Exception
      */
     @Before
     public void setUp() throws Exception {
+        map.put(null, "null");
+        for (int i = 0; i < 100; i++) {
+            map.put(String.valueOf(i), String.valueOf(i));
+        }
     }
 
     public static class Entity {
@@ -89,10 +137,10 @@ public class MapUtilTest {
         map.put("entity2", entity2);
         map.put("entity3", entity3);
 
-        Collection<String> result = AbstractMapUtil.findKeyByVal(map, null);
+        Collection<String> result = MapUtil.findKeyByVal(map, null);
         System.out.println(result);
 
-        result = AbstractMapUtil.findKeyByVal(map, entity1);
+        result = MapUtil.findKeyByVal(map, entity1);
         System.out.println(result);
     }
 

@@ -1,6 +1,6 @@
 package com.iwuyc.tools.commons.thread.conf;
 
-import com.iwuyc.tools.commons.basic.StringUtils;
+import com.iwuyc.tools.commons.util.string.StringUtils;
 import com.iwuyc.tools.commons.basic.type.TimeTuple;
 
 import java.util.Collections;

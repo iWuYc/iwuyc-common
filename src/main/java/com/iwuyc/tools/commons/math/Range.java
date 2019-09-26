@@ -2,7 +2,7 @@ package com.iwuyc.tools.commons.math;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
-import com.iwuyc.tools.commons.basic.StringUtils;
+import com.iwuyc.tools.commons.util.string.StringUtils;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;

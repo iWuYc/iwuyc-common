@@ -7,8 +7,8 @@ package com.iwuyc.tools.commons.classtools;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
-import com.iwuyc.tools.commons.basic.AbstractArrayUtil;
-import com.iwuyc.tools.commons.basic.MultiMap;
+import com.iwuyc.tools.commons.util.collection.ArrayUtil;
+import com.iwuyc.tools.commons.util.collection.MultiMap;
 import com.iwuyc.tools.commons.classtools.typeconverter.TypeConverter;
 import com.iwuyc.tools.commons.classtools.typeconverter.TypeConverterConstant;
 import org.slf4j.Logger;
@@ -381,7 +381,7 @@ public abstract class ClassUtils {
      * @author Neil
      */
     public static Class<?>[] typeList(Object... object) {
-        int parametersLength = AbstractArrayUtil.arrayLength(object);
+        int parametersLength = ArrayUtil.arrayLength(object);
 
         Class<?>[] objectTypeList = new Class<?>[parametersLength];
         for (int i = 0; i < parametersLength; i++) {
@@ -522,7 +522,7 @@ public abstract class ClassUtils {
         }
 
         private Constructor<?> getConstructor(Class<?> clazz) throws NoSuchMethodException, SecurityException {
-            if (AbstractArrayUtil.isEmpty(args)) {
+            if (ArrayUtil.isEmpty(args)) {
                 return clazz.getDeclaredConstructor();
             }
             Class<?>[] parameterTypes = new Class<?>[args.length];

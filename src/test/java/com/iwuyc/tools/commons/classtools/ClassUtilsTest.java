@@ -1,6 +1,6 @@
 package com.iwuyc.tools.commons.classtools;
 
-import com.iwuyc.tools.commons.basic.MultiMap;
+import com.iwuyc.tools.commons.util.collection.MultiMap;
 import com.iwuyc.tools.commons.classtools.typeconverter.TypeConverter;
 import lombok.Data;
 import org.junit.Assert;
