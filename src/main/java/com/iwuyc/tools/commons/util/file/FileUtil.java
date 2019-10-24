@@ -111,7 +111,7 @@ public class FileUtil {
         String fileAbsolutePath = absoluteLocation(filePath);
         File file = new File(fileAbsolutePath);
         try (FileInputStream fr = new FileInputStream(file);
-            BufferedReader reader = new BufferedReader(new InputStreamReader(fr, charsetName))) {
+             BufferedReader reader = new BufferedReader(new InputStreamReader(fr, charsetName))) {
             StringBuilder sb = new StringBuilder();
             String tmp;
             while ((tmp = reader.readLine()) != null) {

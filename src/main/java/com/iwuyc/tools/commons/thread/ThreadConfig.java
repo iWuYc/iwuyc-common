@@ -1,11 +1,11 @@
 package com.iwuyc.tools.commons.thread;
 
-import com.iwuyc.tools.commons.util.collection.MapUtil;
 import com.iwuyc.tools.commons.classtools.ClassUtils;
 import com.iwuyc.tools.commons.thread.conf.ThreadConfigConstant;
 import com.iwuyc.tools.commons.thread.conf.ThreadPoolConfig;
 import com.iwuyc.tools.commons.thread.conf.UsingConfig;
 import com.iwuyc.tools.commons.thread.impl.DefaultThreadPoolsServiceImpl;
+import com.iwuyc.tools.commons.util.collection.MapUtil;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
@@ -37,7 +37,7 @@ public class ThreadConfig {
      */
     private final Map<String, UsingConfig> usingConfigCache = new ConcurrentHashMap<>();
 
-    private Properties propertis;
+    private Properties properties;
 
     public ThreadConfig() {
     }
@@ -66,6 +66,10 @@ public class ThreadConfig {
             log.error("Config thread pool service raise an error:", e);
         }
         return null;
+    }
+
+    public static ThreadPoolsService config(String filePath) {
+        return config(new File(filePath));
     }
 
     private void usingConfig(Map<Object, Object> usingInfo) {
@@ -167,28 +171,40 @@ public class ThreadConfig {
      * @throws IOException 流读取异常
      */
     public void load(InputStream in) throws IOException {
-        if (null == this.propertis) {
+        final Properties config = new Properties();
+        config.load(in);
+        load(config);
+    }
+
+    /**
+     * 可以重复调用多次，增加新的配置项，或者修改配置项
+     *
+     * @param config 配置
+     * @throws IOException 流读取异常
+     */
+    public void load(Properties config) throws IOException {
+        if (null == this.properties) {
             log.debug("未初始化过，进行初始化。");
-            this.propertis = new Properties();
+            this.properties = new Properties();
 
             // 加载默认配置。
             try (InputStream defaultSettings = DefaultThreadPoolsServiceImpl.class
                     .getResourceAsStream(DEFAULT_CONF)) {
-                this.propertis.load(defaultSettings);
-                this.propertis.putAll(InitDefaultProperties.DEFAULT_SETTING);
-                log.info("加载默认的配置完成。[{}]", this.propertis);
+                this.properties.load(defaultSettings);
+                this.properties.putAll(InitDefaultProperties.DEFAULT_SETTING);
+                log.info("加载默认的配置完成。[{}]", this.properties);
             }
         }
-        if (null != in) {
-            propertis.load(in);
+        if (null != config) {
+            properties.putAll(config);
         }
 
         Map<Object, Object> configInfo = MapUtil
-                .findEntryByPrefixKey(this.propertis, ThreadConfigConstant.THREAD_CONFIG_PRENAME);
+                .findEntryByPrefixKey(this.properties, ThreadConfigConstant.THREAD_CONFIG_PRENAME);
         config(configInfo);
 
         Map<Object, Object> usingInfo = MapUtil
-                .findEntryByPrefixKey(this.propertis, ThreadConfigConstant.THREAD_USING_PRENAME);
+                .findEntryByPrefixKey(this.properties, ThreadConfigConstant.THREAD_USING_PRENAME);
         usingConfig(usingInfo);
     }
 
@@ -196,14 +212,12 @@ public class ThreadConfig {
         private final static Map<String, String> DEFAULT_SETTING;
         private static final String DEFAULT_CORE_POOL_SIZE = "thread.conf.default.corePoolSize";
         private static final String DEFAULT_MAX_POOL_SIZE = "thread.conf.default.maximumPoolSize";
-        private static final String DEFAULT_SCHEDULE_CORE_POOL_SIZE = "thread.conf.defaultSchedule.corePoolSize";
 
         static {
             int availableProcessors = Runtime.getRuntime().availableProcessors();
             HashMap<String, String> temp = new HashMap<>();
             temp.put(DEFAULT_CORE_POOL_SIZE, String.valueOf(availableProcessors));
             temp.put(DEFAULT_MAX_POOL_SIZE, String.valueOf(availableProcessors * 4));
-            temp.put(DEFAULT_SCHEDULE_CORE_POOL_SIZE, String.valueOf(availableProcessors));
             DEFAULT_SETTING = Collections.unmodifiableMap(temp);
         }
     }

@@ -92,7 +92,7 @@ public abstract class NumberUtils {
      * 将字符串类型转换成目标的数字类型
      *
      * @param numberFormat 待转换的数字字符串
-     * @param target 目标类型
+     * @param target       目标类型
      * @return 转换后的值
      */
     @SuppressWarnings("unchecked")
@@ -115,7 +115,7 @@ public abstract class NumberUtils {
                 throw new UnsupportedOperationException("The target type unsupport.Target type:" + target);
             }
         }
-        return (T)result;
+        return (T) result;
     }
 
     public static Number parse(String val) {

@@ -19,7 +19,6 @@ import java.util.jar.JarFile;
  *
  * @author Neil
  * @time 2017-08-04 15:23
- * @since
  * @deprecated 废弃，不建议再使用。GitHub有一个开源的类路径扫描工具包，建议使用该工具包。
  *
  * <pre>
@@ -35,7 +34,8 @@ import java.util.jar.JarFile;
 public class AnnotationScanner implements Runnable {
 
     private static final Logger LOG = LoggerFactory.getLogger(AnnotationScanner.class);
-
+    private static final String CLASS_TEMPLATE = "%s.%s";
+    private static final String NUMBER_REGEX = "\\$[0-9]*";
     private final Stack<String> packages = new Stack<>();
     private final Collection<Class<?>> result;
     private final Class<? extends Annotation> annotation;
@@ -118,7 +118,6 @@ public class AnnotationScanner implements Runnable {
             }
             if (entry.isDirectory()) {
                 reproducePackageAndPushStack(entriesName, packageDirName);
-                continue;
             } else if (entriesName.endsWith(".class")) {
                 className = extractClassName(entriesName);
                 classFullName = toClassFullName(packageName, className);
@@ -129,8 +128,7 @@ public class AnnotationScanner implements Runnable {
     }
 
     private String extractClassName(String entriesName) {
-        String className = entriesName.substring(entriesName.lastIndexOf('/') + 1);
-        return className;
+        return entriesName.substring(entriesName.lastIndexOf('/') + 1);
     }
 
     /**
@@ -146,8 +144,6 @@ public class AnnotationScanner implements Runnable {
         }
         this.packages.push(newPackageName);
     }
-
-    private static final String CLASS_TEMPLATE = "%s.%s";
 
     private void scannerAsDir(URL url, String packageName) throws Exception {
         String dirPath = URLDecoder.decode(url.getFile(), StandardCharsets.UTF_8.name());
@@ -172,8 +168,6 @@ public class AnnotationScanner implements Runnable {
             }
         }
     }
-
-    private static final String NUMBER_REGEX = "\\$[0-9]*";
 
     private void annotationClass(String className) throws ClassNotFoundException {
         int anonymityClassLocation = className.lastIndexOf('$');
@@ -209,9 +203,9 @@ public class AnnotationScanner implements Runnable {
         Set<Annotation> scannerAlready = new HashSet<>();
 
         pushAnnotation2Stack(clazz, annotationStack);
-        Annotation item = null;
-        Annotation annotation = null;
-        Class<?> nextScannerAnnotation = null;
+        Annotation item;
+        Annotation annotation;
+        Class<?> nextScannerAnnotation;
 
         boolean result = false;
         while (!annotationStack.isEmpty()) {

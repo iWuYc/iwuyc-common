@@ -9,6 +9,8 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
+ * 默认线程工厂类
+ *
  * @author @Neil
  * @since @2017年10月15日
  */
@@ -44,6 +46,6 @@ public class DefaultThreadFactory implements ThreadFactory {
     }
 
     private String builderThreadName() {
-        return String.format(threadPreName,flag.getAndIncrement());
+        return String.format(threadPreName, flag.getAndIncrement());
     }
 }

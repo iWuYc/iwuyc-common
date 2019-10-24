@@ -49,7 +49,7 @@ public abstract class MapUtil {
         }
         final Map<K, V> result = new HashMap<>(source.size());
         source.entrySet().stream().filter((item) -> String.valueOf(item.getKey()).startsWith(prefixKey))
-            .forEach((item) -> result.put(item.getKey(), item.getValue()));
+                .forEach((item) -> result.put(item.getKey(), item.getValue()));
         return result;
     }
 

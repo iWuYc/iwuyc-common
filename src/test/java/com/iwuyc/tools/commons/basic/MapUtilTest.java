@@ -1,8 +1,3 @@
-/**
- * @Auth iWuYc
- * @time 2017-08-07 13:45
- * @since
- */
 package com.iwuyc.tools.commons.basic;
 
 import com.iwuyc.tools.commons.util.collection.CollectionUtil;
@@ -17,8 +12,8 @@ import java.util.Map;
 
 /**
  * @Auth iWuYc
- * @since
  * @time 2017-08-07 13:45
+ * @since 2019-10-17 10:02:21
  */
 public class MapUtilTest {
     private Map<String, String> map = new HashMap<>();
@@ -49,9 +44,7 @@ public class MapUtilTest {
 
     @Test
     public void isEmpty() {
-        Map<String, String> map = null;
-        Assert.assertTrue(MapUtil.isEmpty(map));
-        map = new HashMap<>();
+        Map<String, String> map = new HashMap<>();
         Assert.assertTrue(MapUtil.isEmpty(map));
         map.put("1", "1");
         Assert.assertFalse(MapUtil.isEmpty(map));
@@ -64,55 +57,14 @@ public class MapUtilTest {
     }
 
     /**
-     * @throws java.lang.Exception
+     *
      */
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         map.put(null, "null");
         for (int i = 0; i < 100; i++) {
             map.put(String.valueOf(i), String.valueOf(i));
         }
-    }
-
-    public static class Entity {
-        String id;
-        String name;
-
-        @Override
-        public int hashCode() {
-            final int prime = 31;
-            int result = 1;
-            result = prime * result + ((name == null) ? 0 : name.hashCode());
-            return result;
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            if (this == obj) {
-                return true;
-            }
-            if (obj == null) {
-                return false;
-            }
-            if (getClass() != obj.getClass()) {
-                return false;
-            }
-            Entity other = (Entity) obj;
-            if (name == null) {
-                if (other.name != null) {
-                    return false;
-                }
-            } else if (!name.equals(other.name)) {
-                return false;
-            }
-            return true;
-        }
-
-        @Override
-        public String toString() {
-            return "Entity [id=" + id + "]";
-        }
-
     }
 
     @Test
@@ -142,6 +94,44 @@ public class MapUtilTest {
 
         result = MapUtil.findKeyByVal(map, entity1);
         System.out.println(result);
+    }
+
+    public static class Entity {
+        String id;
+        String name;
+
+        @Override
+        public int hashCode() {
+            final int prime = 31;
+            int result = 1;
+            result = prime * result + ((name == null) ? 0 : name.hashCode());
+            return result;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj) {
+                return true;
+            }
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            Entity other = (Entity) obj;
+            if (name == null) {
+                return other.name == null;
+            }
+
+            return name.equals(other.name);
+        }
+
+        @Override
+        public String toString() {
+            return "Entity [id=" + id + "]";
+        }
+
     }
 
 }

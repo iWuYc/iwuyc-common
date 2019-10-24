@@ -7,6 +7,7 @@ import org.junit.Test;
 
 import java.io.InputStream;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.ScheduledExecutorService;
 
 import static org.junit.Assert.*;
 
@@ -16,7 +17,7 @@ public class DefaultThreadPoolsServiceImplTest {
 
     @Before
     public void before() throws Exception {
-        try (InputStream in = ThreadConfig.class.getResourceAsStream("/test.properties");) {
+        try (InputStream in = ThreadConfig.class.getResourceAsStream("/test.properties")) {
             this.config = new ThreadConfig();
             config.load(in);
             this.poolSer = new DefaultThreadPoolsServiceImpl(config);
@@ -35,6 +36,21 @@ public class DefaultThreadPoolsServiceImplTest {
         assertNotEquals(result, result1);
         ExecutorService result2 = this.poolSer.getExecutorService(DefaultThreadPoolsServiceImpl.class.getName() + ".2");
         assertNotEquals(result1, result2);
+
+
+    }
+
+    @Test
+    public void testSchedule() {
+        ScheduledExecutorService scheduled1 = this.poolSer.getScheduledExecutor(DefaultThreadPoolsServiceImpl.class);
+        assertNotNull(scheduled1);
+        ScheduledExecutorService scheduled2 = this.poolSer.getScheduledExecutor(DefaultThreadPoolsServiceImpl.class);
+        assertNotNull(scheduled2);
+        assertEquals(scheduled1, scheduled2);
+
+        scheduled1 = this.poolSer.getScheduledExecutor(DefaultThreadPoolsServiceImpl.class.getName() + ".1");
+        scheduled2 = this.poolSer.getScheduledExecutor(DefaultThreadPoolsServiceImpl.class.getName() + ".2");
+        assertNotEquals(scheduled1, scheduled2);
     }
 
     @Test

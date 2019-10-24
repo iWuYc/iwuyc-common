@@ -19,7 +19,7 @@ public class SmartDateTimeFormatter {
 
     private static final LoadingCache<DateTimeFormatterTuple, SmartDateTimeFormatter> DATE_TIME_SMART_FORMATTER_CACHE;
 
-    static{
+    static {
 
         CacheLoader<DateTimeFormatterTuple, SmartDateTimeFormatter> smartCacheLoader = new SmartDateTimeFormatterLoader();
         CacheBuilder<Object, Object> smartCacheBuilder = CacheBuilder.newBuilder();
@@ -30,39 +30,39 @@ public class SmartDateTimeFormatter {
     private final DateTimeFormatter formatter;
     private final DateTimeFormatterTuple tuple;
 
-    public SmartDateTimeFormatter(DateTimeFormatterTuple tuple){
+    public SmartDateTimeFormatter(DateTimeFormatterTuple tuple) {
         this.tuple = tuple;
         this.formatter = DateTimeFormatter.ofPattern(tuple.getPattern(), tuple.getLocale());
     }
 
-    public static SmartDateTimeFormatter create(String pattern, Locale locale){
+    public static SmartDateTimeFormatter create(String pattern, Locale locale) {
         return create(DateTimeFormatterTuple.create(pattern, locale));
     }
 
-    public static SmartDateTimeFormatter create(DateTimeFormatterTuple tuple){
-        if(tuple == null){
+    public static SmartDateTimeFormatter create(DateTimeFormatterTuple tuple) {
+        if (tuple == null) {
             throw new NullPointerException("tuple can't null.");
         }
         return DATE_TIME_SMART_FORMATTER_CACHE.getUnchecked(tuple);
     }
 
-    public String format(TemporalAccessor time){
+    public String format(TemporalAccessor time) {
         return this.formatter.format(time);
     }
 
-    public ZonedDateTime parse(String time){
+    public ZonedDateTime parse(String time) {
         log.debug("Parse method,pattern:{},time:{}", this.tuple.getPattern(), time);
         TemporalAccessor temporal = this.formatter.parse(time, temporalAccessor -> temporalAccessor);
         ZonedDateTime zonedDateTimeTemplates;
-        if(this.tuple.getBaseTime() == null){
+        if (this.tuple.getBaseTime() == null) {
             zonedDateTimeTemplates = ZonedDateTime.now();
-        }else {
+        } else {
             zonedDateTimeTemplates = ZonedDateTime.ofInstant(this.tuple.getBaseTime().toInstant(), DateFormatterConstants.DEFAULT_ZONE_ID);
         }
 
         ChronoField[] chronoFields = ChronoField.values();
-        for(ChronoField item : chronoFields){
-            if(temporal.isSupported(item)){
+        for (ChronoField item : chronoFields) {
+            if (temporal.isSupported(item)) {
                 zonedDateTimeTemplates = zonedDateTimeTemplates.with(item, item.getFrom(temporal));
             }
         }
@@ -74,7 +74,7 @@ public class SmartDateTimeFormatter {
     private static final class SmartDateTimeFormatterLoader extends CacheLoader<DateTimeFormatterTuple, SmartDateTimeFormatter> {
 
         @Override
-        public SmartDateTimeFormatter load(@ParametersAreNonnullByDefault DateTimeFormatterTuple tuple) throws Exception{
+        public SmartDateTimeFormatter load(@ParametersAreNonnullByDefault DateTimeFormatterTuple tuple) throws Exception {
             return new SmartDateTimeFormatter(tuple);
         }
     }

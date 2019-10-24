@@ -7,6 +7,8 @@ import java.util.regex.Pattern;
 
 public class String2TimeTupleConverterTest {
 
+    private static final Pattern UNIT_PATTERN = Pattern.compile("[A-Za-z]+");
+
     @Test
     public void converterData() {
         String2TimeTupleConverter converter = new String2TimeTupleConverter();
@@ -28,7 +30,5 @@ public class String2TimeTupleConverterTest {
     @Test
     public void isSupport() {
     }
-
-    private static final Pattern UNIT_PATTERN = Pattern.compile("[A-Za-z]+");
 
 }
