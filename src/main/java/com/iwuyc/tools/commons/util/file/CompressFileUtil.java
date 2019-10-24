@@ -12,7 +12,7 @@ import java.util.Stack;
 
 public class CompressFileUtil {
     public static void archive(String sourcePath, String targetPathStr, String targetName, boolean isDelete,
-        boolean isOverride) {
+                               boolean isOverride) {
         if (!targetName.endsWith(".tar")) {
             targetName = targetName + ".tar";
         }

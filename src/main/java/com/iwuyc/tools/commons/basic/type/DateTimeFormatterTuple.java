@@ -22,17 +22,17 @@ public class DateTimeFormatterTuple implements Serializable {
     private final Locale locale;
     private final Date baseTime;
 
-    private DateTimeFormatterTuple(String pattern, Locale locale, Date baseTime){
+    private DateTimeFormatterTuple(String pattern, Locale locale, Date baseTime) {
         this.pattern = Conditionals.notNull(pattern);
         this.locale = Conditionals.notNull(locale);
         this.baseTime = baseTime;
     }
 
-    public static DateTimeFormatterTuple create(String pattern, Locale locale, Date baseTime){
+    public static DateTimeFormatterTuple create(String pattern, Locale locale, Date baseTime) {
         return new DateTimeFormatterTuple(pattern, locale, baseTime);
     }
 
-    public static DateTimeFormatterTuple create(String pattern, Locale locale){
+    public static DateTimeFormatterTuple create(String pattern, Locale locale) {
         return create(pattern, locale, new Date());
     }
 }

@@ -26,7 +26,7 @@ public abstract class StringUtils {
      * @param str 待判断的字符
      * @return 如果字符为null或者为""空字符，则返回true，否则返回false
      */
-    public static boolean isEmpty(CharSequence str){
+    public static boolean isEmpty(CharSequence str) {
         return null == str || str.length() == 0;
     }
 
@@ -35,37 +35,37 @@ public abstract class StringUtils {
      *
      * @see StringUtils#isEmpty(CharSequence)
      */
-    public static boolean isNotEmpty(CharSequence str){
+    public static boolean isNotEmpty(CharSequence str) {
         return !isEmpty(str);
     }
 
-    public static boolean equals(CharSequence primaryStr, CharSequence slaveStr){
-        if(primaryStr == null || slaveStr == null){
+    public static boolean equals(CharSequence primaryStr, CharSequence slaveStr) {
+        if (primaryStr == null || slaveStr == null) {
             return primaryStr == slaveStr;
         }
         return primaryStr.equals(slaveStr);
     }
 
-    public static String turnFirstCharToLowerCase(String source){
-        if(isEmpty(source)){
+    public static String turnFirstCharToLowerCase(String source) {
+        if (isEmpty(source)) {
             return source;
         }
         char firstChar = source.charAt(0);
-        if(firstChar < 'A' || firstChar > 'Z'){
+        if (firstChar < 'A' || firstChar > 'Z') {
             return source;
         }
-        firstChar = (char)(firstChar - 'A' + 'a');
+        firstChar = (char) (firstChar - 'A' + 'a');
         return source.length() > 1 ? firstChar + source.substring(1) : String.valueOf(firstChar);
     }
 
-    public static boolean isBlank(CharSequence str){
-        if(isEmpty(str)){
+    public static boolean isBlank(CharSequence str) {
+        if (isEmpty(str)) {
             return true;
         }
         return str.chars().allMatch(item -> item == ' ');
     }
 
-    public static boolean isNotBlank(CharSequence str){
+    public static boolean isNotBlank(CharSequence str) {
         return !isBlank(str);
     }
 }

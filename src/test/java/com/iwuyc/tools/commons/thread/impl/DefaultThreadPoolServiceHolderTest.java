@@ -2,8 +2,6 @@ package com.iwuyc.tools.commons.thread.impl;
 
 import org.junit.Test;
 
-import static org.junit.Assert.*;
-
 public class DefaultThreadPoolServiceHolderTest {
 
     @Test

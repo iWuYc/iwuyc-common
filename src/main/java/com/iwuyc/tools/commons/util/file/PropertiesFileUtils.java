@@ -1,9 +1,9 @@
 package com.iwuyc.tools.commons.util.file;
 
-import com.iwuyc.tools.commons.util.collection.MapUtil;
-import com.iwuyc.tools.commons.util.collection.CollectionUtil;
-import com.iwuyc.tools.commons.util.string.StringUtils;
 import com.iwuyc.tools.commons.util.Constants;
+import com.iwuyc.tools.commons.util.collection.CollectionUtil;
+import com.iwuyc.tools.commons.util.collection.MapUtil;
+import com.iwuyc.tools.commons.util.string.StringUtils;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.*;
@@ -24,7 +24,7 @@ public class PropertiesFileUtils {
      * @param deleteKeys 待删除的数据
      * @return 是否替换成功
      */
-    public static boolean delPropertiesFile(File file, Set<Object> deleteKeys, ReadWriteLock lock){
+    public static boolean delPropertiesFile(File file, Set<Object> deleteKeys, ReadWriteLock lock) {
         return replacePropertiesFile(file, Collections.emptyMap(), deleteKeys, lock);
     }
 
@@ -35,12 +35,12 @@ public class PropertiesFileUtils {
      * @param properties 待替换的数据
      * @return 是否替换成功
      */
-    public static boolean replacePropertiesFile(String path, Map<?, ?> properties){
+    public static boolean replacePropertiesFile(String path, Map<?, ?> properties) {
         return replacePropertiesFile(path, properties, null);
     }
 
-    public static boolean replacePropertiesFile(String path, Map<?, ?> properties, ReadWriteLock lock){
-        if(StringUtils.isEmpty(path) || MapUtil.isEmpty(properties)){
+    public static boolean replacePropertiesFile(String path, Map<?, ?> properties, ReadWriteLock lock) {
+        if (StringUtils.isEmpty(path) || MapUtil.isEmpty(properties)) {
             throw new IllegalArgumentException("Argument can't be empty.");
         }
 
@@ -49,7 +49,7 @@ public class PropertiesFileUtils {
         return replacePropertiesFile(file, properties, lock);
     }
 
-    public static boolean replacePropertiesFile(File file, Map<?, ?> properties, ReadWriteLock lock){
+    public static boolean replacePropertiesFile(File file, Map<?, ?> properties, ReadWriteLock lock) {
         return replacePropertiesFile(file, properties, Collections.emptySet(), lock);
     }
 
@@ -60,7 +60,7 @@ public class PropertiesFileUtils {
      * @param properties 待替换的数据
      * @return 是否替换成功
      */
-    public static boolean replacePropertiesFile(File file, Map<?, ?> properties){
+    public static boolean replacePropertiesFile(File file, Map<?, ?> properties) {
         return replacePropertiesFile(file, properties, Collections.emptySet(), Constants.UTF8_STR);
     }
 
@@ -73,20 +73,20 @@ public class PropertiesFileUtils {
      * @param lock       对文件写操作的时候加写锁
      * @return 是否替换成功
      */
-    public static boolean replacePropertiesFile(File file, Map<?, ?> properties, Set<Object> deleteKeys, ReadWriteLock lock){
-        try{
-            if(null != lock){
+    public static boolean replacePropertiesFile(File file, Map<?, ?> properties, Set<Object> deleteKeys, ReadWriteLock lock) {
+        try {
+            if (null != lock) {
                 lock.writeLock().lock();
             }
             return replacePropertiesFile(file, properties, deleteKeys, Constants.UTF8_STR);
-        }finally{
-            if(null != lock){
+        } finally {
+            if (null != lock) {
                 lock.writeLock().unlock();
             }
         }
     }
 
-    public static boolean replacePropertiesFile(File file, Map<?, ?> properties, Set<Object> deleteKeys, String charsetEncoding){
+    public static boolean replacePropertiesFile(File file, Map<?, ?> properties, Set<Object> deleteKeys, String charsetEncoding) {
         return replacePropertiesFile(file, properties, deleteKeys, charsetEncoding, true);
     }
 
@@ -101,58 +101,58 @@ public class PropertiesFileUtils {
      * @return 是否替换成功
      */
     public static boolean replacePropertiesFile(File file, Map<?, ?> properties, Set<Object> deleteKeys, String charsetEncoding,
-            boolean appendNewLine){
-        if(StringUtils.isEmpty(charsetEncoding)){
+                                                boolean appendNewLine) {
+        if (StringUtils.isEmpty(charsetEncoding)) {
             charsetEncoding = Constants.UTF8_STR;
         }
 
         HashSet<Object> deleteKeysInner = new HashSet<>(deleteKeys);
         StringBuilder newContent = new StringBuilder();
         Character splitChar = null;
-        try(FileInputStream fileReader = new FileInputStream(file);
-                BufferedReader reader = new BufferedReader(new InputStreamReader(fileReader, charsetEncoding))){
+        try (FileInputStream fileReader = new FileInputStream(file);
+             BufferedReader reader = new BufferedReader(new InputStreamReader(fileReader, charsetEncoding))) {
             String line = null;
             boolean isDeleteKey = CollectionUtil.isNotEmpty(deleteKeysInner);
-            while((line = reader.readLine()) != null){
-                if(StringUtils.isBlank(line) || line.charAt(0) == '#'){
+            while ((line = reader.readLine()) != null) {
+                if (StringUtils.isBlank(line) || line.charAt(0) == '#') {
                     newContent.append(line).append('\n');
                     continue;
                 }
                 int splitIndex = line.indexOf('=');
                 splitIndex = splitIndex > 0 ? splitIndex : line.indexOf(':');
-                if(splitIndex < 0){
+                if (splitIndex < 0) {
                     continue;
                 }
                 splitChar = line.charAt(splitIndex);
                 String key = line.substring(0, splitIndex);
-                if(isDeleteKey && deleteKeysInner.contains(key)){
+                if (isDeleteKey && deleteKeysInner.contains(key)) {
                     continue;
                 }
 
-                if(!properties.containsKey(key)){
+                if (!properties.containsKey(key)) {
                     newContent.append(line).append('\n');
                     continue;
                 }
                 Object val = properties.remove(key);
                 newContent.append(key).append(splitChar).append(val).append('\n');
             }
-        }catch(IOException e){
+        } catch (IOException e) {
             log.error("读取{}出错，请检查后重试。", file);
         }
 
         splitChar = splitChar == null ? defaultSplitChar : splitChar;
-        if(appendNewLine){
-            for(Map.Entry<?, ?> item : properties.entrySet()){
+        if (appendNewLine) {
+            for (Map.Entry<?, ?> item : properties.entrySet()) {
                 newContent.append(item.getKey()).append(splitChar).append(item.getValue()).append('\n');
             }
 
         }
-        try(FileOutputStream fileWriter = new FileOutputStream(file);
-                BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(fileWriter, charsetEncoding))){
+        try (FileOutputStream fileWriter = new FileOutputStream(file);
+             BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(fileWriter, charsetEncoding))) {
 
             writer.write(newContent.toString());
             writer.flush();
-        }catch(IOException e){
+        } catch (IOException e) {
             log.error("写入{}出错，请检查后重试。", file);
         }
         return true;
@@ -164,7 +164,7 @@ public class PropertiesFileUtils {
      * @param propertiesLocation properties文件的位置
      * @return properties的实例
      */
-    public static Properties propertiesReader(String propertiesLocation){
+    public static Properties propertiesReader(String propertiesLocation) {
         return propertiesReader(propertiesLocation, Constants.UTF8_STR);
     }
 
@@ -176,11 +176,11 @@ public class PropertiesFileUtils {
      * @param ignoredVal     忽略的val
      * @return properties的实例
      */
-    public static Properties propertiesReader(File propertiesFile, Collection<Object> ignoredKey, Collection<Object> ignoredVal){
+    public static Properties propertiesReader(File propertiesFile, Collection<Object> ignoredKey, Collection<Object> ignoredVal) {
         return propertiesReader(propertiesFile, Constants.UTF8_STR, ignoredKey, ignoredVal, Constants.NIL_STRING);
     }
 
-    public static Properties propertiesReader(File propertiesFile, ReadWriteLock lock){
+    public static Properties propertiesReader(File propertiesFile, ReadWriteLock lock) {
         return propertiesReader(propertiesFile, Constants.UTF8_STR, Collections.emptyList(), Collections.emptyList(), lock, null);
     }
 
@@ -195,14 +195,14 @@ public class PropertiesFileUtils {
      * @return properties的实例
      */
     public static Properties propertiesReader(File propertiesFile, String charsetEncoding, Collection<Object> ignoredKey,
-            Collection<Object> ignoredVal, ReadWriteLock lock, Object defaultVal){
-        try{
-            if(null != lock){
+                                              Collection<Object> ignoredVal, ReadWriteLock lock, Object defaultVal) {
+        try {
+            if (null != lock) {
                 lock.readLock().lock();
             }
             return propertiesReader(propertiesFile, charsetEncoding, ignoredKey, ignoredVal, defaultVal);
-        }finally{
-            if(null != lock){
+        } finally {
+            if (null != lock) {
                 lock.readLock().unlock();
             }
         }
@@ -219,24 +219,24 @@ public class PropertiesFileUtils {
      * @return properties的实例
      */
     public static Properties propertiesReader(File propertiesFile, String charsetEncoding, Collection<Object> ignoredKey,
-            Collection<Object> ignoredVal, Object fillVal){
-        if(StringUtils.isEmpty(charsetEncoding)){
+                                              Collection<Object> ignoredVal, Object fillVal) {
+        if (StringUtils.isEmpty(charsetEncoding)) {
             charsetEncoding = Constants.UTF8_STR;
         }
 
         IgnorableProperties properties = new IgnorableProperties();
         properties.setFillVal(fillVal);
-        if(CollectionUtil.isNotEmpty(ignoredKey)){
+        if (CollectionUtil.isNotEmpty(ignoredKey)) {
             properties.addIgnoreKey(ignoredKey.toArray());
         }
-        if(CollectionUtil.isNotEmpty(ignoredVal)){
+        if (CollectionUtil.isNotEmpty(ignoredVal)) {
             properties.addIgnoreVal(ignoredVal.toArray());
         }
 
-        try(FileInputStream fileInputStream = new FileInputStream(propertiesFile);
-                InputStreamReader reader = new InputStreamReader(fileInputStream, charsetEncoding)){
+        try (FileInputStream fileInputStream = new FileInputStream(propertiesFile);
+             InputStreamReader reader = new InputStreamReader(fileInputStream, charsetEncoding)) {
             properties.load(reader);
-        }catch(IOException e){
+        } catch (IOException e) {
             throw new IllegalArgumentException("Read properties make a mistake.", e);
         }
         return properties;
@@ -249,7 +249,7 @@ public class PropertiesFileUtils {
      * @param charsetEncoding 编码格式
      * @return properties的实例
      */
-    public static Properties propertiesReader(File propertiesFile, String charsetEncoding){
+    public static Properties propertiesReader(File propertiesFile, String charsetEncoding) {
         return propertiesReader(propertiesFile, charsetEncoding, Collections.emptyList(), Collections.emptyList(), null);
     }
 
@@ -260,7 +260,7 @@ public class PropertiesFileUtils {
      * @param charsetEncoding    编码格式
      * @return properties的实例
      */
-    public static Properties propertiesReader(String propertiesLocation, String charsetEncoding){
+    public static Properties propertiesReader(String propertiesLocation, String charsetEncoding) {
         String absolutePropertiesPath = FileUtil.absoluteLocation(propertiesLocation);
         File propertiesFile = new File(absolutePropertiesPath);
 

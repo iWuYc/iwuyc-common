@@ -1,7 +1,7 @@
 package com.iwuyc.tools.commons.thread.conf;
 
-import com.iwuyc.tools.commons.util.string.StringUtils;
 import com.iwuyc.tools.commons.basic.type.TimeTuple;
+import com.iwuyc.tools.commons.util.string.StringUtils;
 
 import java.util.Collections;
 import java.util.Map;
@@ -12,13 +12,11 @@ import java.util.concurrent.TimeUnit;
  */
 public class ThreadPoolConfig {
 
+    private final String factory;
     /**
      * 线程池的名字
      */
     private String threadPoolsName;
-
-    private final String factory;
-
     /**
      * 线程最小线程数
      */

@@ -12,7 +12,7 @@ import java.util.Date;
 public class DateTimeBuilderTest {
 
     @Test
-    public void nextDayOfMonth(){
+    public void nextDayOfMonth() {
         DateTimeBuilder builder = DateTimeBuilder.withTime("2020-10-25T00:26:20+0800");
         builder = builder.nextDayOfMonth(26);
         System.out.println(builder.getZonedDateTime());
@@ -36,7 +36,7 @@ public class DateTimeBuilderTest {
     }
 
     @Test
-    public void testYearMonthDay(){
+    public void testYearMonthDay() {
         Date sourceDate = new Date(0);
 
         String dateStr = "1970";
@@ -76,15 +76,15 @@ public class DateTimeBuilderTest {
         Assert.assertEquals(dateStr, dateTimeBuilder.format());
     }
 
-    private boolean equal(Date date1, Date date2, int... calendarFlag){
+    private boolean equal(Date date1, Date date2, int... calendarFlag) {
         Calendar date1Calendar = Calendar.getInstance();
         date1Calendar.setTime(date1);
 
         Calendar date2Calendar = Calendar.getInstance();
         date2Calendar.setTime(date2);
 
-        for(int i : calendarFlag){
-            if(date1Calendar.get(i) != date2Calendar.get(i)){
+        for (int i : calendarFlag) {
+            if (date1Calendar.get(i) != date2Calendar.get(i)) {
                 return false;
             }
         }

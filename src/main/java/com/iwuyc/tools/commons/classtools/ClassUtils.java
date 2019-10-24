@@ -1,16 +1,11 @@
-/**
- * @Auth iWuYc
- * @time 2017-08-07 16:25
- * @since
- */
 package com.iwuyc.tools.commons.classtools;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
-import com.iwuyc.tools.commons.util.collection.ArrayUtil;
-import com.iwuyc.tools.commons.util.collection.MultiMap;
 import com.iwuyc.tools.commons.classtools.typeconverter.TypeConverter;
 import com.iwuyc.tools.commons.classtools.typeconverter.TypeConverterConstant;
+import com.iwuyc.tools.commons.util.collection.ArrayUtil;
+import com.iwuyc.tools.commons.util.collection.MultiMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,7 +33,7 @@ public abstract class ClassUtils {
 
     private final static Field MODIFIERS_FIELD;
     private static final Logger LOG = LoggerFactory.getLogger(ClassUtils.class);
-    private static final Cache<TypeFunction, String> CACHE_LAMBDA_INFO = CacheBuilder.newBuilder().build();
+    private static final Cache<TypeFunction<?, ?>, String> CACHE_LAMBDA_INFO = CacheBuilder.newBuilder().build();
 
     static {
 
@@ -97,17 +92,17 @@ public abstract class ClassUtils {
      * @return 未注入成功的字段跟值，一般是，不存在这个字段，或者，在注入的时候出问题了
      */
     public static Map<Object, Object> injectFields(Object instance, Map<String, Object> fieldAndVal,
-            MultiMap<Class<? extends Object>, TypeConverter<? extends Object, ? extends Object>> typeConverters) {
+                                                   MultiMap<Class<?>, TypeConverter<?, ?>> typeConverters) {
         if (null == instance || null == fieldAndVal) {
             return Collections.emptyMap();
         }
 
         HashMap<Object, Object> innerMap = new HashMap<>(fieldAndVal);
 
-        Class<? extends Object> clazz = instance.getClass();
+        Class<?> clazz = instance.getClass();
         Field[] fields = clazz.getDeclaredFields();
-        String fieldName = null;
-        Object fieldVal = null;
+        String fieldName;
+        Object fieldVal;
         for (Field field : fields) {
             fieldName = field.getName();
 
@@ -126,7 +121,7 @@ public abstract class ClassUtils {
     }
 
     private static boolean injectField(Object instance, Field field, Object val,
-            MultiMap<Class<? extends Object>, TypeConverter<? extends Object, ? extends Object>> typeConverters) {
+                                       MultiMap<Class<?>, TypeConverter<?, ?>> typeConverters) {
         try {
             // 字段属性修改，以便可以进行属性设置
             fieldModifier(field);
@@ -143,7 +138,8 @@ public abstract class ClassUtils {
 
             return injectField(instance, field, rejectVal);
         } catch (IllegalArgumentException e) {
-            LOG.error("Can't inject the field[{}] val[{}].cause:{}", field, val, e);
+            LOG.error("Can't inject the field[{}] val[{}].cause:{}", field, val, e.getMessage());
+            LOG.debug("Error Info Detail:", e);
             return false;
         }
     }
@@ -153,8 +149,8 @@ public abstract class ClassUtils {
             field.set(instance, rejectVal);
             return true;
         } catch (IllegalArgumentException | IllegalAccessException e) {
-
-            LOG.error("Can't inject the field[{}] val[{}].cause:{}", field, rejectVal, e);
+            LOG.error("Can't inject the field[{}] val[{}].cause:{}", field, rejectVal, e.getMessage());
+            LOG.debug("Error Info Detail:", e);
             return false;
         }
     }
@@ -182,11 +178,11 @@ public abstract class ClassUtils {
      * @param targetType     目标数据类型
      * @param val            数据
      * @param typeConverters 类型转换器集合
-     * @return
+     * @return 转换结果
      */
-    @SuppressWarnings({ "unchecked", "rawtypes" })
-    private static Object convert(Class<? extends Object> sourceType, Class targetType, Object val,
-            MultiMap<Class<? extends Object>, TypeConverter<? extends Object, ? extends Object>> typeConverters) {
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    private static Object convert(Class<?> sourceType, Class targetType, Object val,
+                                  MultiMap<Class<?>, TypeConverter<?, ?>> typeConverters) {
         if (sourceType == targetType) {
             return val;
         }
@@ -195,10 +191,10 @@ public abstract class ClassUtils {
             typeConverters = TypeConverterConstant.DEFAULT_CONVERTERS;
         }
 
-        Object rejectVal = null;
-        Collection<TypeConverter<? extends Object, ? extends Object>> converters = typeConverters.get(sourceType);
+        Object rejectVal;
+        Collection<TypeConverter<?, ?>> converters = typeConverters.get(sourceType);
         // 筛选支持转换的转换器，并且返回第一个。
-        Optional<TypeConverter<? extends Object, ? extends Object>> supportConverterOpt = converters.stream()
+        Optional<TypeConverter<?, ?>> supportConverterOpt = converters.stream()
                 .filter((item) -> {
                     return item.support(targetType);
                 }).findFirst();
@@ -221,10 +217,7 @@ public abstract class ClassUtils {
      */
     public static <I> I instance(Class<I> targetClass, String clazzName, Object... args) {
         Optional<Class<?>> clazzOpt = loadClass(clazzName);
-        if (!clazzOpt.isPresent()) {
-            return null;
-        }
-        return instance(targetClass, clazzOpt.get(), args);
+        return clazzOpt.map(aClass -> instance(targetClass, aClass, args)).orElse(null);
     }
 
     /**
@@ -255,9 +248,9 @@ public abstract class ClassUtils {
     /**
      * 获取属性对象
      *
-     * @param clazz
-     * @param fieldName
-     * @return
+     * @param clazz     目标类
+     * @param fieldName 目标字段名
+     * @return 查找到的字段实例
      */
     public static Field findField(Class<?> clazz, String fieldName) {
         return AccessController.doPrivileged(new FieldPrivilegedAction(clazz, fieldName));
@@ -317,7 +310,7 @@ public abstract class ClassUtils {
      * @param instance   实例或者Class对象
      * @param methodName 方法名
      * @param parameters 方法的入参
-     * @return
+     * @return 执行结果
      * @author Neil
      */
     public static Object callMethod(Object instance, String methodName, Object... parameters) {
@@ -331,7 +324,7 @@ public abstract class ClassUtils {
      * @param instance   实例或者Class对象
      * @param methodName 方法名
      * @param parameters 方法的入参
-     * @return
+     * @return 执行结果
      * @author Neil
      */
     public static Object mandatoryCallMethod(Object instance, String methodName, Object... parameters) {
@@ -402,7 +395,7 @@ public abstract class ClassUtils {
 
         Integer[] constructorIndex = new Integer[executables.length];
         int cursor = 0;
-        Executable constructor = null;
+        Executable constructor;
         for (int i = 0; i < executables.length; i++) {
             constructor = executables[i];
             if (compareTypeList(constructor.getParameterTypes(), parameterTypes, false)) {
@@ -515,7 +508,7 @@ public abstract class ClassUtils {
                 Object i = constructor.newInstance(args);
                 return (I) i;
             } catch (Exception e) {
-                LOG.debug("error:{}", e);
+                LOG.debug("error:", e);
                 LOG.error("Can't init class[{}]", clazz);
             }
             return null;
@@ -530,14 +523,13 @@ public abstract class ClassUtils {
                 parameterTypes[i] = args[i].getClass();
             }
 
-            Constructor<?> bestMatch = (Constructor<?>) chooseBestMatchExecutable(clazz.getDeclaredConstructors(),
+            return (Constructor<?>) chooseBestMatchExecutable(clazz.getDeclaredConstructors(),
                     parameterTypes);
-            return bestMatch;
         }
 
     }
 
-    private static class ClassLoadPrivilegedAction implements PrivilegedAction<Optional<Class<? extends Object>>> {
+    private static class ClassLoadPrivilegedAction implements PrivilegedAction<Optional<Class<?>>> {
 
         private ClassLoader loader;
         private String classPath;
@@ -550,7 +542,7 @@ public abstract class ClassUtils {
         }
 
         @Override
-        public Optional<Class<? extends Object>> run() {
+        public Optional<Class<?>> run() {
 
             Class<?> result = null;
             try {
@@ -570,7 +562,7 @@ public abstract class ClassUtils {
         private boolean declared;
 
         public MethodPrivilegedAction(Class<?> targetClazz, String methodName, Class<?>[] parameterTypeList,
-                boolean declared) {
+                                      boolean declared) {
             this.targetClazz = targetClazz;
             this.methodName = methodName;
             this.parameterTypeList = parameterTypeList;

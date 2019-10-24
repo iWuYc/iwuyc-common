@@ -21,11 +21,11 @@ public class DateTimeUtils {
 
     private static final LoadingCache<DateTimeFormatterTuple, DateTimeFormatter> DATE_TIME_FORMATTER_CACHE;
 
-    static{
+    static {
         CacheLoader<DateTimeFormatterTuple, DateTimeFormatter> cacheLoader = new CacheLoader<DateTimeFormatterTuple, DateTimeFormatter>() {
 
             @Override
-            public DateTimeFormatter load(DateTimeFormatterTuple tuple){
+            public DateTimeFormatter load(DateTimeFormatterTuple tuple) {
                 return DateTimeFormatter.ofPattern(tuple.getPattern(), tuple.getLocale());
             }
         };
@@ -34,15 +34,15 @@ public class DateTimeUtils {
         DATE_TIME_FORMATTER_CACHE = cacheBuilder.build(cacheLoader);
     }
 
-    private static DateTimeFormatter getDateTimeFormatter(DateTimeFormatterTuple tuple){
+    private static DateTimeFormatter getDateTimeFormatter(DateTimeFormatterTuple tuple) {
         return DATE_TIME_FORMATTER_CACHE.getUnchecked(tuple);
     }
 
-    public static DateTimeFormatter getDateTimeFormatter(String pattern, Locale locale){
+    public static DateTimeFormatter getDateTimeFormatter(String pattern, Locale locale) {
         return getDateTimeFormatter(DateTimeFormatterTuple.create(pattern, locale));
     }
 
-    public static DateTimeFormatter getDateTimeFormatter(String pattern){
+    public static DateTimeFormatter getDateTimeFormatter(String pattern) {
         return getDateTimeFormatter(pattern, DateFormatterConstants.DEFAULT_LOCALE);
     }
 
@@ -55,7 +55,7 @@ public class DateTimeUtils {
      * @return 转换后的日期类型
      * @see DateFormatterConstants#DEFAULT_LOCALE
      */
-    public static Date parse(String dateStr, String pattern, Locale locale){
+    public static Date parse(String dateStr, String pattern, Locale locale) {
         return DateTimeBuilder.withTime(dateStr, pattern, locale).toDate();
     }
 
@@ -67,7 +67,7 @@ public class DateTimeUtils {
      * @return 转换后的日期类型
      * @see DateFormatterConstants#DEFAULT_LOCALE
      */
-    public static Date parse(String dateStr, String pattern){
+    public static Date parse(String dateStr, String pattern) {
         return parse(dateStr, pattern, DateFormatterConstants.DEFAULT_LOCALE);
     }
 
@@ -79,20 +79,20 @@ public class DateTimeUtils {
      * @see DateFormatterConstants#DEFAULT_PATTERN
      * @see DateFormatterConstants#DEFAULT_LOCALE
      */
-    public static Date parse(String dateStr){
+    public static Date parse(String dateStr) {
         return parse(dateStr, DateFormatterConstants.DEFAULT_PATTERN);
     }
 
-    public static String format(Date date, String pattern){
+    public static String format(Date date, String pattern) {
         DateTimeBuilder builder = DateTimeBuilder.withTime(date);
         return builder.format(pattern);
     }
 
-    public static String format(Date date){
+    public static String format(Date date) {
         return format(date, DateFormatterConstants.DEFAULT_PATTERN);
     }
 
-    public static String now(){
+    public static String now() {
         return DateTimeBuilder.withTime(new Date()).format();
     }
 }

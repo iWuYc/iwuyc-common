@@ -3,8 +3,6 @@ package com.iwuyc.tools.commons.util;
 import com.google.common.base.Stopwatch;
 import org.junit.Test;
 
-import java.lang.invoke.SerializedLambda;
-
 public class PlaceholderExtractTest {
 
     @Test

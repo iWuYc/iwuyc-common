@@ -20,7 +20,7 @@ public class IgnorableProperties extends Properties {
      * @param keys 增加忽略的key值，增加该值后，所有put到该properties，将忽略这些指定的key。
      * @return 当前properties实例
      */
-    public IgnorableProperties addIgnoreKey(Object... keys){
+    public IgnorableProperties addIgnoreKey(Object... keys) {
         this.ignoreKey.addAll(Arrays.asList(keys));
         return this;
     }
@@ -29,17 +29,17 @@ public class IgnorableProperties extends Properties {
      * @param vals 增加忽略的val值，增加该值后，所有put到该properties，将忽略这些指定的val。
      * @return 当前properties实例
      */
-    public IgnorableProperties addIgnoreVal(Object... vals){
+    public IgnorableProperties addIgnoreVal(Object... vals) {
         this.ignoreVal.addAll(Arrays.asList(vals));
         return this;
     }
 
     @Override
-    public synchronized Object put(Object key, Object value){
-        if(ignoreKey.contains(key) || ignoreVal.contains(value)){
+    public synchronized Object put(Object key, Object value) {
+        if (ignoreKey.contains(key) || ignoreVal.contains(value)) {
             return value;
         }
-        if(null != fillVal){
+        if (null != fillVal) {
             return super.put(key, fillVal);
         }
         return super.put(key, value);

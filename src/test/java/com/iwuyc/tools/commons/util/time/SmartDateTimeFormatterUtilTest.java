@@ -40,7 +40,7 @@ public class SmartDateTimeFormatterUtilTest {
         SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         Date date = format.parse("2018-09-02 13:28:27");
         LocalDateTime localDateTime =
-            LocalDateTime.ofInstant(date.toInstant(), DateFormatterConstants.DEFAULT_ZONE_OFFSET);
+                LocalDateTime.ofInstant(date.toInstant(), DateFormatterConstants.DEFAULT_ZONE_OFFSET);
         System.out.println(localDateTime.format(formatter));
     }
 

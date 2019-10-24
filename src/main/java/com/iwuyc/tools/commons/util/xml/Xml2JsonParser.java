@@ -100,7 +100,7 @@ public class Xml2JsonParser implements Parser<Node, String> {
     private boolean shouldBeClean(Collection<Node> nodes) {
         // 判断是否存在非 CharacterData 类型的节点 并且是复合类型的，如果存在，则需要将nodes中所有的 CharacterData 节点删除
         long count = nodes.parallelStream()
-            .filter(item -> !(item instanceof CharacterData) && MULTI_NODE_TYPE.contains(item.getNodeType())).count();
+                .filter(item -> !(item instanceof CharacterData) && MULTI_NODE_TYPE.contains(item.getNodeType())).count();
         return count != 0;
     }
 
@@ -108,7 +108,7 @@ public class Xml2JsonParser implements Parser<Node, String> {
         if (isSimpleNode(ele)) {
             leaf(jsonBuilder, ele);
         } else if (isMultiNode(ele)) {
-            multiObject(jsonBuilder, (Branch)ele);
+            multiObject(jsonBuilder, (Branch) ele);
         }
     }
 
@@ -121,7 +121,7 @@ public class Xml2JsonParser implements Parser<Node, String> {
         switch (nodeType) {
             case Node.ELEMENT_NODE:
             case Node.DOCUMENT_NODE:
-                List<Node> children = ((Branch)ele).content();
+                List<Node> children = ((Branch) ele).content();
                 if (children.size() == 1) {
                     Node child = children.get(0);
                     short childType = child.getNodeType();
@@ -185,7 +185,7 @@ public class Xml2JsonParser implements Parser<Node, String> {
         boolean isMultiLeaf = MULTI_NODE_TYPE.contains(ele.getNodeType());
         if (isMultiLeaf) {
             jsonBuilder.name(ele.getName());
-            ele = ((Branch)ele).content().get(0);
+            ele = ((Branch) ele).content().get(0);
         }
         String val = ele.getStringValue();
         if (NumberUtils.isNumber(val)) {

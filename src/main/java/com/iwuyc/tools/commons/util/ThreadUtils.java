@@ -6,8 +6,9 @@ import java.util.Optional;
 
 /**
  * 线程工具
- * @since 2019-01-25 10:06:41
+ *
  * @author Neil
+ * @since 2019-01-25 10:06:41
  */
 public class ThreadUtils {
 
@@ -17,11 +18,11 @@ public class ThreadUtils {
      *
      * @return 调用的栈追踪信息
      */
-    public static Optional<StackTraceElement> callLocationInfo(){
+    public static Optional<StackTraceElement> callLocationInfo() {
         RuntimePermission permission = new RuntimePermission("getStackTrace");
-        Optional<StackTraceElement> result = AccessController.doPrivileged((PrivilegedAction<Optional<StackTraceElement>>)() -> {
+        Optional<StackTraceElement> result = AccessController.doPrivileged((PrivilegedAction<Optional<StackTraceElement>>) () -> {
             StackTraceElement[] stackTraces = Thread.currentThread().getStackTrace();
-            if(stackTraces.length < 7){
+            if (stackTraces.length < 7) {
                 return Optional.empty();
             }
             return Optional.ofNullable(stackTraces[6]);

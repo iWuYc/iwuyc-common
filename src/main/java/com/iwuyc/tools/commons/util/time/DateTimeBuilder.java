@@ -23,7 +23,7 @@ public class DateTimeBuilder {
 
     public static DateTimeBuilder withTime(Date time) {
         Instant instant = time.toInstant();
-        return withTime(ZonedDateTime.ofInstant(instant,ZoneId.systemDefault()));
+        return withTime(ZonedDateTime.ofInstant(instant, ZoneId.systemDefault()));
     }
 
     public static DateTimeBuilder withTime(ZonedDateTime time) {
