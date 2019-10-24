@@ -4,7 +4,7 @@
 ### 配置示例：
 ```properties
 thread.conf.default.corePoolSize=2
-thread.conf.default.factory=com.iwuyc.tools.commons.thread.impl.ThreadPoolExecutorFactory
+thread.conf.default.factory=com.iwuyc.tools.commons.thread.impl.DefaultExecutorServiceFactory
 # [h - hour;m - minute;s - second;ms - millisecond;ns - nanosecond;]default:s
 thread.conf.default.keepAliveTime=3600s
 thread.conf.default.maximumPoolSize=16
@@ -53,10 +53,9 @@ public class YamlConfigTest
 ```
 默认实现了jdk中的两种线程池的构造器：
 ```
-com.iwuyc.tools.commons.thread.impl.ScheduledExecutorServiceFactory;
-com.iwuyc.tools.commons.thread.impl.ThreadPoolExecutorFactory;
+com.iwuyc.tools.commons.thread.impl.DefaultExecutorServiceFactory;
 ```
-以上两个类实现了```java com.iwuyc.tools.commons.thread.ExecutorServiceFactory```接口，如果有需要支持拓展第三方的线程池（必须实现```java.util.concurrent.ExecutorService```接口）生成，则可以继承该接口，然后在```create(ThreadPoolConfig config)```方法中实现相应的线程池构造。
+上述类实现了```java com.iwuyc.tools.commons.thread.ExecutorServiceFactory```接口，如果有需要支持拓展第三方的线程池（必须实现```java.util.concurrent.ExecutorService```接口）生成，则可以继承该接口，然后在```create(ThreadPoolConfig config)```或```createSchedule(ThreadPoolConfig)```方法中实现相应的线程池构造。
 
 
 ### 默认配置
@@ -70,14 +69,11 @@ com.iwuyc.tools.commons.thread.impl.ThreadPoolExecutorFactory;
 #                      
 ####################################################################################################################
 thread.conf.default.corePoolSize=availableProcessors
-thread.conf.default.factory=com.iwuyc.tools.commons.thread.impl.ThreadPoolExecutorFactory
+thread.conf.default.factory=com.iwuyc.tools.commons.thread.impl.DefaultExecutorServiceFactory
 # [h - hour;m - minute;s - second;ms - millisecond;ns - nanosecond;]default:s
 thread.conf.default.keepAliveTime=60m
-thread.conf.default.maximumPoolSize=availableProcessors*2
+thread.conf.default.maximumPoolSize=availableProcessors*4
 thread.conf.default.maxQueueSize=1800
-
-thread.conf.defaultSchedule.corePoolSize=availableProcessors
-thread.conf.defaultSchedule.factory=com.iwuyc.tools.commons.thread.impl.ScheduledExecutorServiceFactory
 
 thread.using.root=default
 thread.using.com.iwuyc=default

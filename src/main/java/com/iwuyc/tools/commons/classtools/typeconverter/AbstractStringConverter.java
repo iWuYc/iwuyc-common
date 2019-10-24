@@ -1,8 +1,6 @@
 package com.iwuyc.tools.commons.classtools.typeconverter;
 
 import com.iwuyc.tools.commons.util.string.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * @param <T>
@@ -10,7 +8,6 @@ import org.slf4j.LoggerFactory;
  * @since @2017年10月15日
  */
 public abstract class AbstractStringConverter<T> implements TypeConverter<String, T> {
-    protected static final Logger LOG = LoggerFactory.getLogger(AbstractStringConverter.class);
 
     /**
      * 进行数据转换

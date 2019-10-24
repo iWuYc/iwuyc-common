@@ -22,7 +22,8 @@ public class FileUtilTest {
         String filePath = testPropertiesUrl.getFile() + "test_delete.properties";
         File file = new File(filePath);
         try {
-            file.createNewFile();
+            boolean createFileResult = file.createNewFile();
+            assertTrue(createFileResult);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -34,5 +35,12 @@ public class FileUtilTest {
     public void absoluteLocation() {
         String result = FileUtil.absoluteLocation("classpath:/test.properties");
         System.out.println(result);
+    }
+
+    @Test
+    public void fileExistsTest() {
+        final String location = FileUtil.class.getResource(FileUtil.class.getSimpleName() + ".class").getFile();
+        boolean result = FileUtil.fileExists(location);
+        assertTrue(result);
     }
 }

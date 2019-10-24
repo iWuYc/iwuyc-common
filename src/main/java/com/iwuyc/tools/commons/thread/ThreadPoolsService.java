@@ -1,6 +1,7 @@
 package com.iwuyc.tools.commons.thread;
 
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.ScheduledExecutorService;
 
 /**
  * 线程池的服务
@@ -20,10 +21,26 @@ public interface ThreadPoolsService {
     /**
      * 提供过字符串获取相应的线程池实例。
      *
-     * @param domain 作用域，以半角“.”字符作为分隔符，可以是包名，类全限定名。
+     * @param domain 作用域，只能出现英文字母、“_”、“.”，以半角“.”字符作为分隔符，可以是包名，类全限定名。
      * @return 线程池实例
      */
     ExecutorService getExecutorService(String domain);
+
+    /**
+     * 获取定时执行的线程池
+     *
+     * @param clazz 类
+     * @return 线程池实例
+     */
+    ScheduledExecutorService getScheduledExecutor(Class<?> clazz);
+
+    /**
+     * 获取定时执行的线程池
+     *
+     * @param domain 作用域，只能出现英文字母、“_”、“.”，以半角“.”字符作为分隔符，可以是包名，类全限定名。
+     * @return 线程池实例
+     */
+    ScheduledExecutorService getScheduledExecutor(String domain);
 
     /**
      * 获取配置信息
