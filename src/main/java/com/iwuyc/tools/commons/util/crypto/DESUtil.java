@@ -1,7 +1,6 @@
 package com.iwuyc.tools.commons.util.crypto;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
 import javax.crypto.Cipher;
 import javax.crypto.NoSuchPaddingException;
@@ -13,10 +12,9 @@ import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
 import java.util.Base64;
 
-@SuppressWarnings("restriction")
+@Slf4j
 public class DESUtil {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(DESUtil.class);
 
     /**
      * 加密
@@ -34,7 +32,7 @@ public class DESUtil {
             Base64.Encoder encoder = Base64.getMimeEncoder();
             return encoder.encodeToString(b);
         } catch (Exception e) {
-            LOGGER.warn("DESUtil encrypt error:", e);
+            log.warn("DESUtil encrypt error:", e);
             return null;
         }
     }
@@ -71,7 +69,7 @@ public class DESUtil {
 
             return new String(retByte, charset);
         } catch (Exception e) {
-            LOGGER.warn("DESUtil decrypt error:", e);
+            log.warn("DESUtil decrypt error:", e);
             e.printStackTrace();
             return null;
         }

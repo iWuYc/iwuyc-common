@@ -4,16 +4,14 @@ import com.iwuyc.tools.commons.basic.type.TimeTuple;
 import com.iwuyc.tools.commons.thread.ExecutorServiceFactory;
 import com.iwuyc.tools.commons.thread.conf.ThreadPoolConfig;
 
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.*;
 
 /**
  * @author @Neil
  * @since @2017年10月15日
  */
-public class ThreadPoolExecutorFactory implements ExecutorServiceFactory {
+public class DefaultExecutorServiceFactory implements ExecutorServiceFactory {
+    private static final String SCHEDULE_EXECUTOR_NAME_FORMAT = "schedule-%s";
 
     @Override
     public ExecutorService create(ThreadPoolConfig config) {
@@ -22,8 +20,14 @@ public class ThreadPoolExecutorFactory implements ExecutorServiceFactory {
         BlockingQueue<Runnable> workQueue = builderBlockingQueue(config);
         ThreadFactory threadFactory = new DefaultThreadFactory(config.getThreadPoolsName());
 
-        return new java.util.concurrent.ThreadPoolExecutor(config.getCorePoolSize(), config
-                .getMaximumPoolSize(), keepalive.getTime(), keepalive.getTimeUnit(), workQueue, threadFactory);
+        return new ThreadPoolExecutor(config.getCorePoolSize(), config.getMaximumPoolSize(), keepalive.getTime(), keepalive.getTimeUnit(), workQueue, threadFactory);
+    }
+
+    @Override
+    public ScheduledExecutorService createSchedule(ThreadPoolConfig config) {
+        String threadPoolName = String.format(SCHEDULE_EXECUTOR_NAME_FORMAT, config.getThreadPoolsName());
+        final DefaultThreadFactory defaultThreadFactory = new DefaultThreadFactory(threadPoolName);
+        return new ScheduledThreadPoolExecutor(config.getCorePoolSize(), defaultThreadFactory);
     }
 
     private BlockingQueue<Runnable> builderBlockingQueue(ThreadPoolConfig config) {

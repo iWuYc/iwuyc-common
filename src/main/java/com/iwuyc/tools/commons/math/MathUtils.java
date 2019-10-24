@@ -1,19 +1,18 @@
 package com.iwuyc.tools.commons.math;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * 数学工具类
  *
  * @author Neil
  */
+@Slf4j
 public class MathUtils {
-    private static final Logger LOGGER = LoggerFactory.getLogger(MathUtils.class);
 
-    private static final char[] NumChinese = {'零', '壹', '贰', '叁', '肆', '伍', '陆', '柒', '捌', '玖'};
+    private static final char[] NUM_CHINESE = {'零', '壹', '贰', '叁', '肆', '伍', '陆', '柒', '捌', '玖'};
     private static final char[] UNITS = {' ', '拾', '佰', '仟'};
-    private static final char[] BIGUNITS = {'万', '亿', '万', '兆'};
+    private static final char[] BIG_UNITS = {'万', '亿', '万', '兆'};
 
     /**
      * 将数字转换为繁体文字
@@ -22,7 +21,7 @@ public class MathUtils {
      * @return 返回转换后的结果
      */
     public static String numberTranslation(long num) {
-        LOGGER.debug("Number:{}", num);
+        log.debug("Number:{}", num);
         StringBuilder sb = new StringBuilder();
         boolean minus = false;
         if (num < 0) {
@@ -34,8 +33,8 @@ public class MathUtils {
             int unitsCountTemp = unitsCount % 4;
             if (unitsCountTemp != 0) {
                 sb.append(UNITS[unitsCountTemp]);
-            } else if (unitsCount != 0 && unitsCountTemp == 0) {
-                sb.append(BIGUNITS[unitsCount / 4 - 1]);
+            } else if (unitsCount != 0) {
+                sb.append(BIG_UNITS[unitsCount / 4 - 1]);
             }
             int temp = (int) (num % 10);
             if (temp == 0) {
@@ -43,14 +42,14 @@ public class MathUtils {
                     sb.deleteCharAt(sb.length() - 1);
                 }
                 if (sb.length() > 0) {
-                    if (sb.charAt(sb.length() - 1) != NumChinese[0]) {
-                        sb.append(NumChinese[temp]);
+                    if (sb.charAt(sb.length() - 1) != NUM_CHINESE[0]) {
+                        sb.append(NUM_CHINESE[temp]);
                     }
                 } else {
-                    sb.append(NumChinese[temp]);
+                    sb.append(NUM_CHINESE[temp]);
                 }
             } else {
-                sb.append(NumChinese[temp]);
+                sb.append(NUM_CHINESE[temp]);
             }
             num /= 10;
             unitsCount++;
@@ -59,12 +58,11 @@ public class MathUtils {
         if (minus) {
             sb.append('负');
         }
-        char ch;
-        while (sb.length() > 1 && (ch = sb.charAt(0)) == NumChinese[0]) {
+        while (sb.length() > 1 && sb.charAt(0) == NUM_CHINESE[0]) {
             sb.deleteCharAt(0);
         }
         String result = sb.reverse().toString();
-        LOGGER.debug("Result:{}", result);
+        log.debug("Result:{}", result);
         return result;
     }
 }

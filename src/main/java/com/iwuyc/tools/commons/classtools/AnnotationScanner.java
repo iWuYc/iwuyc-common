@@ -1,8 +1,7 @@
 package com.iwuyc.tools.commons.classtools;
 
 import com.iwuyc.tools.commons.util.string.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
 import java.lang.annotation.Annotation;
@@ -31,9 +30,9 @@ import java.util.jar.JarFile;
  *             </pre>
  */
 @Deprecated
+@Slf4j
 public class AnnotationScanner implements Runnable {
 
-    private static final Logger LOG = LoggerFactory.getLogger(AnnotationScanner.class);
     private static final String CLASS_TEMPLATE = "%s.%s";
     private static final String NUMBER_REGEX = "\\$[0-9]*";
     private final Stack<String> packages = new Stack<>();
@@ -54,14 +53,14 @@ public class AnnotationScanner implements Runnable {
     @Override
     public void run() {
         try {
-            String nextPackage = null;
+            String nextPackage;
             while (!packages.isEmpty()) {
                 nextPackage = packages.pop();
                 removeParentPackage(nextPackage);
                 packageScanner(nextPackage);
             }
         } catch (Exception e) {
-            LOG.warn("Raise an error when scanning package.", e);
+            log.warn("Raise an error when scanning package.", e);
         }
     }
 
@@ -78,8 +77,8 @@ public class AnnotationScanner implements Runnable {
         String packageDirName = packageName.replace('.', '/');
         Enumeration<URL> urls = Thread.currentThread().getContextClassLoader().getResources(packageDirName);
 
-        URL url = null;
-        String protocol = null;
+        URL url;
+        String protocol;
 
         while (urls.hasMoreElements()) {
             url = urls.nextElement();
@@ -101,10 +100,10 @@ public class AnnotationScanner implements Runnable {
         JarFile jar = ((JarURLConnection) url.openConnection()).getJarFile();
         Enumeration<JarEntry> entries = jar.entries();
 
-        JarEntry entry = null;
-        String entriesName = null;
-        String className = null;
-        String classFullName = null;
+        JarEntry entry;
+        String entriesName;
+        String className;
+        String classFullName;
 
         while (entries.hasMoreElements()) {
             entry = entries.nextElement();
@@ -153,8 +152,8 @@ public class AnnotationScanner implements Runnable {
             return;
         }
 
-        String newPackage = null;
-        String className = null;
+        String newPackage;
+        String className;
         for (File file : files) {
             if (file.isDirectory()) {
                 newPackage = packageName + '.' + file.getName();
@@ -169,7 +168,7 @@ public class AnnotationScanner implements Runnable {
         }
     }
 
-    private void annotationClass(String className) throws ClassNotFoundException {
+    private void annotationClass(String className) {
         int anonymityClassLocation = className.lastIndexOf('$');
         // 匿名内部类，则直接跳过
         if (anonymityClassLocation >= 0 && className.substring(anonymityClassLocation).matches(NUMBER_REGEX)) {
@@ -192,7 +191,6 @@ public class AnnotationScanner implements Runnable {
             if (!tryGetFromAnnotation(clazz)) {
                 return;
             }
-            // this.annotationStack.clear();
         }
         this.result.add(clazz);
     }

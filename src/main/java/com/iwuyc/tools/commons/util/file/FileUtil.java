@@ -2,8 +2,6 @@ package com.iwuyc.tools.commons.util.file;
 
 import com.iwuyc.tools.commons.util.string.StringUtils;
 import lombok.extern.slf4j.Slf4j;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.net.URISyntaxException;
@@ -20,7 +18,6 @@ import java.nio.file.Paths;
 public class FileUtil {
 
     public static final String DEFAULT_CHARSET_ENCODING = "UTF-8";
-    private static final Logger LOGGER = LoggerFactory.getLogger(FileUtil.class);
     private static final String CLASSPATH_PREFIX = "classpath:";
 
     /**
@@ -29,7 +26,7 @@ public class FileUtil {
      * @param out      指定的流。
      * @param length   需要填充的长度，可大于bytes数组的长度。
      * @param bytesArr bytes数组
-     * @throws Exception
+     * @throws IOException 文件流异常，对文件进行写操作的时候抛出的文件流异常
      * @author Neil
      */
     private static void fillEmptyByte(OutputStream out, int length, byte[] bytesArr) throws IOException {
@@ -59,11 +56,12 @@ public class FileUtil {
         try (FileInputStream in = new FileInputStream(file); FileOutputStream out = new FileOutputStream(file)) {
             final byte[] emptyBytes = new byte[1024];
 
-            int availableSize = 0;
+            int availableSize;
             // Fill zero bytes into file.
             while ((availableSize = in.available()) != 0) {
                 fillEmptyByte(out, availableSize, emptyBytes);
-                in.skip(availableSize);
+                long skipResult = in.skip(availableSize);
+                log.debug("skipResult:{}", skipResult);
             }
 
         } catch (Exception e) {
@@ -119,7 +117,8 @@ public class FileUtil {
             }
             return sb.toString();
         } catch (Exception e) {
-            LOGGER.error("Read file raise an error.Cause:{}", e);
+            log.error("Read file raise an error.Cause:{}", e.getMessage());
+            log.debug("Error Msg Detail:", e);
         }
         return StringUtils.NIL_STRING;
     }

@@ -6,8 +6,7 @@ import com.iwuyc.tools.commons.classtools.typeconverter.TypeConverter;
 import com.iwuyc.tools.commons.classtools.typeconverter.TypeConverterConstant;
 import com.iwuyc.tools.commons.util.collection.ArrayUtil;
 import com.iwuyc.tools.commons.util.collection.MultiMap;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
 import java.lang.invoke.SerializedLambda;
 import java.lang.reflect.*;
@@ -22,6 +21,7 @@ import java.util.*;
  * @date 2017-08-07 16:25
  * @since JDK8
  */
+@Slf4j
 public abstract class ClassUtils {
 
     /**
@@ -32,7 +32,6 @@ public abstract class ClassUtils {
     public final static Map<Class<?>, Class<?>> PRIMITIVE_TYPES_MAPPING_WRAPPED_TYPES;
 
     private final static Field MODIFIERS_FIELD;
-    private static final Logger LOG = LoggerFactory.getLogger(ClassUtils.class);
     private static final Cache<TypeFunction<?, ?>, String> CACHE_LAMBDA_INFO = CacheBuilder.newBuilder().build();
 
     static {
@@ -132,14 +131,14 @@ public abstract class ClassUtils {
             }
             Object rejectVal = convert(val.getClass(), field.getType(), val, typeConverters);
             if (null == rejectVal) {
-                LOG.warn("Can't convert val;The val is:[{}]", val);
+                log.warn("Can't convert val;The val is:[{}]", val);
                 return false;
             }
 
             return injectField(instance, field, rejectVal);
         } catch (IllegalArgumentException e) {
-            LOG.error("Can't inject the field[{}] val[{}].cause:{}", field, val, e.getMessage());
-            LOG.debug("Error Info Detail:", e);
+            log.error("Can't inject the field[{}] val[{}].cause:{}", field, val, e.getMessage());
+            log.debug("Error Info Detail:", e);
             return false;
         }
     }
@@ -149,8 +148,8 @@ public abstract class ClassUtils {
             field.set(instance, rejectVal);
             return true;
         } catch (IllegalArgumentException | IllegalAccessException e) {
-            LOG.error("Can't inject the field[{}] val[{}].cause:{}", field, rejectVal, e.getMessage());
-            LOG.debug("Error Info Detail:", e);
+            log.error("Can't inject the field[{}] val[{}].cause:{}", field, rejectVal, e.getMessage());
+            log.debug("Error Info Detail:", e);
             return false;
         }
     }
@@ -195,12 +194,10 @@ public abstract class ClassUtils {
         Collection<TypeConverter<?, ?>> converters = typeConverters.get(sourceType);
         // 筛选支持转换的转换器，并且返回第一个。
         Optional<TypeConverter<?, ?>> supportConverterOpt = converters.stream()
-                .filter((item) -> {
-                    return item.support(targetType);
-                }).findFirst();
+                .filter((item) -> item.support(targetType)).findFirst();
         // 如果没有找到转换器，则直接将源数据返回。
         if (!supportConverterOpt.isPresent()) {
-            LOG.warn("Can't find any convert for this type[{}]", targetType);
+            log.warn("Can't find any convert for this type[{}]", targetType);
             return val;
         }
         rejectVal = ((TypeConverter<Object, Object>) supportConverterOpt.get()).convert(val, targetType);
@@ -230,7 +227,7 @@ public abstract class ClassUtils {
      * @author Neil
      */
     public static <I> I instance(Class<I> targetClass, Class<?> clazz, Object... args) {
-        return AccessController.doPrivileged(new InstancePrivilegedAction<I>(targetClass, clazz, args));
+        return AccessController.doPrivileged(new InstancePrivilegedAction<>(targetClass, clazz, args));
     }
 
     /**
@@ -345,7 +342,7 @@ public abstract class ClassUtils {
                 declared);
         Optional<Method> methodOpt = AccessController.doPrivileged(action);
         if (!methodOpt.isPresent()) {
-            LOG.warn("Can't found any method for name:[{}];Parameter Type List:{}", methodName,
+            log.warn("Can't found any method for name:[{}];Parameter Type List:{}", methodName,
                     Arrays.toString(parameterTypeList));
             return null;
         }
@@ -360,7 +357,7 @@ public abstract class ClassUtils {
         try {
             result = method.invoke(instance, parameters);
         } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
-            LOG.error("Call [{}] raise an error.Cause:[{}]", methodName, e.getMessage());
+            log.error("Call [{}] raise an error.Cause:[{}]", methodName, e.getMessage());
         }
         return result;
 
@@ -502,14 +499,14 @@ public abstract class ClassUtils {
                 }
                 Constructor<?> constructor = getConstructor(clazz);
                 if (!constructor.isAccessible()) {
-                    LOG.debug("The constructor can't visit.Set it true for accessible.");
+                    log.debug("The constructor can't visit.Set it true for accessible.");
                     constructor.setAccessible(true);
                 }
                 Object i = constructor.newInstance(args);
                 return (I) i;
             } catch (Exception e) {
-                LOG.debug("error:", e);
-                LOG.error("Can't init class[{}]", clazz);
+                log.debug("error:", e);
+                log.error("Can't init class[{}]", clazz);
             }
             return null;
         }
@@ -548,7 +545,7 @@ public abstract class ClassUtils {
             try {
                 result = Class.forName(this.classPath, this.isInitialize, this.loader);
             } catch (ClassNotFoundException e) {
-                LOG.error("Can't found class:[{}]", classPath);
+                log.error("Can't found class:[{}]", classPath);
             }
             return Optional.ofNullable(result);
         }
