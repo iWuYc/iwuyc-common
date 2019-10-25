@@ -60,7 +60,7 @@ public class MathUtilsTest {
         Assert.assertEquals(numStr, "壹万零壹佰零壹");
     }
 
-    @Test(timeout = 2_000)
+    @Test
     public void performance() {
         int times = 1000_0000;
         Stopwatch stopwatch = Stopwatch.createStarted();
