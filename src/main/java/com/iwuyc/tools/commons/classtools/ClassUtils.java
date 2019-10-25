@@ -5,6 +5,7 @@ import com.google.common.cache.CacheBuilder;
 import com.iwuyc.tools.commons.classtools.typeconverter.TypeConverter;
 import com.iwuyc.tools.commons.classtools.typeconverter.TypeConverterConstant;
 import com.iwuyc.tools.commons.util.collection.ArrayUtil;
+import com.iwuyc.tools.commons.util.collection.CollectionUtil;
 import com.iwuyc.tools.commons.util.collection.MultiMap;
 import lombok.extern.slf4j.Slf4j;
 
@@ -192,6 +193,10 @@ public abstract class ClassUtils {
 
         Object rejectVal;
         Collection<TypeConverter<?, ?>> converters = typeConverters.get(sourceType);
+        if (CollectionUtil.isEmpty(converters)) {
+            log.warn("未找到对应的转换器：sourceType->targetType:[{} -> {}];val:[{}];typeConverters:[{}]", sourceType, targetType, val, typeConverters);
+            return val;
+        }
         // 筛选支持转换的转换器，并且返回第一个。
         Optional<TypeConverter<?, ?>> supportConverterOpt = converters.stream()
                 .filter((item) -> item.support(targetType)).findFirst();

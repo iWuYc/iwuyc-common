@@ -2,6 +2,7 @@ package com.iwuyc.tools.commons.thread;
 
 import java.io.File;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.ScheduledExecutorService;
 
 /**
  * 线程池服务持有类，用于静态方法调用，需先使用 {@link ThreadConfig#config(File)} 进行配置后，才可以使用
@@ -14,6 +15,10 @@ public class ThreadPoolServiceHolder {
 
     public static ExecutorService get(Class<?> clazz) {
         return getThreadPoolsService().getExecutorService(clazz);
+    }
+
+    public static ScheduledExecutorService getScheduleService(Class<?> clazz) {
+        return getThreadPoolsService().getScheduledExecutor(clazz);
     }
 
     public static ThreadPoolsService getThreadPoolsService() {

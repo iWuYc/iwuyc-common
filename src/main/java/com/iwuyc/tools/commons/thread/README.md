@@ -1,13 +1,17 @@
 # ThreadPoolsFactory
 
 在项目开发中，为了提高性能，我们通常会使用提高并发数的方式进行，这时通常是用线程池的方式进行线程管理与配置的。在项目中，为了方便集中管理线程池，我在这里使用了类似于log4j的方式进行配置。
+
+> cores表示的是宿主机的可用处理器数量。可用于做占位符，做乘法计算，目前只支持乘法计算，如：cores\*4表示宿主机可用处理器数量的四倍，若CPU是4核的宿主机，则cores\*4=4\*4=16，最终值为16。
+
 ### 配置示例：
 ```properties
-thread.conf.default.corePoolSize=2
+thread.conf.default.corePoolSize=cores
 thread.conf.default.factory=com.iwuyc.tools.commons.thread.impl.DefaultExecutorServiceFactory
 # [h - hour;m - minute;s - second;ms - millisecond;ns - nanosecond;]default:s
 thread.conf.default.keepAliveTime=3600s
-thread.conf.default.maximumPoolSize=16
+# cores*4相当于availableProcessors*4，运行宿主机中可用处理器的两倍，其中“cores”字符串表示获取当前运行环境的可用处理器
+thread.conf.default.maximumPoolSize=cores*4
 thread.conf.default.maxQueueSize=1800
 thread.conf.default.otherSetting1=1800
 
@@ -68,11 +72,11 @@ com.iwuyc.tools.commons.thread.impl.DefaultExecutorServiceFactory;
 # thread.using 以这个开头，则是表示配置域下面所使用的线程池实例，值为线程池实例的名字。该规则跟log4j类似，就不再赘了。      
 #                      
 ####################################################################################################################
-thread.conf.default.corePoolSize=availableProcessors
+thread.conf.default.corePoolSize=cores
 thread.conf.default.factory=com.iwuyc.tools.commons.thread.impl.DefaultExecutorServiceFactory
 # [h - hour;m - minute;s - second;ms - millisecond;ns - nanosecond;]default:s
 thread.conf.default.keepAliveTime=60m
-thread.conf.default.maximumPoolSize=availableProcessors*4
+thread.conf.default.maximumPoolSize=cores*4
 thread.conf.default.maxQueueSize=1800
 
 thread.using.root=default

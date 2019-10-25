@@ -5,6 +5,7 @@ import com.iwuyc.tools.commons.thread.conf.ThreadConfigConstant;
 import com.iwuyc.tools.commons.thread.conf.ThreadPoolConfig;
 import com.iwuyc.tools.commons.thread.conf.UsingConfig;
 import com.iwuyc.tools.commons.thread.impl.DefaultThreadPoolsServiceImpl;
+import com.iwuyc.tools.commons.util.NumberUtils;
 import com.iwuyc.tools.commons.util.collection.MapUtil;
 import lombok.extern.slf4j.Slf4j;
 
@@ -26,7 +27,9 @@ import java.util.concurrent.ConcurrentHashMap;
 @Slf4j
 public class ThreadConfig {
     public static final String DEFAULT_CONF = "/thread/thread.properties";
-
+    public static final String CORES_PLACEHOLDER = "cores";
+    public static final String MATH_OPERATOR = "*";
+    private static final int AVAILABLE_PROCESSORS = Runtime.getRuntime().availableProcessors();
     /**
      * 线程池配置缓存。key是线程池的名字，val为线程池的配置实例。
      */
@@ -49,21 +52,33 @@ public class ThreadConfig {
      * @return 返回threadPoolService的实例
      */
     public static ThreadPoolsService config(File file) {
-        if (null == file) {
-            log.warn("未指定配置文件，将使用默认配置进行配置。[classpath:{}]", DEFAULT_CONF);
-            URL defaultConfigFile = ThreadConfig.class.getResource(DEFAULT_CONF);
-            log.info("默认配置文件全路径为：[{}]", defaultConfigFile.getFile());
-            file = new File(defaultConfigFile.getFile());
-        }
 
-        ThreadConfig config = new ThreadConfig();
-        try (InputStream in = new FileInputStream(file)) {
+        InputStream in = null;
+        try {
+            if (null == file) {
+                log.warn("未指定配置文件，将使用默认配置进行配置。[classpath:{}]", DEFAULT_CONF);
+                URL defaultConfigFile = ThreadConfig.class.getResource(DEFAULT_CONF);
+                log.info("默认配置文件全路径为：[{}]", defaultConfigFile.getFile());
+                in = defaultConfigFile.openStream();
+            } else {
+                in = new FileInputStream(file);
+            }
+
+            ThreadConfig config = new ThreadConfig();
             config.load(in);
             ThreadPoolServiceHolder.setThreadPoolsService(new DefaultThreadPoolsServiceImpl(config));
             log.info("初始化线程池框架完成。");
             return ThreadPoolServiceHolder.getThreadPoolsService();
         } catch (IOException e) {
             log.error("Config thread pool service raise an error:", e);
+        } finally {
+            if (in != null) {
+                try {
+                    in.close();
+                } catch (IOException ignore) {
+
+                }
+            }
         }
         return null;
     }
@@ -113,16 +128,56 @@ public class ThreadConfig {
         final Map<String, Object> injectFieldVal = new HashMap<>(threadPoolConfig.size());
         threadPoolConfig.forEach((k, v) -> {
             String newKey = String.valueOf(k).substring(prefix.length() + 1);
-            injectFieldVal.put(newKey, v);
+            String val = String.valueOf(v);
+
+            Object valResult;
+            if (val.contains(MATH_OPERATOR) || val.contains(CORES_PLACEHOLDER)) {
+                valResult = calculatorExp(val);
+            } else {
+                valResult = v;
+            }
+            injectFieldVal.put(newKey, valResult);
+
         });
         final String threadPoolsName = prefix.substring(ThreadConfigConstant.THREAD_CONFIG_PRENAME.length() + 1);
         injectFieldVal.put("threadPoolsName", threadPoolsName);
-
         ThreadPoolConfig config = new ThreadPoolConfig();
         Map<Object, Object> otherSetting = ClassUtils.injectFields(config, injectFieldVal);
         config.setOtherSetting(otherSetting);
 
         threadConfigCache.put(config.getThreadPoolsName(), config);
+    }
+
+    private int calculatorExp(String val) {
+        String[] expArr = val.split("[*]");
+        Integer[] expNums = new Integer[expArr.length];
+        for (int i = 0; i < expArr.length; i++) {
+            String item = expArr[i].trim();
+
+            Integer num;
+            if (NumberUtils.isNumber(item)) {
+                num = NumberUtils.parse(item, int.class);
+            } else if (CORES_PLACEHOLDER.equals(item)) {
+                num = AVAILABLE_PROCESSORS;
+            } else {
+                throw new IllegalArgumentException("表达式错误，只支持乘法，示例[cores*2]，相当于availableProcessors*2，运行宿主机中可用处理器的两倍，其中“cores”字符串表示获取当前运行环境的可用处理器。exp[" + val + "]");
+            }
+            expNums[i] = num;
+        }
+
+        if (expNums.length == 0) {
+            return 0;
+        }
+
+        long result = expNums[0];
+        for (int i = 1; i < expNums.length; i++) {
+            result *= expNums[i];
+            if (result > 65535 || result <= 0) {
+                throw new IllegalArgumentException("表达式最终的结果范围值不允许超过(0,65535]");
+            }
+        }
+
+        return (int) result;
     }
 
     private String findThreadNameIncludePrefix(String key) {
@@ -214,7 +269,7 @@ public class ThreadConfig {
         private static final String DEFAULT_MAX_POOL_SIZE = "thread.conf.default.maximumPoolSize";
 
         static {
-            int availableProcessors = Runtime.getRuntime().availableProcessors();
+            int availableProcessors = AVAILABLE_PROCESSORS;
             HashMap<String, String> temp = new HashMap<>();
             temp.put(DEFAULT_CORE_POOL_SIZE, String.valueOf(availableProcessors));
             temp.put(DEFAULT_MAX_POOL_SIZE, String.valueOf(availableProcessors * 4));
