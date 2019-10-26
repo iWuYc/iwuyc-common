@@ -160,6 +160,15 @@ public class DefaultThreadPoolsServiceImpl implements ThreadPoolsService {
             }
         }
         executorServiceCache.clear();
+
+        for (Map.Entry<String, RefreshableScheduledExecutorService> item : this.scheduleExecutorServiceCache.entrySet()) {
+            try {
+                item.getValue().shutdown();
+            } catch (Exception e) {
+                log.error("Shutdown schedule pool raise an error.Cause:", e);
+            }
+        }
+        this.scheduleExecutorServiceCache.clear();
     }
 
     @Override
