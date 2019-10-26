@@ -150,7 +150,7 @@ public class DefaultThreadPoolsServiceImpl implements ThreadPoolsService {
             return;
         }
 
-        for (Map.Entry<String, ExecutorService> item : executorServiceCache.entrySet()) {
+        for (Map.Entry<String, ExecutorService> item : this.executorServiceCache.entrySet()) {
             try {
                 item.getValue().shutdown();
             } catch (Exception e) {
@@ -158,6 +158,15 @@ public class DefaultThreadPoolsServiceImpl implements ThreadPoolsService {
             }
         }
         executorServiceCache.clear();
+
+        for (Map.Entry<String, ScheduledExecutorService> item : this.scheduleExecutorServiceCache.entrySet()) {
+            try {
+                item.getValue().shutdown();
+            } catch (Exception e) {
+                log.error("Shutdown schedule pool raise an error.Cause:", e);
+            }
+        }
+        this.scheduleExecutorServiceCache.clear();
     }
 
     @Override
