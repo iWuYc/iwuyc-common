@@ -1,9 +1,7 @@
 package com.iwuyc.tools.commons.thread.impl;
 
 import com.iwuyc.tools.commons.classtools.ClassUtils;
-import com.iwuyc.tools.commons.thread.ExecutorServiceFactory;
-import com.iwuyc.tools.commons.thread.ThreadConfig;
-import com.iwuyc.tools.commons.thread.ThreadPoolsService;
+import com.iwuyc.tools.commons.thread.*;
 import com.iwuyc.tools.commons.thread.conf.ThreadPoolConfig;
 import com.iwuyc.tools.commons.thread.conf.UsingConfig;
 import com.iwuyc.tools.commons.util.string.StringUtils;
@@ -27,8 +25,9 @@ public class DefaultThreadPoolsServiceImpl implements ThreadPoolsService {
 
     private static final String DEFAULT_DOMAIN = "root";
 
-    private Map<String, ExecutorService> executorServiceCache = new ConcurrentHashMap<>();
-    private Map<String, ScheduledExecutorService> scheduleExecutorServiceCache = new ConcurrentHashMap<>();
+    @SuppressWarnings("rawtypes")
+    private Map<String, RefreshableExecutorService> executorServiceCache = new ConcurrentHashMap<>();
+    private Map<String, RefreshableScheduledExecutorService> scheduleExecutorServiceCache = new ConcurrentHashMap<>();
     private ReadWriteLock lock = new ReentrantReadWriteLock(true);
     private ThreadConfig config;
     private AtomicBoolean isShutdown = new AtomicBoolean();
@@ -51,12 +50,12 @@ public class DefaultThreadPoolsServiceImpl implements ThreadPoolsService {
 
     @Override
     public ExecutorService getExecutorService(String domain) {
-        return getExecutorServiceByMap(domain, this.executorServiceCache, ExecutorService.class);
+        return getExecutorServiceByMap(domain, this.executorServiceCache, RefreshableExecutorService.class);
     }
 
     @Override
     public ScheduledExecutorService getScheduledExecutor(String domain) {
-        return getExecutorServiceByMap(domain, this.scheduleExecutorServiceCache, ScheduledExecutorService.class);
+        return getExecutorServiceByMap(domain, this.scheduleExecutorServiceCache, RefreshableScheduledExecutorService.class);
     }
 
     @Override
@@ -70,7 +69,7 @@ public class DefaultThreadPoolsServiceImpl implements ThreadPoolsService {
         return getScheduledExecutor(domain);
     }
 
-    private <T extends ExecutorService> T getExecutorServiceByMap(String domain, Map<String, T> container, Class<T> targetType) {
+    private <T extends RefreshableExecutorService<?>> T getExecutorServiceByMap(String domain, Map<String, T> container, Class<T> targetType) {
         if (StringUtils.isEmpty(domain)) {
             log.debug("未指定domain，将使用默认的domain：{}", DEFAULT_DOMAIN);
             domain = DEFAULT_DOMAIN;
@@ -86,7 +85,7 @@ public class DefaultThreadPoolsServiceImpl implements ThreadPoolsService {
         return executorSer;
     }
 
-    private <T extends ExecutorService> T findThreadPoolOrCreate(String domain, Map<String, T> container, Class<T> targetType) {
+    private <T extends RefreshableExecutorService<?>> T findThreadPoolOrCreate(String domain, Map<String, T> container, Class<T> targetType) {
 
         UsingConfig usingConfig = this.config.findUsingSetting(domain);
         T executorService = container.get(usingConfig.getDomain());
@@ -122,7 +121,7 @@ public class DefaultThreadPoolsServiceImpl implements ThreadPoolsService {
     }
 
     @SuppressWarnings("unchecked")
-    private <T extends ExecutorService> T createNewThreadPoolFactory(ThreadPoolConfig threadPoolConfig, boolean isScheduleExecutor) {
+    private <T extends RefreshableExecutorService<?>> T createNewThreadPoolFactory(ThreadPoolConfig threadPoolConfig, boolean isScheduleExecutor) {
         ExecutorServiceFactory factory = ClassUtils
                 .instance(ExecutorServiceFactory.class, threadPoolConfig.getFactory());
         if (null == factory) {
@@ -131,9 +130,11 @@ public class DefaultThreadPoolsServiceImpl implements ThreadPoolsService {
         }
         T instance;
         if (isScheduleExecutor) {
-            instance = (T) factory.createSchedule(threadPoolConfig);
+            ScheduledExecutorService instanceTmp = factory.createSchedule(threadPoolConfig);
+            instance = (T) new WrappingScheduledExecutorService(instanceTmp);
         } else {
-            instance = (T) factory.create(threadPoolConfig);
+            ExecutorService instanceTmp = factory.create(threadPoolConfig);
+            instance = (T) new WrappingExecutorService<>(instanceTmp);
         }
         return instance;
     }
@@ -144,13 +145,14 @@ public class DefaultThreadPoolsServiceImpl implements ThreadPoolsService {
     }
 
     @Override
+    @SuppressWarnings("rawtypes")
     public void shutdown() {
 
         if (!isShutdown.compareAndSet(false, true)) {
             return;
         }
 
-        for (Map.Entry<String, ExecutorService> item : this.executorServiceCache.entrySet()) {
+        for (Map.Entry<String, RefreshableExecutorService> item : executorServiceCache.entrySet()) {
             try {
                 item.getValue().shutdown();
             } catch (Exception e) {
