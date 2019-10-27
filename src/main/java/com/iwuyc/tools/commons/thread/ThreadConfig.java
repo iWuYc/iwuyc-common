@@ -1,12 +1,15 @@
 package com.iwuyc.tools.commons.thread;
 
+import com.iwuyc.tools.commons.basic.type.TimeTuple;
 import com.iwuyc.tools.commons.classtools.ClassUtils;
 import com.iwuyc.tools.commons.thread.conf.ThreadConfigConstant;
 import com.iwuyc.tools.commons.thread.conf.ThreadPoolConfig;
 import com.iwuyc.tools.commons.thread.conf.UsingConfig;
+import com.iwuyc.tools.commons.thread.conf.typeconverter.String2TimeTupleConverter;
 import com.iwuyc.tools.commons.thread.impl.DefaultThreadPoolsServiceImpl;
 import com.iwuyc.tools.commons.util.NumberUtils;
 import com.iwuyc.tools.commons.util.collection.MapUtil;
+import com.iwuyc.tools.commons.util.string.StringUtils;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
@@ -17,6 +20,7 @@ import java.net.URL;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 
 /**
  * 线程池的配置项
@@ -26,6 +30,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 @Slf4j
 public class ThreadConfig {
+    private static final String AUTO_SCAN_KEY = "thread.auto.scan";
     public static final String DEFAULT_CONF = "/thread/thread.properties";
     public static final String CORES_PLACEHOLDER = "cores";
     public static final String MATH_OPERATOR = "*";
@@ -44,6 +49,22 @@ public class ThreadConfig {
     private String configPath;
 
     public ThreadConfig() {
+    }
+
+    /**
+     * 提供配置文件，直接返回默认的 ThreadPoolsService 实例。
+     *
+     * @param filePath 可以为空，空则取classpath中/thread/thread.properties的默认配置
+     * @return 返回threadPoolService的实例
+     */
+    public static ThreadPoolsService config(String filePath) {
+        File file;
+        if (StringUtils.isEmpty(filePath)) {
+            file = null;
+        } else {
+            file = new File(filePath);
+        }
+        return config(file);
     }
 
     /**
@@ -70,10 +91,11 @@ public class ThreadConfig {
 
             ThreadConfig config = new ThreadConfig();
             config.load(in);
-            config.setConfigPath(configPath);
+            config.setConfigFileInfomation(configPath);
 
             DefaultThreadPoolsServiceImpl defaultThreadPoolsService = new DefaultThreadPoolsServiceImpl(config);
             ThreadPoolServiceHolder.setThreadPoolsService(defaultThreadPoolsService);
+            defaultThreadPoolsService.getScheduledExecutor("root").schedule(config::autoScanProperties, 1, TimeUnit.MINUTES);
             log.info("初始化线程池框架完成。");
             return ThreadPoolServiceHolder.getThreadPoolsService();
         } catch (IOException e) {
@@ -91,13 +113,31 @@ public class ThreadConfig {
         return null;
     }
 
-    public void setConfigPath(String configPath) {
+    private TimeTuple enableAutoScanTime() {
+        String autoScanDelay = this.properties.getProperty(AUTO_SCAN_KEY, "1m");
+
+        return String2TimeTupleConverter.converter(autoScanDelay);
+    }
+
+    public void autoScanProperties() {
+        TimeTuple timeTuple = enableAutoScanTime();
+        if (timeTuple.getTime() <= 0) {
+            return;
+        }
+        try {
+
+        } finally {
+            // 扫描间隔至少在三十秒以上
+            long millionTime = timeTuple.getTimeUnit().toMillis(timeTuple.getTime());
+            long delayTime = Math.max(millionTime, 30_000);
+            ThreadPoolServiceHolder.getScheduleService("root").schedule(this::autoScanProperties, delayTime, TimeUnit.MILLISECONDS);
+        }
+    }
+
+    public void setConfigFileInfomation(String configPath) {
         this.configPath = configPath;
     }
 
-    public static ThreadPoolsService config(String filePath) {
-        return config(new File(filePath));
-    }
 
     private void usingConfig(Map<Object, Object> usingInfo) {
         String key;

@@ -17,8 +17,16 @@ public class ThreadPoolServiceHolder {
         return getThreadPoolsService().getExecutorService(clazz);
     }
 
+    public static ExecutorService get(String domain) {
+        return getThreadPoolsService().getExecutorService(domain);
+    }
+
     public static ScheduledExecutorService getScheduleService(Class<?> clazz) {
         return getThreadPoolsService().getScheduledExecutor(clazz);
+    }
+
+    public static ScheduledExecutorService getScheduleService(String domain) {
+        return getThreadPoolsService().getScheduledExecutor(domain);
     }
 
     public static ThreadPoolsService getThreadPoolsService() {

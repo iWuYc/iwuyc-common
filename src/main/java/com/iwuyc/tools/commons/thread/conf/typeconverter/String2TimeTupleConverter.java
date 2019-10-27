@@ -26,8 +26,24 @@ public class String2TimeTupleConverter extends AbstractStringConverter<TimeTuple
         MAPPING.put("ns", TimeUnit.NANOSECONDS);
     }
 
-    @Override
-    protected TimeTuple converterData(String from, Class<? extends TimeTuple> targetType) {
+    /**
+     * 将时间表达式转换为时间元组.示例:1h,1m,1s,1ms,1ns,分别表示:1小时,1分钟,1秒钟,1毫秒,1纳秒
+     *
+     * @param from 源数据
+     * @return 转换后的实例
+     */
+    public static TimeTuple converter(String from) {
+        return converter(from, TimeTuple.class);
+    }
+
+    /**
+     * 将时间表达式转换为时间元组.示例:1h,1m,1s,1ms,1ns,分别表示:1小时,1分钟,1秒钟,1毫秒,1纳秒
+     *
+     * @param from       源数据
+     * @param targetType 目标类型
+     * @return 转换后的实例
+     */
+    public static TimeTuple converter(String from, Class<? extends TimeTuple> targetType) {
         from = from.trim();
 
         String numStr = from.replaceAll("[A-Za-z]*", "").trim();
@@ -44,6 +60,11 @@ public class String2TimeTupleConverter extends AbstractStringConverter<TimeTuple
             timeUnit = TimeUnit.SECONDS;
         }
         return TimeTuple.create(num, timeUnit);
+    }
+
+    @Override
+    public TimeTuple converterData(String from, Class<? extends TimeTuple> targetType) {
+        return converter(from, targetType);
     }
 
     @Override
