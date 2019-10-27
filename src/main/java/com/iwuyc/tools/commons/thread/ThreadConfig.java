@@ -41,6 +41,7 @@ public class ThreadConfig {
     private final Map<String, UsingConfig> usingConfigCache = new ConcurrentHashMap<>();
 
     private Properties properties;
+    private String configPath;
 
     public ThreadConfig() {
     }
@@ -55,18 +56,24 @@ public class ThreadConfig {
 
         InputStream in = null;
         try {
+            String configPath;
             if (null == file) {
                 log.warn("未指定配置文件，将使用默认配置进行配置。[classpath:{}]", DEFAULT_CONF);
                 URL defaultConfigFile = ThreadConfig.class.getResource(DEFAULT_CONF);
                 log.info("默认配置文件全路径为：[{}]", defaultConfigFile.getFile());
                 in = defaultConfigFile.openStream();
+                configPath = "thread.properties";
             } else {
                 in = new FileInputStream(file);
+                configPath = file.getAbsolutePath();
             }
 
             ThreadConfig config = new ThreadConfig();
             config.load(in);
-            ThreadPoolServiceHolder.setThreadPoolsService(new DefaultThreadPoolsServiceImpl(config));
+            config.setConfigPath(configPath);
+
+            DefaultThreadPoolsServiceImpl defaultThreadPoolsService = new DefaultThreadPoolsServiceImpl(config);
+            ThreadPoolServiceHolder.setThreadPoolsService(defaultThreadPoolsService);
             log.info("初始化线程池框架完成。");
             return ThreadPoolServiceHolder.getThreadPoolsService();
         } catch (IOException e) {
@@ -80,7 +87,12 @@ public class ThreadConfig {
                 }
             }
         }
+
         return null;
+    }
+
+    public void setConfigPath(String configPath) {
+        this.configPath = configPath;
     }
 
     public static ThreadPoolsService config(String filePath) {
@@ -109,16 +121,16 @@ public class ThreadConfig {
 
         String threadPoolsNamePrefix;
         String key;
-        Map<Object, Object> threadPoolFacotryConfig;
+        Map<Object, Object> threadPoolFactoryConfig;
 
         while (!keys.isEmpty()) {
             key = String.valueOf(keys.iterator().next());
             threadPoolsNamePrefix = findThreadNameIncludePrefix(key);
-            threadPoolFacotryConfig = MapUtil.findEntryByPrefixKey(configInfo, threadPoolsNamePrefix + '.');
+            threadPoolFactoryConfig = MapUtil.findEntryByPrefixKey(configInfo, threadPoolsNamePrefix + '.');
 
-            threadPoolFacotryConfig.forEach(configInfo::remove);
+            threadPoolFactoryConfig.forEach(configInfo::remove);
 
-            threadPoolFactoryConfig(threadPoolsNamePrefix, threadPoolFacotryConfig);
+            threadPoolFactoryConfig(threadPoolsNamePrefix, threadPoolFactoryConfig);
 
             keys = configInfo.keySet();
         }

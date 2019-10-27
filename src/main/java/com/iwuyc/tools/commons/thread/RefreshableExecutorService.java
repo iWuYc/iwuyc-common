@@ -9,4 +9,10 @@ import java.util.concurrent.ExecutorService;
  * @author Neil
  */
 public interface RefreshableExecutorService<Delegate extends ExecutorService> extends RefreshDelegate<Delegate>, ExecutorService {
+    /**
+     * 获取实际代理对象
+     *
+     * @return 代理对象实例
+     */
+    Delegate delegate();
 }

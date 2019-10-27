@@ -5,6 +5,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
  * 线程池代理类
@@ -12,7 +14,14 @@ import java.util.concurrent.atomic.AtomicReference;
  * @author Neil
  */
 public class WrappingExecutorService<Delegate extends ExecutorService> implements RefreshableExecutorService<Delegate> {
+    /**
+     * 代理的原子引用类型
+     */
     private final AtomicReference<Delegate> delegateReference = new AtomicReference<>();
+    /**
+     * 加上读写锁，避免在替换线程池的时候，使用旧的线程池继续执行后续的任务。
+     */
+    private final ReadWriteLock lock = new ReentrantReadWriteLock();
 
 
     public WrappingExecutorService(Delegate delegate) {
@@ -93,18 +102,31 @@ public class WrappingExecutorService<Delegate extends ExecutorService> implement
     }
 
     protected Delegate getDelegate() {
-        return this.delegateReference.get();
+        try {
+            this.lock.readLock().lock();
+            return this.delegateReference.get();
+        } finally {
+            this.lock.readLock().unlock();
+        }
     }
 
     @Override
     public boolean refresh(Delegate newDelegate) {
-        Delegate oldReference = this.delegateReference.getAndUpdate((old) -> newDelegate);
         try {
+            this.lock.writeLock().lock();
+            Delegate oldReference = this.delegateReference.getAndUpdate((old) -> newDelegate);
             if (!oldReference.isShutdown()) {
                 oldReference.shutdown();
             }
         } catch (RuntimeException ignore) {
+        } finally {
+            this.lock.writeLock().unlock();
         }
         return true;
+    }
+
+    @Override
+    public Delegate delegate() {
+        return this.delegateReference.get();
     }
 }
