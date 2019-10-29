@@ -8,6 +8,7 @@ import com.iwuyc.tools.commons.util.string.StringUtils;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
@@ -31,11 +32,11 @@ public class DefaultThreadPoolsServiceImpl implements ThreadPoolsService, Modifi
     private final Map<String, RefreshableScheduledExecutorService> scheduleExecutorServiceCache = new ConcurrentHashMap<>();
     private final Map<String, ExecutorServiceFactory> executorServiceFactoryCache = new ConcurrentHashMap<>();
     private ReadWriteLock lock = new ReentrantReadWriteLock(true);
-    private ThreadConfig config;
+    private ThreadConfig threadConfig;
     private AtomicBoolean isShutdown = new AtomicBoolean();
 
-    public DefaultThreadPoolsServiceImpl(ThreadConfig config) {
-        this.config = config;
+    public DefaultThreadPoolsServiceImpl(ThreadConfig threadConfig) {
+        this.threadConfig = threadConfig;
     }
 
     @Override
@@ -89,7 +90,7 @@ public class DefaultThreadPoolsServiceImpl implements ThreadPoolsService, Modifi
 
     private <T extends RefreshableExecutorService<?, ?>> T findThreadPoolOrCreate(String domain, Map<String, T> container, Class<T> targetType) {
 
-        UsingConfig usingConfig = this.config.findUsingSetting(domain);
+        UsingConfig usingConfig = this.threadConfig.findUsingSetting(domain);
         T executorService = container.get(usingConfig.getDomain());
         if (null != executorService) {
             log.debug("找到[{}]对应的executorService。", usingConfig.getDomain());
@@ -106,7 +107,7 @@ public class DefaultThreadPoolsServiceImpl implements ThreadPoolsService, Modifi
                 return executorService;
             }
 
-            ThreadPoolConfig threadPoolConfig = this.config.findThreadPoolConfig(usingConfig.getThreadPoolsName());
+            ThreadPoolConfig threadPoolConfig = this.threadConfig.findThreadPoolConfig(usingConfig.getThreadPoolsName());
             executorService = createNewThreadPoolFactory(threadPoolConfig, isScheduleExecutor(targetType));
 
             container.put(usingConfig.getDomain(), executorService);
@@ -160,8 +161,8 @@ public class DefaultThreadPoolsServiceImpl implements ThreadPoolsService, Modifi
     }
 
     @Override
-    public ThreadConfig getConfig() {
-        return this.config;
+    public ThreadConfig getThreadConfig() {
+        return this.threadConfig;
     }
 
     @Override
@@ -219,19 +220,31 @@ public class DefaultThreadPoolsServiceImpl implements ThreadPoolsService, Modifi
     @Override
     public Boolean delete(Collection<ThreadPoolConfig> threadPoolConfigs) {
         // TODO
-        deleteExecutorService(threadPoolConfigs);
+        deleteExecutorService(threadPoolConfigs, this.executorServiceCache);
         return null;
     }
 
     @SuppressWarnings("unchecked")
-    private void deleteExecutorService(Collection<ThreadPoolConfig> threadPoolConfigs) {
+    private void deleteExecutorService(Collection<ThreadPoolConfig> threadPoolConfigs, Map<String, RefreshableExecutorService> executorServiceCache) {
+        Collection<RefreshableExecutorService> refreshableExecutorServices = new HashSet<>(threadPoolConfigs.size());
         for (Map.Entry<String, RefreshableExecutorService> item : executorServiceCache.entrySet()) {
             final RefreshableExecutorService<ExecutorService, ThreadPoolConfig> executorService = item.getValue();
             final ThreadPoolConfig config = executorService.config();
             if (!threadPoolConfigs.contains(config)) {
                 continue;
             }
-            String domain = item.getKey();
+
+            RefreshableExecutorService<ExecutorService, ThreadPoolConfig> parentThreadPools = findParentThreadPools(item.getKey(), threadPoolConfigs);
+            executorService.refresh(parentThreadPools.delegate());
+            
+            refreshableExecutorServices.add(parentThreadPools);
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private RefreshableExecutorService<ExecutorService, ThreadPoolConfig> findParentThreadPools(String currentDomain, Collection<ThreadPoolConfig> shouldBeDeleteThreadPoolConfig) {
+        String domain = currentDomain;
+        do {
             final int lastIndexOf = domain.lastIndexOf('.');
             if (lastIndexOf > 0) {
                 domain = domain.substring(0, lastIndexOf);
@@ -239,10 +252,16 @@ public class DefaultThreadPoolsServiceImpl implements ThreadPoolsService, Modifi
                 domain = "root";
             }
 
-            final UsingConfig usingSetting = this.config.findUsingSetting(domain);
-            final RefreshableExecutorService refreshableExecutorService = executorServiceCache.get(usingSetting.getThreadPoolsName());
+            final UsingConfig usingSetting = this.threadConfig.findUsingSetting(domain);
+            final RefreshableExecutorService<ExecutorService, ThreadPoolConfig> refreshableExecutorService = executorServiceCache.get(usingSetting.getThreadPoolsName());
+            ThreadPoolConfig config = refreshableExecutorService.config();
+            if (!shouldBeDeleteThreadPoolConfig.contains(config)) {
+                return refreshableExecutorService;
+            }
+        } while (!"root".equals(domain));
 
-        }
+        RefreshableExecutorService defaultExecutors = executorServiceCache.get("default");
+        return defaultExecutors;
     }
 
     @Override

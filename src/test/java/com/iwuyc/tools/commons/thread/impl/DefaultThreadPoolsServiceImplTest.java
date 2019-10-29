@@ -58,7 +58,7 @@ public class DefaultThreadPoolsServiceImplTest {
         ExecutorService rootExecutor = poolSer.getExecutorService((Class<?>) null);
         System.out.println(rootExecutor);
 
-        System.out.println(poolSer.getConfig());
+        System.out.println(poolSer.getThreadConfig());
     }
 
     @Test(timeout = 5_000L)

@@ -1,8 +1,10 @@
 package com.iwuyc.tools.commons.thread;
 
 import com.iwuyc.tools.commons.thread.conf.ThreadPoolConfig;
+import lombok.extern.slf4j.Slf4j;
 
 import javax.annotation.Nonnull;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.*;
@@ -15,11 +17,13 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
  *
  * @author Neil
  */
+@Slf4j
 public class WrappingExecutorService<Delegate extends ExecutorService> implements RefreshableExecutorService<Delegate, ThreadPoolConfig> {
     /**
      * 代理的原子引用类型
      */
     private final AtomicReference<Delegate> delegateReference = new AtomicReference<>();
+    private final AtomicReference<BlockingQueue<Delegate>> oldDelegateReference = new AtomicReference<>(new ArrayBlockingQueue<Delegate>(Integer.MAX_VALUE));
     private final ThreadPoolConfig threadPoolConfig;
     /**
      * 加上读写锁，避免在替换线程池的时候，使用旧的线程池继续执行后续的任务。
@@ -116,17 +120,39 @@ public class WrappingExecutorService<Delegate extends ExecutorService> implement
 
     @Override
     public boolean refresh(Delegate newDelegate) {
+        // TODO Neil 更新之后需要调用　release　方法释放旧的代理实例
         try {
             this.lock.writeLock().lock();
             Delegate oldDelegate = this.delegateReference.getAndUpdate((old) -> newDelegate);
             if (!oldDelegate.isShutdown() && newDelegate != oldDelegate) {
-                oldDelegate.shutdown();
+                this.oldDelegateReference.get().add(oldDelegate);
             }
         } catch (RuntimeException ignore) {
         } finally {
             this.lock.writeLock().unlock();
         }
         return true;
+    }
+
+    @Override
+    public boolean release() {
+        try {
+            this.lock.writeLock().lock();
+            Collection<Delegate> oldDelegates = new ArrayList<>();
+            this.oldDelegateReference.get().drainTo(oldDelegates);
+            for (Delegate oldDelegate : oldDelegates) {
+                if (null != oldDelegate && !oldDelegate.isShutdown()) {
+                    oldDelegate.shutdown();
+                }
+            }
+            return true;
+        } catch (RuntimeException e) {
+            log.warn("Shutdown threadPool raise an error.Cause:{}", e.getMessage());
+            log.debug("Error Detail:", e);
+        } finally {
+            this.lock.writeLock().unlock();
+        }
+        return false;
     }
 
     @Override
