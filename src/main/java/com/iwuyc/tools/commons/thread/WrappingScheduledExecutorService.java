@@ -1,5 +1,7 @@
 package com.iwuyc.tools.commons.thread;
 
+import com.iwuyc.tools.commons.thread.conf.ThreadPoolConfig;
+
 import javax.annotation.Nonnull;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ScheduledExecutorService;
@@ -13,8 +15,8 @@ import java.util.concurrent.TimeUnit;
  */
 public class WrappingScheduledExecutorService extends WrappingExecutorService<ScheduledExecutorService> implements ScheduledExecutorService {
 
-    public WrappingScheduledExecutorService(ScheduledExecutorService delegate) {
-        super(delegate);
+    public WrappingScheduledExecutorService(ScheduledExecutorService delegate, ThreadPoolConfig threadPoolConfig) {
+        super(delegate, threadPoolConfig);
     }
 
     @Override

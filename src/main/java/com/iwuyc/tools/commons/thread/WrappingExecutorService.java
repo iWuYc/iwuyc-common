@@ -1,5 +1,7 @@
 package com.iwuyc.tools.commons.thread;
 
+import com.iwuyc.tools.commons.thread.conf.ThreadPoolConfig;
+
 import javax.annotation.Nonnull;
 import java.util.Collection;
 import java.util.List;
@@ -13,18 +15,20 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
  *
  * @author Neil
  */
-public class WrappingExecutorService<Delegate extends ExecutorService> implements RefreshableExecutorService<Delegate> {
+public class WrappingExecutorService<Delegate extends ExecutorService> implements RefreshableExecutorService<Delegate, ThreadPoolConfig> {
     /**
      * 代理的原子引用类型
      */
     private final AtomicReference<Delegate> delegateReference = new AtomicReference<>();
+    private final ThreadPoolConfig threadPoolConfig;
     /**
      * 加上读写锁，避免在替换线程池的时候，使用旧的线程池继续执行后续的任务。
      */
     private final ReadWriteLock lock = new ReentrantReadWriteLock();
 
 
-    public WrappingExecutorService(Delegate delegate) {
+    public WrappingExecutorService(Delegate delegate, ThreadPoolConfig threadPoolConfig) {
+        this.threadPoolConfig = threadPoolConfig;
         this.delegateReference.set(delegate);
     }
 
@@ -114,9 +118,9 @@ public class WrappingExecutorService<Delegate extends ExecutorService> implement
     public boolean refresh(Delegate newDelegate) {
         try {
             this.lock.writeLock().lock();
-            Delegate oldReference = this.delegateReference.getAndUpdate((old) -> newDelegate);
-            if (!oldReference.isShutdown()) {
-                oldReference.shutdown();
+            Delegate oldDelegate = this.delegateReference.getAndUpdate((old) -> newDelegate);
+            if (!oldDelegate.isShutdown() && newDelegate != oldDelegate) {
+                oldDelegate.shutdown();
             }
         } catch (RuntimeException ignore) {
         } finally {
@@ -128,5 +132,10 @@ public class WrappingExecutorService<Delegate extends ExecutorService> implement
     @Override
     public Delegate delegate() {
         return this.delegateReference.get();
+    }
+
+    @Override
+    public ThreadPoolConfig config() {
+        return threadPoolConfig;
     }
 }

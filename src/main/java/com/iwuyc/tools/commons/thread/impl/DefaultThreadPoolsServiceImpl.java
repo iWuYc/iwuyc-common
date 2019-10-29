@@ -7,6 +7,7 @@ import com.iwuyc.tools.commons.thread.conf.UsingConfig;
 import com.iwuyc.tools.commons.util.string.StringUtils;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
@@ -20,14 +21,15 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
  * @author @Neil
  * @since @2017年10月15日
  */
+@SuppressWarnings("rawtypes")
 @Slf4j
-public class DefaultThreadPoolsServiceImpl implements ThreadPoolsService {
+public class DefaultThreadPoolsServiceImpl implements ThreadPoolsService, ModifiableService<ThreadPoolConfig, Boolean> {
 
     private static final String DEFAULT_DOMAIN = "root";
 
-    @SuppressWarnings("rawtypes")
-    private Map<String, RefreshableExecutorService> executorServiceCache = new ConcurrentHashMap<>();
-    private Map<String, RefreshableScheduledExecutorService> scheduleExecutorServiceCache = new ConcurrentHashMap<>();
+    private final Map<String, RefreshableExecutorService> executorServiceCache = new ConcurrentHashMap<>();
+    private final Map<String, RefreshableScheduledExecutorService> scheduleExecutorServiceCache = new ConcurrentHashMap<>();
+    private final Map<String, ExecutorServiceFactory> executorServiceFactoryCache = new ConcurrentHashMap<>();
     private ReadWriteLock lock = new ReentrantReadWriteLock(true);
     private ThreadConfig config;
     private AtomicBoolean isShutdown = new AtomicBoolean();
@@ -69,7 +71,7 @@ public class DefaultThreadPoolsServiceImpl implements ThreadPoolsService {
         return getScheduledExecutor(domain);
     }
 
-    private <T extends RefreshableExecutorService<?>> T getExecutorServiceByMap(String domain, Map<String, T> container, Class<T> targetType) {
+    private <T extends RefreshableExecutorService> T getExecutorServiceByMap(String domain, Map<String, T> container, Class<T> targetType) {
         if (StringUtils.isEmpty(domain)) {
             log.debug("未指定domain，将使用默认的domain：{}", DEFAULT_DOMAIN);
             domain = DEFAULT_DOMAIN;
@@ -85,7 +87,7 @@ public class DefaultThreadPoolsServiceImpl implements ThreadPoolsService {
         return executorSer;
     }
 
-    private <T extends RefreshableExecutorService<?>> T findThreadPoolOrCreate(String domain, Map<String, T> container, Class<T> targetType) {
+    private <T extends RefreshableExecutorService<?, ?>> T findThreadPoolOrCreate(String domain, Map<String, T> container, Class<T> targetType) {
 
         UsingConfig usingConfig = this.config.findUsingSetting(domain);
         T executorService = container.get(usingConfig.getDomain());
@@ -121,22 +123,40 @@ public class DefaultThreadPoolsServiceImpl implements ThreadPoolsService {
     }
 
     @SuppressWarnings("unchecked")
-    private <T extends RefreshableExecutorService<?>> T createNewThreadPoolFactory(ThreadPoolConfig threadPoolConfig, boolean isScheduleExecutor) {
-        ExecutorServiceFactory factory = ClassUtils
-                .instance(ExecutorServiceFactory.class, threadPoolConfig.getFactory());
-        if (null == factory) {
-            log.error("无法实例化指定的工厂类[{}]。", threadPoolConfig.getFactory());
-            throw new IllegalArgumentException("无法实例化工厂类[" + threadPoolConfig.getFactory() + "]");
+    private <T extends RefreshableExecutorService<?, ?>> T createNewThreadPoolFactory(ThreadPoolConfig threadPoolConfig, boolean isScheduleExecutor) {
+        final String executorServiceFactoryName = threadPoolConfig.getFactory();
+        ExecutorServiceFactory executorServiceFactory = executorServiceFactoryCache.get(executorServiceFactoryName);
+        if (null == executorServiceFactory) {
+            executorServiceFactory = createExecutorServiceFactory(executorServiceFactoryName);
+            executorServiceFactoryCache.put(executorServiceFactoryName, executorServiceFactory);
         }
+
         T instance;
         if (isScheduleExecutor) {
-            ScheduledExecutorService instanceTmp = factory.createSchedule(threadPoolConfig);
-            instance = (T) new WrappingScheduledExecutorService(instanceTmp);
+            ScheduledExecutorService instanceTmp = executorServiceFactory.createSchedule(threadPoolConfig);
+            instance = (T) new WrappingScheduledExecutorService(instanceTmp, threadPoolConfig);
         } else {
-            ExecutorService instanceTmp = factory.create(threadPoolConfig);
-            instance = (T) new WrappingExecutorService<>(instanceTmp);
+            ExecutorService instanceTmp = executorServiceFactory.create(threadPoolConfig);
+            instance = (T) new WrappingExecutorService<>(instanceTmp, threadPoolConfig);
         }
         return instance;
+    }
+
+    private ExecutorServiceFactory createExecutorServiceFactory(String executorServiceFactoryName) {
+        try {
+            this.lock.writeLock().lock();
+            ExecutorServiceFactory factory = this.executorServiceFactoryCache.get(executorServiceFactoryName);
+            if (null == factory) {
+                factory = ClassUtils.instance(ExecutorServiceFactory.class, executorServiceFactoryName);
+                if (null == factory) {
+                    log.error("无法实例化指定的工厂类[{}]。", executorServiceFactoryName);
+                    throw new IllegalArgumentException("无法实例化工厂类[" + executorServiceFactoryName + "]");
+                }
+            }
+            return factory;
+        } finally {
+            this.lock.writeLock().unlock();
+        }
     }
 
     @Override
@@ -145,7 +165,6 @@ public class DefaultThreadPoolsServiceImpl implements ThreadPoolsService {
     }
 
     @Override
-    @SuppressWarnings("rawtypes")
     public void shutdown() {
 
         if (!isShutdown.compareAndSet(false, true)) {
@@ -176,4 +195,58 @@ public class DefaultThreadPoolsServiceImpl implements ThreadPoolsService {
         return isShutdown.get();
     }
 
+    @Override
+    @SuppressWarnings("unchecked")
+    public Boolean update(Collection<ThreadPoolConfig> threadPoolConfigs) {
+        try {
+            this.lock.writeLock().lock();
+            for (ThreadPoolConfig threadPoolConfig : threadPoolConfigs) {
+
+                final String threadPoolsName = threadPoolConfig.getThreadPoolsName();
+                final RefreshableExecutorService<ExecutorService, ThreadPoolConfig> refreshableExecutorService = this.executorServiceCache.get(threadPoolsName);
+                if (null == refreshableExecutorService) {
+                    return Boolean.TRUE;
+                }
+                final RefreshableExecutorService<?, ?> newThreadPoolFactory = this.createNewThreadPoolFactory(threadPoolConfig, false);
+                refreshableExecutorService.refresh(newThreadPoolFactory.delegate());
+            }
+        } finally {
+            this.lock.writeLock().unlock();
+        }
+        return Boolean.TRUE;
+    }
+
+    @Override
+    public Boolean delete(Collection<ThreadPoolConfig> threadPoolConfigs) {
+        // TODO
+        deleteExecutorService(threadPoolConfigs);
+        return null;
+    }
+
+    @SuppressWarnings("unchecked")
+    private void deleteExecutorService(Collection<ThreadPoolConfig> threadPoolConfigs) {
+        for (Map.Entry<String, RefreshableExecutorService> item : executorServiceCache.entrySet()) {
+            final RefreshableExecutorService<ExecutorService, ThreadPoolConfig> executorService = item.getValue();
+            final ThreadPoolConfig config = executorService.config();
+            if (!threadPoolConfigs.contains(config)) {
+                continue;
+            }
+            String domain = item.getKey();
+            final int lastIndexOf = domain.lastIndexOf('.');
+            if (lastIndexOf > 0) {
+                domain = domain.substring(0, lastIndexOf);
+            } else {
+                domain = "root";
+            }
+
+            final UsingConfig usingSetting = this.config.findUsingSetting(domain);
+            final RefreshableExecutorService refreshableExecutorService = executorServiceCache.get(usingSetting.getThreadPoolsName());
+
+        }
+    }
+
+    @Override
+    public Boolean add(Collection<ThreadPoolConfig> threadPoolConfigs) {
+        return null;
+    }
 }
