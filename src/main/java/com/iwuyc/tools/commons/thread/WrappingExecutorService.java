@@ -24,7 +24,7 @@ public class WrappingExecutorService<Delegate extends ExecutorService> implement
      */
     private final AtomicReference<Delegate> delegateReference = new AtomicReference<>();
     private final AtomicReference<BlockingQueue<Delegate>> oldDelegateReference = new AtomicReference<>(new ArrayBlockingQueue<Delegate>(Integer.MAX_VALUE));
-    private final ThreadPoolConfig threadPoolConfig;
+    private final AtomicReference<ThreadPoolConfig> threadPoolConfig = new AtomicReference<>();
     /**
      * 加上读写锁，避免在替换线程池的时候，使用旧的线程池继续执行后续的任务。
      */
@@ -32,7 +32,7 @@ public class WrappingExecutorService<Delegate extends ExecutorService> implement
 
 
     public WrappingExecutorService(Delegate delegate, ThreadPoolConfig threadPoolConfig) {
-        this.threadPoolConfig = threadPoolConfig;
+        this.threadPoolConfig.set(threadPoolConfig);
         this.delegateReference.set(delegate);
     }
 
@@ -162,6 +162,11 @@ public class WrappingExecutorService<Delegate extends ExecutorService> implement
 
     @Override
     public ThreadPoolConfig config() {
-        return threadPoolConfig;
+        return threadPoolConfig.get();
+    }
+
+    @Override
+    public ThreadPoolConfig updateConfig(ThreadPoolConfig newConfig) {
+        return threadPoolConfig.getAndSet(newConfig);
     }
 }

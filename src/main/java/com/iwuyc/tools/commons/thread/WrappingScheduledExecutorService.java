@@ -1,6 +1,7 @@
 package com.iwuyc.tools.commons.thread;
 
 import com.iwuyc.tools.commons.thread.conf.ThreadPoolConfig;
+import com.iwuyc.tools.commons.thread.impl.bean.ExecutorServiceTuple;
 
 import javax.annotation.Nonnull;
 import java.util.concurrent.Callable;
@@ -13,10 +14,14 @@ import java.util.concurrent.TimeUnit;
  *
  * @author Neil
  */
-public class WrappingScheduledExecutorService extends WrappingExecutorService<ScheduledExecutorService> implements ScheduledExecutorService {
+public class WrappingScheduledExecutorService extends WrappingExecutorService<ScheduledExecutorService> implements RefreshableScheduledExecutorService {
 
     public WrappingScheduledExecutorService(ScheduledExecutorService delegate, ThreadPoolConfig threadPoolConfig) {
         super(delegate, threadPoolConfig);
+    }
+
+    public static WrappingScheduledExecutorService create(ExecutorServiceTuple executorServiceTuple) {
+        return new WrappingScheduledExecutorService(executorServiceTuple.getScheduledExecutorService(), executorServiceTuple.getConfig());
     }
 
     @Override

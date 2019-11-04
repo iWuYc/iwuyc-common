@@ -22,4 +22,12 @@ public interface RefreshableExecutorService<Delegate extends ExecutorService, Co
      * @return 配置实例
      */
     Config config();
+
+    /**
+     * 更新配置数据
+     *
+     * @param newConfig 新的配置数据
+     * @return 旧的配置数据
+     */
+    Config updateConfig(Config newConfig);
 }

@@ -1,5 +1,7 @@
 package com.iwuyc.tools.commons.thread;
 
+import com.iwuyc.tools.commons.thread.conf.ThreadPoolConfig;
+
 import java.util.concurrent.ScheduledExecutorService;
 
 /**
@@ -7,5 +9,5 @@ import java.util.concurrent.ScheduledExecutorService;
  *
  * @author Neil
  */
-public interface RefreshableScheduledExecutorService extends RefreshableExecutorService<ScheduledExecutorService>, ScheduledExecutorService {
+public interface RefreshableScheduledExecutorService extends RefreshableExecutorService<ScheduledExecutorService, ThreadPoolConfig>, ScheduledExecutorService {
 }
