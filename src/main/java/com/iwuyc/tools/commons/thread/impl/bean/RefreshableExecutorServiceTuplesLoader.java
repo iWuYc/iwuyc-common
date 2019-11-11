@@ -9,9 +9,9 @@ import java.util.Collection;
 /**
  * @author Neil
  */
-public class RefreshableExecutorServiceTuplesLoader extends CacheLoader<ExecutorServiceTuple, Collection<RefreshableExecutorServiceTuple>> {
+public class RefreshableExecutorServiceTuplesLoader extends CacheLoader<JDKExecutorServiceTuple, Collection<RefreshableExecutorServiceTuple>> {
     @Override
-    public Collection<RefreshableExecutorServiceTuple> load(@Nonnull ExecutorServiceTuple key) throws Exception {
+    public Collection<RefreshableExecutorServiceTuple> load(@Nonnull JDKExecutorServiceTuple key) {
         return new ConcurrentHashSet<>();
     }
 

@@ -1,6 +1,7 @@
 package com.iwuyc.tools.commons.thread;
 
 import com.iwuyc.tools.commons.thread.conf.ThreadPoolConfig;
+import com.iwuyc.tools.commons.thread.impl.bean.JDKExecutorServiceTuple;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.annotation.Nonnull;
@@ -23,7 +24,7 @@ public class WrappingExecutorService<Delegate extends ExecutorService> implement
      * 代理的原子引用类型
      */
     private final AtomicReference<Delegate> delegateReference = new AtomicReference<>();
-    private final AtomicReference<BlockingQueue<Delegate>> oldDelegateReference = new AtomicReference<>(new ArrayBlockingQueue<Delegate>(Integer.MAX_VALUE));
+    private final BlockingQueue<Delegate> oldDelegateReference = new ArrayBlockingQueue<>(10);
     private final AtomicReference<ThreadPoolConfig> threadPoolConfig = new AtomicReference<>();
     /**
      * 加上读写锁，避免在替换线程池的时候，使用旧的线程池继续执行后续的任务。
@@ -31,11 +32,14 @@ public class WrappingExecutorService<Delegate extends ExecutorService> implement
     private final ReadWriteLock lock = new ReentrantReadWriteLock();
 
 
-    public WrappingExecutorService(Delegate delegate, ThreadPoolConfig threadPoolConfig) {
+    protected WrappingExecutorService(Delegate delegate, ThreadPoolConfig threadPoolConfig) {
         this.threadPoolConfig.set(threadPoolConfig);
         this.delegateReference.set(delegate);
     }
 
+    public static WrappingExecutorService<ScheduledExecutorService> create(JDKExecutorServiceTuple jdkExecutorServiceTuple) {
+        return new WrappingExecutorService<>(jdkExecutorServiceTuple.getScheduledExecutorService(), jdkExecutorServiceTuple.getConfig());
+    }
 
     @Override
     public void shutdown() {
@@ -125,7 +129,7 @@ public class WrappingExecutorService<Delegate extends ExecutorService> implement
             this.lock.writeLock().lock();
             Delegate oldDelegate = this.delegateReference.getAndUpdate((old) -> newDelegate);
             if (!oldDelegate.isShutdown() && newDelegate != oldDelegate) {
-                this.oldDelegateReference.get().add(oldDelegate);
+                this.oldDelegateReference.add(oldDelegate);
             }
         } catch (RuntimeException ignore) {
         } finally {
@@ -139,7 +143,7 @@ public class WrappingExecutorService<Delegate extends ExecutorService> implement
         try {
             this.lock.writeLock().lock();
             Collection<Delegate> oldDelegates = new ArrayList<>();
-            this.oldDelegateReference.get().drainTo(oldDelegates);
+            this.oldDelegateReference.drainTo(oldDelegates);
             for (Delegate oldDelegate : oldDelegates) {
                 if (null != oldDelegate && !oldDelegate.isShutdown()) {
                     oldDelegate.shutdown();
