@@ -12,7 +12,6 @@ import com.iwuyc.tools.commons.thread.conf.typeconverter.String2TimeTupleConvert
 import com.iwuyc.tools.commons.thread.impl.DefaultThreadFactory;
 import com.iwuyc.tools.commons.thread.impl.DefaultThreadPoolsServiceImpl;
 import com.iwuyc.tools.commons.util.NumberUtils;
-import com.iwuyc.tools.commons.util.collection.CollectionUtil;
 import com.iwuyc.tools.commons.util.collection.MapUtil;
 import com.iwuyc.tools.commons.util.file.FileUtil;
 import com.iwuyc.tools.commons.util.file.PropertiesFileUtils;
@@ -43,9 +42,11 @@ public class ThreadConfig {
     public static final String DEFAULT_CONF = "/thread/thread.properties";
     public static final String CORES_PLACEHOLDER = "cores";
     public static final String MATH_OPERATOR = "*";
+    private static final String DEFAULT_CONF_PATH = "/thread.properties";
     private static final String AUTO_SCAN_KEY = "thread.auto.scan";
     private static final int AVAILABLE_PROCESSORS = Runtime.getRuntime().availableProcessors();
     private static final ScheduledExecutorService AUTO_SCAN_TASK = new ScheduledThreadPoolExecutor(1, new DefaultThreadFactory("Thread-Config-Auto-Scan"));
+    private static final int DEFAULT_SCAN_DELAY_TIMES = 30_000;
     /**
      * 线程池配置缓存。key是线程池的名字，val为线程池的配置实例。
      */
@@ -55,11 +56,11 @@ public class ThreadConfig {
      * 使用于配置缓存。key是范围，val为线程池名字。
      */
     private final Map<String, UsingConfig> usingConfigCache = new ConcurrentHashMap<>();
-    private final ThreadLocal<ModifiableService<ThreadPoolConfig, Boolean>> modifiableServiceThreadLocal = new ThreadLocal<>();
+    private final ThreadLocal<ModifiableService> modifiableServiceThreadLocal = new ThreadLocal<>();
     private Properties properties;
     private FileInformation fileInformation;
 
-    public ThreadConfig() {
+    private ThreadConfig() {
     }
 
     /**
@@ -73,7 +74,8 @@ public class ThreadConfig {
         if (StringUtils.isEmpty(filePath)) {
             file = null;
         } else {
-            file = new File(filePath);
+            String fileLocation = FileUtil.absoluteLocation(filePath);
+            file = new File(fileLocation);
         }
         return config(file);
     }
@@ -107,7 +109,7 @@ public class ThreadConfig {
             DefaultThreadPoolsServiceImpl defaultThreadPoolsService = new DefaultThreadPoolsServiceImpl(config);
             ThreadPoolServiceHolder.setThreadPoolsService(defaultThreadPoolsService);
 
-            AUTO_SCAN_TASK.schedule(config::autoScanProperties, 1, TimeUnit.MINUTES);
+            AUTO_SCAN_TASK.schedule(config::autoScanProperties, 0, TimeUnit.MILLISECONDS);
             log.info("初始化线程池框架完成。");
             return ThreadPoolServiceHolder.getThreadPoolsService();
         } catch (IOException e) {
@@ -141,28 +143,50 @@ public class ThreadConfig {
             if (!(threadPoolsService instanceof ModifiableService)) {
                 return;
             }
-            modifiableServiceThreadLocal.set((ModifiableService) threadPoolsService);
-            String filePath = this.fileInformation.getPath();
+            this.modifiableServiceThreadLocal.set((ModifiableService) threadPoolsService);
+            final FileInformation fileInformation = this.getFileInformation();
+            String filePath = fileInformation.getPath();
             final File file = new File(filePath);
-            if (!file.exists() || file.lastModified() != this.fileInformation.getLastModifiedTime()) {
+            if (!file.exists() || file.lastModified() == fileInformation.getLastModifiedTime()) {
+                log.debug("thread配置文件无变化，无需重新加载配置。");
                 return;
             }
             Properties newProperties = PropertiesFileUtils.propertiesReader(file, (ReadWriteLock) null);
-            compareConfig(newProperties);
+            if (compareConfig(newProperties)) {
+                fileInformation.setLastModifiedTime(file.lastModified());
+            }
+        } catch (IOException e) {
+            log.warn("加载配置文件出错：{}", e.getMessage());
+            log.debug("error detail:", e);
         } finally {
             // 扫描间隔至少在三十秒以上
             long millionTime = timeTuple.getTimeUnit().toMillis(timeTuple.getTime());
-            long delayTime = Math.max(millionTime, 30_000);
+            long delayTime = Math.max(millionTime, DEFAULT_SCAN_DELAY_TIMES);
+            this.modifiableServiceThreadLocal.remove();
             AUTO_SCAN_TASK.schedule(this::autoScanProperties, delayTime, TimeUnit.MILLISECONDS);
         }
+    }
+
+    public FileInformation getFileInformation() {
+        if (null != this.fileInformation) {
+            return this.fileInformation;
+        }
+        synchronized (this) {
+            if (null != this.fileInformation) {
+                return this.fileInformation;
+            }
+            this.setConfigFilePath(DEFAULT_CONF_PATH);
+        }
+        return fileInformation;
     }
 
     /**
      * 更新thread.conf开头的配置项
      *
      * @param newProperties 新配置文件
+     * @return
      */
-    private void compareConfig(Properties newProperties) {
+    private boolean compareConfig(Properties newProperties) throws IOException {
         Map<Object, Object> oldConfigProperties = MapUtil
                 .findEntryByPrefixKey(this.properties, ThreadConfigConstant.THREAD_CONFIG_PRENAME);
         Map<Object, Object> newConfigProperties = MapUtil
@@ -171,84 +195,16 @@ public class ThreadConfig {
         final MapDifference<Object, Object> difference = Maps.difference(oldConfigProperties, newConfigProperties);
         // 无变更
         if (difference.areEqual()) {
-            return;
+            return true;
         }
 
-        // 新增配置
-        Map<Object, Object> newly = difference.entriesOnlyOnRight();
-        if (MapUtil.isNotEmpty(newly)) {
-            newlyConfig(newly);
-        }
+        Properties oldConfig = new Properties();
+        oldConfig.putAll(this.properties);
+        this.properties.clear();
 
-        // 配置变更
-        final Map<Object, MapDifference.ValueDifference<Object>> changed = difference.entriesDiffering();
-        if (MapUtil.isNotEmpty(changed)) {
-            changedConfig(changed, newConfigProperties);
-        }
-
-        // 删除配置
-        Map<Object, Object> deleted = difference.entriesOnlyOnLeft();
-        if (MapUtil.isNotEmpty(deleted)) {
-            deletedConfig(deleted, oldConfigProperties);
-        }
-
-    }
-
-    private void newlyConfig(Map<Object, Object> newly) {
-
-        final Map<String, ThreadPoolConfig> newlyConfig = config(newly);
-        if (MapUtil.isEmpty(newlyConfig)) {
-            return;
-        }
-        this.threadConfigCache.putAll(newlyConfig);
-    }
-
-    private void changedConfig(Map<Object, MapDifference.ValueDifference<Object>> changed, Map<Object, Object> newConfigProperties) {
-        Map<String, ThreadPoolConfig> newThreadConfigMap = extractThreadPoolConfig(changed, newConfigProperties);
-
-        final ModifiableService<ThreadPoolConfig, Boolean> modifiableService = modifiableServiceThreadLocal.get();
-        modifiableService.update(newThreadConfigMap.values());
-    }
-
-    private Map<String, ThreadPoolConfig> extractThreadPoolConfig(Map<?, ?> changed, Map<Object, Object> fullProperties) {
-        final HashMap<?, ?> changeInfos = new HashMap<>(changed);
-
-        Map<String, ThreadPoolConfig> newThreadConfigMap = new HashMap<>(changeInfos.size() / 2);
-        Set<?> keys = changeInfos.keySet();
-        while (!keys.isEmpty()) {
-            String key = String.valueOf(keys.iterator().next());
-            final String keyPrefix = findThreadNameIncludePrefix(key);
-
-            final Map<Object, Object> groupConfig = MapUtil.findEntryByPrefixKey(fullProperties, keyPrefix);
-            final ThreadPoolConfig threadPoolConfig = threadPoolFactoryConfig(keyPrefix, groupConfig);
-            newThreadConfigMap.put(threadPoolConfig.getThreadPoolsName(), threadPoolConfig);
-
-            groupConfig.forEach(changeInfos::remove);
-            keys = changeInfos.keySet();
-        }
-        return newThreadConfigMap;
-    }
-
-    /**
-     * 删除配置
-     *
-     * @param deleteProperties    在原来配置文件中存在，但新的配置文件中不存在的项
-     * @param oldConfigProperties 原来的配置文件数据项
-     */
-    private void deletedConfig(Map<Object, Object> deleteProperties, Map<Object, Object> oldConfigProperties) {
-        final Map<String, ThreadPoolConfig> threadPoolConfigMap = extractThreadPoolConfig(deleteProperties, oldConfigProperties);
-        Collection<ThreadPoolConfig> threadPoolConfigs = new HashSet<>();
-        for (Entry<String, ThreadPoolConfig> item : threadPoolConfigMap.entrySet()) {
-            if ("default".equals(item.getKey())) {
-                continue;
-            }
-            threadPoolConfigs.add(item.getValue());
-        }
-        if (CollectionUtil.isEmpty(threadPoolConfigs)) {
-            return;
-        }
-        final ModifiableService<ThreadPoolConfig, Boolean> modifiableService = modifiableServiceThreadLocal.get();
-        modifiableService.delete(threadPoolConfigs);
+        this.load(newProperties);
+        final ModifiableService modifiableService = this.modifiableServiceThreadLocal.get();
+        return modifiableService.refresh();
     }
 
     public void setConfigFilePath(String configPath) {

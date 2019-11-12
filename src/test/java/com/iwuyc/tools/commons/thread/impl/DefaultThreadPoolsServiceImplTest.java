@@ -2,6 +2,7 @@ package com.iwuyc.tools.commons.thread.impl;
 
 import com.google.common.base.Stopwatch;
 import com.iwuyc.tools.commons.thread.ThreadConfig;
+import com.iwuyc.tools.commons.thread.ThreadPoolsService;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -12,16 +13,11 @@ import java.util.concurrent.ScheduledExecutorService;
 import static org.junit.Assert.*;
 
 public class DefaultThreadPoolsServiceImplTest {
-    private ThreadConfig config;
-    private DefaultThreadPoolsServiceImpl poolSer;
+    private ThreadPoolsService poolSer;
 
     @Before
     public void before() throws Exception {
-        try (InputStream in = ThreadConfig.class.getResourceAsStream("/test.properties")) {
-            this.config = new ThreadConfig();
-            config.load(in);
-            this.poolSer = new DefaultThreadPoolsServiceImpl(config);
-        }
+            this.poolSer =  ThreadConfig.config("classpath:/test.properties");
     }
 
     @Test
