@@ -166,7 +166,7 @@ public class ThreadConfig {
         Map<Object, Object> oldConfigProperties = MapUtil
                 .findEntryByPrefixKey(this.properties, ThreadConfigConstant.THREAD_CONFIG_PRENAME);
         Map<Object, Object> newConfigProperties = MapUtil
-                .findEntryByPrefixKey(this.properties, ThreadConfigConstant.THREAD_CONFIG_PRENAME);
+                .findEntryByPrefixKey(newProperties, ThreadConfigConstant.THREAD_CONFIG_PRENAME);
 
         final MapDifference<Object, Object> difference = Maps.difference(oldConfigProperties, newConfigProperties);
         // 无变更
@@ -363,20 +363,25 @@ public class ThreadConfig {
         return key.substring(0, endIndex);
     }
 
+    public UsingConfig findParentSetting(String domain) {
+        Optional<String> innerDomainOpt = subLastNode(domain);
+        String innerDomain = innerDomainOpt.orElse("root");
+        return findUsingSetting(innerDomain);
+    }
+
     public UsingConfig findUsingSetting(String domain) {
         String innerDomain = domain;
         UsingConfig config;
-        int lastDotIndex;
         do {
             config = usingConfigCache.get(innerDomain);
             if (null != config) {
                 break;
             }
-            lastDotIndex = innerDomain.lastIndexOf('.');
-            if (lastDotIndex < 0) {
+            Optional<String> newDomainOpt = subLastNode(innerDomain);
+            if (!newDomainOpt.isPresent()) {
                 break;
             }
-            innerDomain = innerDomain.substring(0, lastDotIndex);
+            innerDomain = newDomainOpt.get();
         } while (true);
 
         if (null == config) {
@@ -385,6 +390,14 @@ public class ThreadConfig {
         }
         usingConfigCache.put(domain, config);
         return config;
+    }
+
+    private Optional<String> subLastNode(String domain) {
+        int lastDotIndex = domain.lastIndexOf('.');
+        if (lastDotIndex < 0) {
+            return Optional.empty();
+        }
+        return Optional.of(domain.substring(0, lastDotIndex));
     }
 
     public ThreadPoolConfig findThreadPoolConfig(String threadPoolsName) {
@@ -419,14 +432,16 @@ public class ThreadConfig {
             log.debug("未初始化过，进行初始化。");
             this.properties = new Properties();
 
-            // 加载默认配置。
-            try (InputStream defaultSettings = DefaultThreadPoolsServiceImpl.class
-                    .getResourceAsStream(DEFAULT_CONF)) {
-                this.properties.load(defaultSettings);
-                this.properties.putAll(InitDefaultProperties.DEFAULT_SETTING);
-                log.info("加载默认的配置完成。[{}]", this.properties);
-            }
+
         }
+        // 加载默认配置。
+        try (InputStream defaultSettings = DefaultThreadPoolsServiceImpl.class
+                .getResourceAsStream(DEFAULT_CONF)) {
+            this.properties.load(defaultSettings);
+            this.properties.putAll(InitDefaultProperties.DEFAULT_SETTING);
+            log.info("加载默认的配置完成。[{}]", this.properties);
+        }
+
         if (null != config) {
             properties.putAll(config);
         }

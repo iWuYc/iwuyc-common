@@ -9,7 +9,7 @@ import com.google.common.cache.CacheLoader;
  */
 public class RefreshableExecutorServiceTupleLoader extends CacheLoader<String, RefreshableExecutorServiceTuple> {
     @Override
-    public RefreshableExecutorServiceTuple load(String key) throws Exception {
-        return new RefreshableExecutorServiceTuple();
+    public RefreshableExecutorServiceTuple load(String domain) throws Exception {
+        return new RefreshableExecutorServiceTuple(domain);
     }
 }

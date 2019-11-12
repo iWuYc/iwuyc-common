@@ -43,13 +43,13 @@ public class WrappingExecutorService<Delegate extends ExecutorService> implement
 
     @Override
     public void shutdown() {
-        this.getDelegate().shutdown();
+        throw new UnsupportedOperationException("不支持关闭线程池操作。");
     }
 
     @Override
     @Nonnull
     public List<Runnable> shutdownNow() {
-        return this.getDelegate().shutdownNow();
+        throw new UnsupportedOperationException("不支持关闭线程池操作。");
     }
 
     @Override

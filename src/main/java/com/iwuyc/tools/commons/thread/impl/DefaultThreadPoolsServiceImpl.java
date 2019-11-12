@@ -1,6 +1,5 @@
 package com.iwuyc.tools.commons.thread.impl;
 
-import com.google.common.base.Preconditions;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.LoadingCache;
@@ -8,13 +7,15 @@ import com.iwuyc.tools.commons.classtools.ClassUtils;
 import com.iwuyc.tools.commons.thread.*;
 import com.iwuyc.tools.commons.thread.conf.ThreadPoolConfig;
 import com.iwuyc.tools.commons.thread.conf.UsingConfig;
-import com.iwuyc.tools.commons.thread.impl.bean.*;
+import com.iwuyc.tools.commons.thread.impl.bean.JDKExecutorServiceTuple;
+import com.iwuyc.tools.commons.thread.impl.bean.RefreshableExecutorServiceTuple;
+import com.iwuyc.tools.commons.thread.impl.bean.RefreshableExecutorServiceTupleLoader;
+import com.iwuyc.tools.commons.thread.impl.bean.RefreshableExecutorServiceTuplesLoader;
 import com.iwuyc.tools.commons.util.string.StringUtils;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.annotation.Nonnull;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
@@ -43,7 +44,7 @@ public class DefaultThreadPoolsServiceImpl implements ThreadPoolsService, Modifi
     /**
      * 线程池元组 -> 对应引用当前线程池元组的封装实例
      */
-    private final LoadingCache<JDKExecutorServiceTuple, Collection<RefreshableExecutorServiceTuple>> executorServiceGuavaCache = CacheBuilder.newBuilder().build(new RefreshableExecutorServiceTuplesLoader());
+    private final LoadingCache<JDKExecutorServiceTuple, Collection<RefreshableExecutorServiceTuple>> jdkExecutorMappingRefreshableExecutor = CacheBuilder.newBuilder().build(new RefreshableExecutorServiceTuplesLoader());
 
     /**
      * domain -> RefreshableExecutorServiceTuple
@@ -74,7 +75,7 @@ public class DefaultThreadPoolsServiceImpl implements ThreadPoolsService, Modifi
     @Override
     public ExecutorService getExecutorService(String domain) {
         {
-            Preconditions.checkNotNull(domain);
+            domain = checkDomain(domain);
             final RefreshableExecutorServiceTuple refreshableExecutorServiceTuple = this.domainRefreshableTupleServices.getUnchecked(domain);
             if (null != refreshableExecutorServiceTuple.getExecutorService()) {
                 return refreshableExecutorServiceTuple.getExecutorService();
@@ -86,10 +87,26 @@ public class DefaultThreadPoolsServiceImpl implements ThreadPoolsService, Modifi
                 }
 
                 final JDKExecutorServiceTuple jdkExecutorServiceTuple = findOrCreateJdkExecutorServiceTuple(domain);
+
                 final WrappingExecutorService wrappingScheduledExecutorService = WrappingExecutorService.create(jdkExecutorServiceTuple);
                 refreshableExecutorServiceTuple.setExecutorService(wrappingScheduledExecutorService);
+
+                linkedExecutors(refreshableExecutorServiceTuple, jdkExecutorServiceTuple);
                 return wrappingScheduledExecutorService;
             }
+        }
+    }
+
+    /**
+     * 将两种executor建立关联关系
+     *
+     * @param refreshableExecutorServiceTuple 可更新、引用类型、代理类型executor
+     * @param jdkExecutorServiceTuple         实际的executor
+     */
+    private void linkedExecutors(RefreshableExecutorServiceTuple refreshableExecutorServiceTuple, JDKExecutorServiceTuple jdkExecutorServiceTuple) {
+        final Collection<RefreshableExecutorServiceTuple> refreshableExecutorServiceTuples = this.jdkExecutorMappingRefreshableExecutor.getUnchecked(jdkExecutorServiceTuple);
+        if (!refreshableExecutorServiceTuples.contains(refreshableExecutorServiceTuple)) {
+            refreshableExecutorServiceTuples.add(refreshableExecutorServiceTuple);
         }
     }
 
@@ -106,7 +123,7 @@ public class DefaultThreadPoolsServiceImpl implements ThreadPoolsService, Modifi
 
     @Override
     public ScheduledExecutorService getScheduledExecutor(String domain) {
-        Preconditions.checkNotNull(domain);
+        domain = checkDomain(domain);
         final RefreshableExecutorServiceTuple refreshableExecutorServiceTuple = this.domainRefreshableTupleServices.getUnchecked(domain);
         if (null != refreshableExecutorServiceTuple.getScheduledExecutorService()) {
             return refreshableExecutorServiceTuple.getScheduledExecutorService();
@@ -120,18 +137,22 @@ public class DefaultThreadPoolsServiceImpl implements ThreadPoolsService, Modifi
             final JDKExecutorServiceTuple jdkExecutorServiceTuple = findOrCreateJdkExecutorServiceTuple(domain);
             final WrappingScheduledExecutorService wrappingScheduledExecutorService = WrappingScheduledExecutorService.create(jdkExecutorServiceTuple);
             refreshableExecutorServiceTuple.setScheduledExecutorService(wrappingScheduledExecutorService);
+
+            linkedExecutors(refreshableExecutorServiceTuple, jdkExecutorServiceTuple);
+
             return wrappingScheduledExecutorService;
         }
     }
 
 
-    private ExecutorServiceTuple getExecutorServiceByMap(String domain) {
+    @Nonnull
+    private String checkDomain(String domain) {
         if (StringUtils.isEmpty(domain)) {
             log.debug("未指定domain，将使用默认的domain：{}", DEFAULT_DOMAIN);
             domain = DEFAULT_DOMAIN;
         }
         log.debug("Get executor service for domain:{}", domain);
-        return findOrCreateJdkExecutorServiceTuple(domain);
+        return domain;
     }
 
     private JDKExecutorServiceTuple findOrCreateJdkExecutorServiceTuple(String domain) {
@@ -145,9 +166,6 @@ public class DefaultThreadPoolsServiceImpl implements ThreadPoolsService, Modifi
         return jdkExecutorServiceTuple;
     }
 
-    private <T extends ExecutorService> boolean isScheduleExecutor(Class<T> targetType) {
-        return ScheduledExecutorService.class.isAssignableFrom(targetType);
-    }
 
     @Nonnull
     private JDKExecutorServiceTuple getOrCreateExecutorServiceTuple(ThreadPoolConfig threadPoolConfig) {
@@ -200,32 +218,31 @@ public class DefaultThreadPoolsServiceImpl implements ThreadPoolsService, Modifi
     @Override
     public void shutdown() {
 
-//        if (!isShutdown.compareAndSet(false, true)) {
-//            return;
-//        }
-//
-//        for (Map.Entry<String, RefreshableExecutorService> item : executorServiceCache.entrySet()) {
-//            try {
-//                item.getValue().shutdown();
-//            } catch (Exception e) {
-//                log.error("Shutdown pool raise an error.Cause:", e);
-//            }
-//        }
-//        executorServiceCache.clear();
-//
-//        for (Map.Entry<String, RefreshableScheduledExecutorService> item : this.scheduleExecutorServiceCache.entrySet()) {
-//            try {
-//                item.getValue().shutdown();
-//            } catch (Exception e) {
-//                log.error("Shutdown schedule pool raise an error.Cause:", e);
-//            }
-//        }
-//        this.scheduleExecutorServiceCache.clear();
+        if (!isShutdown.compareAndSet(false, true)) {
+            return;
+        }
+        for (Map.Entry<JDKExecutorServiceTuple, Collection<RefreshableExecutorServiceTuple>> item : this.jdkExecutorMappingRefreshableExecutor.asMap().entrySet()) {
+            JDKExecutorServiceTuple itemKey = item.getKey();
+            if (!itemKey.getScheduledExecutorService().isShutdown()) {
+                itemKey.getScheduledExecutorService().shutdown();
+            }
+            if (!itemKey.getExecutorService().isShutdown()) {
+                itemKey.getExecutorService().shutdown();
+            }
+
+            Collection<RefreshableExecutorServiceTuple> itemVal = item.getValue();
+            itemVal.clear();
+        }
+
+        this.jdkExecutorMappingRefreshableExecutor.invalidateAll();
+        this.nameExecutorServiceCache.invalidateAll();
+        this.domainRefreshableTupleServices.invalidateAll();
+        this.executorServiceFactoryCache.clear();
     }
 
     @Override
     public boolean isShutdown() {
-        return isShutdown.get();
+        return this.isShutdown.get();
     }
 
     @Override
@@ -257,22 +274,24 @@ public class DefaultThreadPoolsServiceImpl implements ThreadPoolsService, Modifi
 
     @SuppressWarnings("unchecked")
     private void deleteExecutorService(Collection<ThreadPoolConfig> threadPoolConfigs, Map<String, RefreshableExecutorService> executorServiceCache) {
-        Collection<RefreshableExecutorService> refreshableExecutorServices = new HashSet<>(threadPoolConfigs.size());
-        for (Map.Entry<String, RefreshableExecutorService> item : executorServiceCache.entrySet()) {
-            final RefreshableExecutorService<ExecutorService, ThreadPoolConfig> executorService = item.getValue();
-            final ThreadPoolConfig config = executorService.config();
-            if (!threadPoolConfigs.contains(config)) {
-                continue;
-            }
+        for (ThreadPoolConfig item : threadPoolConfigs) {
+            final String threadPoolsName = item.getThreadPoolsName();
+            final JDKExecutorServiceTuple jdkExecutorServiceTuple = this.nameExecutorServiceCache.getIfPresent(threadPoolsName);
 
-            RefreshableExecutorService<ExecutorService, ThreadPoolConfig> parentThreadPools = findParentThreadPools(item.getKey(), threadPoolConfigs);
-            if (null == parentThreadPools) {
-                // TODO
-                return;
-            }
-            executorService.refresh(parentThreadPools.delegate());
+            final Collection<RefreshableExecutorServiceTuple> refreshableExecutors = this.jdkExecutorMappingRefreshableExecutor.getUnchecked(jdkExecutorServiceTuple);
 
-            refreshableExecutorServices.add(parentThreadPools);
+            switchAllNewReference(item, refreshableExecutors);
+
+        }
+    }
+
+    private void switchAllNewReference(ThreadPoolConfig threadPoolConfig, Collection<RefreshableExecutorServiceTuple> refreshableExecutors) {
+        for (RefreshableExecutorServiceTuple item : refreshableExecutors) {
+            final UsingConfig usingSetting = this.threadConfig.findUsingSetting(item.getDomain());
+            final ThreadPoolConfig newThreadPoolConfig = this.threadConfig.findThreadPoolConfig(usingSetting.getThreadPoolsName());
+            if (threadPoolConfig.equals(newThreadPoolConfig)){
+
+            }
         }
     }
 

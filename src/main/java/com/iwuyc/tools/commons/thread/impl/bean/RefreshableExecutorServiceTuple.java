@@ -9,7 +9,11 @@ import lombok.EqualsAndHashCode;
 @EqualsAndHashCode
 public class RefreshableExecutorServiceTuple implements ExecutorServiceTuple {
 
+    private final String domain;
     private RefreshableExecutorService<?, ?> executorService;
     private RefreshableScheduledExecutorService scheduledExecutorService;
 
+    public RefreshableExecutorServiceTuple(String domain) {
+        this.domain = domain;
+    }
 }
