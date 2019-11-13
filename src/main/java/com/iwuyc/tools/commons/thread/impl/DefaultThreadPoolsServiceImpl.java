@@ -7,10 +7,7 @@ import com.iwuyc.tools.commons.classtools.ClassUtils;
 import com.iwuyc.tools.commons.thread.*;
 import com.iwuyc.tools.commons.thread.conf.ThreadPoolConfig;
 import com.iwuyc.tools.commons.thread.conf.UsingConfig;
-import com.iwuyc.tools.commons.thread.impl.bean.JDKExecutorServiceTuple;
-import com.iwuyc.tools.commons.thread.impl.bean.RefreshableExecutorServiceTuple;
-import com.iwuyc.tools.commons.thread.impl.bean.RefreshableExecutorServiceTupleLoader;
-import com.iwuyc.tools.commons.thread.impl.bean.RefreshableExecutorServiceTuplesLoader;
+import com.iwuyc.tools.commons.thread.impl.bean.*;
 import com.iwuyc.tools.commons.util.string.StringUtils;
 import lombok.extern.slf4j.Slf4j;
 
@@ -83,7 +80,8 @@ public class DefaultThreadPoolsServiceImpl implements ThreadPoolsService, Modifi
             return refreshableExecutorServiceTuple.getExecutorService();
         }
 
-        synchronized (this) {
+        try {
+            this.lock.writeLock().lock();
             if (null != refreshableExecutorServiceTuple.getExecutorService()) {
                 return refreshableExecutorServiceTuple.getExecutorService();
             }
@@ -95,6 +93,8 @@ public class DefaultThreadPoolsServiceImpl implements ThreadPoolsService, Modifi
 
             linkedExecutors(jdkExecutorServiceTuple, refreshableExecutorServiceTuple);
             return wrappingScheduledExecutorService;
+        } finally {
+            this.lock.writeLock().unlock();
         }
     }
 
@@ -248,34 +248,58 @@ public class DefaultThreadPoolsServiceImpl implements ThreadPoolsService, Modifi
 
     @Override
     public boolean refresh() {
-        final ConcurrentMap<JDKExecutorServiceTuple, Collection<RefreshableExecutorServiceTuple>> jdkExecutorMappingRefreshableExecutorMap = this.jdkExecutorMappingRefreshableExecutor.asMap();
+        try {
+            this.lock.writeLock().lock();
+            final ConcurrentMap<JDKExecutorServiceTuple, Collection<RefreshableExecutorServiceTuple>> jdkExecutorMappingRefreshableExecutorMap = this.jdkExecutorMappingRefreshableExecutor.asMap();
 
-        final Map<ThreadPoolConfig, JDKExecutorServiceTuple> configJdkServiceTupleMap = jdkExecutorMappingRefreshableExecutorMap.keySet().stream().collect(Collectors.toMap(JDKExecutorServiceTuple::getConfig, item -> item));
+            final Map<ThreadPoolConfig, JDKExecutorServiceTuple> configJdkServiceTupleMap = jdkExecutorMappingRefreshableExecutorMap.keySet().stream().collect(Collectors.toMap(JDKExecutorServiceTuple::getConfig, item -> item));
 
-        for (Map.Entry<JDKExecutorServiceTuple, Collection<RefreshableExecutorServiceTuple>> item : jdkExecutorMappingRefreshableExecutorMap.entrySet()) {
-            final Collection<RefreshableExecutorServiceTuple> itemValue = item.getValue();
-            final JDKExecutorServiceTuple itemKey = item.getKey();
+            for (Map.Entry<JDKExecutorServiceTuple, Collection<RefreshableExecutorServiceTuple>> item : jdkExecutorMappingRefreshableExecutorMap.entrySet()) {
+                final Collection<RefreshableExecutorServiceTuple> itemValue = item.getValue();
+                final JDKExecutorServiceTuple itemKey = item.getKey();
 
-            Iterator<RefreshableExecutorServiceTuple> itemValueIt = itemValue.iterator();
-            while (itemValueIt.hasNext()) {
-                final RefreshableExecutorServiceTuple refreshableExecutorServiceTupleItem = itemValueIt.next();
+                Iterator<RefreshableExecutorServiceTuple> itemValueIt = itemValue.iterator();
+                while (itemValueIt.hasNext()) {
+                    final RefreshableExecutorServiceTuple refreshableExecutorServiceTupleItem = itemValueIt.next();
 
-                if (!pickOutNewJdkTuple(itemKey, configJdkServiceTupleMap, refreshableExecutorServiceTupleItem)) {
-                    continue;
+                    if (!pickOutNewJdkTuple(itemKey, configJdkServiceTupleMap, refreshableExecutorServiceTupleItem)) {
+                        continue;
+                    }
+                    itemValueIt.remove();
                 }
-                itemValueIt.remove();
             }
+
+            releaseDidNotUsingInstance();
+
+            return false;
+        } finally {
+            this.lock.writeLock().unlock();
         }
-
-        releaseDidNotUsingInstance();
-
-        return false;
     }
 
     private void releaseDidNotUsingInstance() {
         final ConcurrentMap<JDKExecutorServiceTuple, Collection<RefreshableExecutorServiceTuple>> jdkExecutorMappingRefreshableExecutorMap = this.jdkExecutorMappingRefreshableExecutor.asMap();
-        for (Map.Entry<JDKExecutorServiceTuple, Collection<RefreshableExecutorServiceTuple>> item : jdkExecutorMappingRefreshableExecutorMap.entrySet()) {
-//            item.
+        final Iterator<Map.Entry<JDKExecutorServiceTuple, Collection<RefreshableExecutorServiceTuple>>> iterator = jdkExecutorMappingRefreshableExecutorMap.entrySet().iterator();
+        while (iterator.hasNext()) {
+            Map.Entry<JDKExecutorServiceTuple, Collection<RefreshableExecutorServiceTuple>> item = iterator.next();
+            if (!item.getValue().isEmpty()) {
+                continue;
+            }
+            iterator.remove();
+            final JDKExecutorServiceTuple key = item.getKey();
+            shutdownExecutor(key);
+        }
+    }
+
+    private void shutdownExecutor(ExecutorServiceTuple jdkExecutorServiceTuple) {
+        final ExecutorService executorService = jdkExecutorServiceTuple.getExecutorService();
+        if (null != executorService && !executorService.isShutdown()) {
+            executorService.shutdown();
+        }
+
+        final ScheduledExecutorService scheduledExecutorService = jdkExecutorServiceTuple.getScheduledExecutorService();
+        if (null != scheduledExecutorService && !scheduledExecutorService.isShutdown()) {
+            scheduledExecutorService.shutdown();
         }
     }
 
