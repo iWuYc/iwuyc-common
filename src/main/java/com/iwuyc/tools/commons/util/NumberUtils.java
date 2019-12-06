@@ -127,4 +127,13 @@ public abstract class NumberUtils {
         }
         return result;
     }
+
+    /**
+     * 将字符串的int类型转换为数字类型
+     * @param intStr 待转换的字符串
+     * @return 转换后的值
+     */
+    public static int parseInt(String intStr) {
+        return parse(intStr, int.class);
+    }
 }

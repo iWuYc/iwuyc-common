@@ -68,4 +68,14 @@ public abstract class StringUtils {
     public static boolean isNotBlank(CharSequence str) {
         return !isBlank(str);
     }
+
+    /**
+     * 计算字符串的长度
+     *
+     * @param str 待计算的字符串
+     * @return 返回字符串的长度，如果str为null则返回为0
+     */
+    public static int length(String str) {
+        return str == null ? 0 : str.length();
+    }
 }
