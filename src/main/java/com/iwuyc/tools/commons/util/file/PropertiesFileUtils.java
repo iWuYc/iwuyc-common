@@ -266,5 +266,29 @@ public class PropertiesFileUtils {
 
         return propertiesReader(propertiesFile, charsetEncoding, Collections.emptyList(), Collections.emptyList(), Constants.NIL_STRING);
     }
-
+    /**
+     * 加载对应前缀的配置项，产生一个新的实例。如：properties为：{producer.host=123,producer.timeout=10,username=iot} prefix为：[producer.]，trimPrefix为true，则返回的properties为{host=123,timeout=10}
+     *
+     * @param properties 源配置实例
+     * @param prefix     需要获取的配置前缀
+     * @param trimPrefix 是否去除前缀
+     * @return 新的实例
+     */
+    public static Properties prefixFilter(Properties properties, String prefix, boolean trimPrefix) {
+        Properties result = new Properties();
+        for (Map.Entry<Object, Object> item : properties.entrySet()) {
+            final String key = String.valueOf(item.getKey());
+            if (!key.startsWith(prefix)) {
+                continue;
+            }
+            String newKey;
+            if (trimPrefix) {
+                newKey = key.substring(StringUtils.length(prefix));
+            } else {
+                newKey = key;
+            }
+            result.put(newKey, item.getValue());
+        }
+        return result;
+    }
 }
