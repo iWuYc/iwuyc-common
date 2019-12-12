@@ -306,7 +306,7 @@ public class ThreadConfig {
         for (int i = 1; i < expNums.length; i++) {
             result *= expNums[i];
             if (result > 65535 || result <= 0) {
-                throw new IllegalArgumentException("表达式最终的结果范围值不允许超过(0,65535]");
+                throw new IllegalArgumentException("表达式最终的结果范围值不允许超过(0,65535],当前计算结果为：" + result);
             }
         }
 
