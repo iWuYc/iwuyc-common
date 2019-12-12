@@ -2,6 +2,7 @@ package com.iwuyc.tools.commons.thread.conf;
 
 import com.iwuyc.tools.commons.basic.type.TimeTuple;
 import com.iwuyc.tools.commons.util.string.StringUtils;
+import lombok.EqualsAndHashCode;
 
 import java.util.Collections;
 import java.util.Map;
@@ -10,6 +11,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * @author Neil
  */
+@EqualsAndHashCode
 public class ThreadPoolConfig {
 
     private final String factory;

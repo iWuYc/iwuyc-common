@@ -160,15 +160,19 @@ public abstract class ClassUtils {
      *
      * @param field 待修改字段。
      */
-    private static void fieldModifier(Field field) {
+    public static void fieldModifier(Field field, int modifies) {
         if (!field.isAccessible()) {
             field.setAccessible(true);
         }
+        injectField(field, MODIFIERS_FIELD, modifies);
+    }
+
+    public static void fieldModifier(Field field) {
         int newModifies = field.getModifiers();
         if (Modifier.isFinal(newModifies)) {
             newModifies = newModifies & ~Modifier.FINAL;
         }
-        injectField(field, MODIFIERS_FIELD, newModifies);
+        fieldModifier(field, newModifies);
     }
 
     /**
@@ -183,7 +187,7 @@ public abstract class ClassUtils {
     @SuppressWarnings({"unchecked", "rawtypes"})
     private static Object convert(Class<?> sourceType, Class targetType, Object val,
                                   MultiMap<Class<?>, TypeConverter<?, ?>> typeConverters) {
-        if (sourceType == targetType) {
+        if (sourceType == targetType || compareType(sourceType, targetType, false)) {
             return val;
         }
 
@@ -194,7 +198,7 @@ public abstract class ClassUtils {
         Object rejectVal;
         Collection<TypeConverter<?, ?>> converters = typeConverters.get(sourceType);
         if (CollectionUtil.isEmpty(converters)) {
-            log.warn("未找到对应的转换器：sourceType->targetType:[{} -> {}];val:[{}];typeConverters:[{}]", sourceType, targetType, val, typeConverters);
+            log.warn("未找到对应的转换器，直接返回原值：sourceType->targetType:[{} -> {}];val:[{}];typeConverters:[{}]", sourceType, targetType, val, typeConverters);
             return val;
         }
         // 筛选支持转换的转换器，并且返回第一个。

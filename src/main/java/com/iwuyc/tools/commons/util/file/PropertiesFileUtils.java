@@ -218,8 +218,7 @@ public class PropertiesFileUtils {
      * @param fillVal         如果不为null，则将以这个值填充properties对象中所有的value值。
      * @return properties的实例
      */
-    public static Properties propertiesReader(File propertiesFile, String charsetEncoding, Collection<Object> ignoredKey,
-                                              Collection<Object> ignoredVal, Object fillVal) {
+    public static Properties propertiesReader(File propertiesFile, String charsetEncoding, Collection<Object> ignoredKey, Collection<Object> ignoredVal, Object fillVal) {
         if (StringUtils.isEmpty(charsetEncoding)) {
             charsetEncoding = Constants.UTF8_STR;
         }
@@ -264,7 +263,7 @@ public class PropertiesFileUtils {
         String absolutePropertiesPath = FileUtil.absoluteLocation(propertiesLocation);
         File propertiesFile = new File(absolutePropertiesPath);
 
-        return propertiesReader(propertiesFile, charsetEncoding, Collections.emptyList(), Collections.emptyList(), Constants.NIL_STRING);
+        return propertiesReader(propertiesFile, charsetEncoding, Collections.emptyList(), Collections.emptyList(), null);
     }
     /**
      * 加载对应前缀的配置项，产生一个新的实例。如：properties为：{producer.host=123,producer.timeout=10,username=iot} prefix为：[producer.]，trimPrefix为true，则返回的properties为{host=123,timeout=10}

@@ -135,21 +135,22 @@ public class FileUtil {
         }
 
         if (location.startsWith(CLASSPATH_PREFIX)) {
-            location = location.substring(CLASSPATH_PREFIX.length());
-            URL resource = FileUtil.class.getResource(location);
+            String classpathLocation = location.substring(CLASSPATH_PREFIX.length());
+            URL resource = FileUtil.class.getResource(classpathLocation);
             if (resource == null) {
                 resource = FileUtil.class.getResource("/");
                 try {
                     String classpath = Paths.get(resource.toURI()).toAbsolutePath().toString();
-                    location = Paths.get(classpath, location).toAbsolutePath().toString();
-                    return location;
+                    classpathLocation = Paths.get(classpath, classpathLocation).toAbsolutePath().toString();
+                    return classpathLocation;
                 } catch (URISyntaxException e) {
                     //do nothing
                     log.warn("URI:{};Wrong:{}", location, e.getMessage());
                     throw new IllegalArgumentException(e.getMessage(), e);
                 }
             }
-            location = resource.getFile();
+            classpathLocation = resource.getFile();
+            return classpathLocation;
         }
         return new File(location).getAbsolutePath();
     }

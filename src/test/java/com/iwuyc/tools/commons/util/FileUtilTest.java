@@ -35,6 +35,9 @@ public class FileUtilTest {
     public void absoluteLocation() {
         String result = FileUtil.absoluteLocation("classpath:/test.properties");
         System.out.println(result);
+        System.out.println(new File("C:/Users/Neil/Documents/Workspace/open-source/iwuyc-common/target/test-classes/test.properties").exists());
+        result = FileUtil.absoluteLocation("classpath:/tesasdasdat.properties");
+        System.out.println(result);
     }
 
     @Test

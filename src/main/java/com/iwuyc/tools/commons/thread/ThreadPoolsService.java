@@ -47,7 +47,7 @@ public interface ThreadPoolsService {
      *
      * @return 配置实例
      */
-    ThreadConfig getConfig();
+    ThreadConfig getThreadConfig();
 
     /**
      * 停止该线程池服务，并释放相应的资源
