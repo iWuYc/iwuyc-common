@@ -46,6 +46,10 @@ public abstract class StringUtils {
         return primaryStr.equals(slaveStr);
     }
 
+    public static boolean notEquals(CharSequence primaryStr, CharSequence slaveStr) {
+        return !equals(primaryStr, slaveStr);
+    }
+
     public static String turnFirstCharToLowerCase(String source) {
         if (isEmpty(source)) {
             return source;
