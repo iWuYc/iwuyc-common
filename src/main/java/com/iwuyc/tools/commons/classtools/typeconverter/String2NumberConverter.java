@@ -7,11 +7,10 @@ import com.iwuyc.tools.commons.util.NumberUtils;
  *
  * @author Neil
  */
-public class String2Number extends AbstractStringConverter<Number> {
+public class String2NumberConverter extends AbstractStringConverter<Number> {
     @Override
     protected Number converterData(String data, Class<? extends Number> targetType) {
-        Number result = NumberUtils.parse(data, targetType);
-        return result;
+        return NumberUtils.parse(data, targetType);
     }
 
     @Override
