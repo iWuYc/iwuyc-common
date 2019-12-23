@@ -8,7 +8,7 @@ import java.util.Date;
  * @author @Neil
  * @since @2017年10月15日
  */
-public class String2Date extends AbstractStringConverter<Date> {
+public class String2DateConverter extends AbstractStringConverter<Date> {
 
     @Override
     protected Date converterData(String data, Class<? extends Date> targetType) {
