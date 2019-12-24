@@ -177,7 +177,7 @@ public class PropertiesFileUtils {
      * @return properties的实例
      */
     public static Properties propertiesReader(File propertiesFile, Collection<Object> ignoredKey, Collection<Object> ignoredVal) {
-        return propertiesReader(propertiesFile, Constants.UTF8_STR, ignoredKey, ignoredVal, Constants.NIL_STRING);
+        return propertiesReader(propertiesFile, Constants.UTF8_STR, ignoredKey, ignoredVal, null);
     }
 
     public static Properties propertiesReader(File propertiesFile, ReadWriteLock lock) {
