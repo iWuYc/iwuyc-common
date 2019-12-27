@@ -21,6 +21,7 @@ import java.util.regex.Pattern;
  *
  * @author Neil
  */
+@SuppressWarnings("unchecked")
 @Slf4j
 public class Xml2JsonParser implements Parser<Node, String> {
     private static final Set<Short> SIMPLE_NODE_TYPE = new HashSet<>();
@@ -185,7 +186,7 @@ public class Xml2JsonParser implements Parser<Node, String> {
         boolean isMultiLeaf = MULTI_NODE_TYPE.contains(ele.getNodeType());
         if (isMultiLeaf) {
             jsonBuilder.name(ele.getName());
-            ele = ((Branch) ele).content().get(0);
+            ele = (Node) ((Branch) ele).content().get(0);
         }
         String val = ele.getStringValue();
         if (NumberUtils.isNumber(val)) {
