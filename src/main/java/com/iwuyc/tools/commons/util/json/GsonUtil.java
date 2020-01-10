@@ -1,13 +1,18 @@
 package com.iwuyc.tools.commons.util.json;
 
 import com.google.gson.*;
+import com.iwuyc.tools.commons.util.NumberUtils;
 import com.iwuyc.tools.commons.util.string.StringUtils;
+import lombok.extern.slf4j.Slf4j;
+
+import java.util.Optional;
 
 /**
  * Gson 的封装工具包
  *
  * @author Neil
  */
+@Slf4j
 public class GsonUtil {
     private static final Gson GSON = new Gson();
 
@@ -91,5 +96,54 @@ public class GsonUtil {
     public static <T> T deepCopy(T source) {
         String json = toJson(source);
         return (T) toObject(json, source.getClass());
+    }
+
+    public static Optional<JsonElement> findOutNode(JsonElement source, String targetXpath) {
+        final String[] xpaths = targetXpath.split("[.]");
+        JsonElement jsonElement = source;
+        for (String xpath : xpaths) {
+            final XpathInfo xPathInfo = extractArrIndex(xpath);
+            if (jsonElement.isJsonArray() && !xPathInfo.isArray()) {
+                jsonElement = jsonElement.getAsJsonArray().get(0);
+            }
+            if (xPathInfo.isArray()) {
+                JsonArray jsonArr;
+                if (StringUtils.isNotEmpty(xPathInfo.getNodeName()) && jsonElement.isJsonObject()) {
+                    jsonArr = jsonElement.getAsJsonObject().getAsJsonArray(xPathInfo.getNodeName());
+                } else if (StringUtils.isEmpty(xPathInfo.getNodeName()) && jsonElement.isJsonArray()) {
+                    jsonArr = jsonElement.getAsJsonArray();
+                } else {
+                    log.warn("xpath路径为数组，但源数据对应节点并非数组，未能找到符合表达式的节点:{}", targetXpath);
+                    return Optional.empty();
+                }
+                jsonElement = jsonArr.get(xPathInfo.getIndex());
+            } else if (jsonElement.isJsonObject()) {
+                jsonElement = jsonElement.getAsJsonObject().get(xPathInfo.getNodeName());
+            } else {
+                log.warn("非jsonObject节点:{}。未能找到符合表达式的节点:{},xpath:{}", jsonElement.getClass().getName(), targetXpath, xpath);
+                return Optional.empty();
+            }
+        }
+
+
+        return Optional.ofNullable(jsonElement);
+    }
+
+    public static XpathInfo extractArrIndex(String xpath) {
+        final int indexStart = xpath.indexOf('[');
+        XpathInfo xPathInfo = new XpathInfo();
+        final String nodeName;
+        if (indexStart < 0) {
+            nodeName = xpath;
+        } else {
+            nodeName = xpath.substring(0, indexStart);
+            final String indexStr = xpath.substring(indexStart + 1, xpath.lastIndexOf(']'));
+            final int index = NumberUtils.parseInt(indexStr);
+            xPathInfo.setIndex(index);
+            xPathInfo.setArray(true);
+        }
+        xPathInfo.setNodeName(nodeName);
+
+        return xPathInfo;
     }
 }
