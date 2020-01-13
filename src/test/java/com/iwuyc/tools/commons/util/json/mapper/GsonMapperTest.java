@@ -1,5 +1,6 @@
 package com.iwuyc.tools.commons.util.json.mapper;
 
+import com.google.common.base.Stopwatch;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -49,9 +50,40 @@ public class GsonMapperTest {
 
         JsonArray targetStructArr = new JsonArray();
         JsonObject jsonObj = new JsonObject();
-        jsonObj.add("name", new JsonPrimitive("children[$].name"));
+        jsonObj.add("age", new JsonPrimitive("name"));
+        jsonObj.add("name", new JsonPrimitive("age"));
+        jsonObj.add(JsonMapper.SOURCE_ARR, new JsonPrimitive("children"));
         targetStructArr.add(jsonObj);
         result = gsonMapper.mapper(srcObj, targetStructArr);
+        System.out.println(result);
+        String struct = "{\n" +
+                "    \"names\": {\n" +
+                "        \"" + JsonMapper.VALUE_XPATH + "\": \"name\",\n" +
+                "        \"" + JsonMapper.SOURCE_ARR + "\": \"children\"\n" +
+                "    },\n" +
+                "    \"ages\": {\n" +
+                "        \"" + JsonMapper.VALUE_XPATH + "\": \"age\",\n" +
+                "        \"" + JsonMapper.SOURCE_ARR + "\": \"children\"\n" +
+                "    }\n" +
+                "}";
+        targetStruct = GsonUtil.toObject(struct);
+        Stopwatch stopwatch = Stopwatch.createStarted();
+        for (int i = 0; i < 100_0000; i++) {
+            result = gsonMapper.mapper(srcObj, targetStruct);
+        }
+        System.out.println(stopwatch.stop());
+        System.out.println(result);
+    }
+
+    @Test
+    public void name() {
+        String jsonStr = "{\"name\":\"Jack\",\"friends\":[{\"name\":\"Tom\",\"age\":12,\"gender\":\"male\"},{\"name\":\"Alice\",\"age\":13,\"gender\":\"female\"}],\"courses\":[\"math\",\"physics\",\"PE\",\"biolgy\"],\"pet\":{\"name\":\"Rose\",\"age\":2,\"species\":\"dog\"}}";
+        String targetStructJsonStr = "{\"name\":\"friends[0].name\",\"friends\":{\"$arrSource\":\"friends\",\"$valueXpath\":\"name\"},\"classes\":\"courses\",\"pet\":\"pet.name\"}";
+
+        JsonElement source = GsonUtil.toObject(jsonStr);
+        JsonElement targetStructJson = GsonUtil.toObject(targetStructJsonStr);
+        GsonMapper mapper = new GsonMapper();
+        final JsonElement result = mapper.mapper(source, targetStructJson);
         System.out.println(result);
     }
 }
