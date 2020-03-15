@@ -62,6 +62,18 @@ public abstract class StringUtils {
         return source.length() > 1 ? firstChar + source.substring(1) : String.valueOf(firstChar);
     }
 
+    /**
+     * 判断字符串是否为空字符串
+     * ex:
+     * str = ""; => true
+     * str = " "; => true
+     * str = null; => true
+     * str = " a "; => false
+     * <p>
+     *
+     * @param str 待检测的字符串
+     * @return 如果为空字符串，则返回true，否则返回false
+     */
     public static boolean isBlank(CharSequence str) {
         if (isEmpty(str)) {
             return true;
@@ -69,6 +81,12 @@ public abstract class StringUtils {
         return str.chars().allMatch(item -> item == ' ');
     }
 
+    /**
+     * 判断字符串是否为空字符串，与 {@link #isBlank(CharSequence)} 方法结果相反
+     *
+     * @param str 待检测的字符串
+     * @return 如果不为空字符串，则返回true，否则返回false
+     */
     public static boolean isNotBlank(CharSequence str) {
         return !isBlank(str);
     }
@@ -81,5 +99,30 @@ public abstract class StringUtils {
      */
     public static int length(String str) {
         return str == null ? 0 : str.length();
+    }
+
+    /**
+     * 判断字符串数组中是否存在空的字符串 {{@link #isEmpty(CharSequence)}}
+     *
+     * @param strs 待验证的字符串数组
+     * @return 如果字符串数值中存在空字符串，则返回true，否则返回false
+     */
+    public static boolean isAnyEmpty(CharSequence... strs) {
+        for (CharSequence str : strs) {
+            if (isEmpty(str)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * 判断字符串数组中是否不存在空的字符串 !{@link #isAnyEmpty(CharSequence...)}
+     *
+     * @param strs 待验证的字符串数组
+     * @return 如果字符串数组中存在空字符串，则返回false，否则返回true
+     */
+    public static boolean isNonEmpty(CharSequence... strs) {
+        return !isAnyEmpty(strs);
     }
 }
