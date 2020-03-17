@@ -11,6 +11,7 @@ import java.util.Stack;
 
 @Slf4j
 public class GsonMapper implements JsonMapper<JsonElement, JsonElement> {
+    private final JsonPrimitive SOURCE_NODE = new JsonPrimitive(JsonMapper.SOURCE_ARR);
     private Stack<CurrentNodeInfo> currentNodeStack = new Stack<>();
 
     @Override
@@ -56,52 +57,59 @@ public class GsonMapper implements JsonMapper<JsonElement, JsonElement> {
     private JsonElement jsonArray() {
         final CurrentNodeInfo currentNodeInfo = currentNodeStack.pop();
         final JsonElement targetStruct = currentNodeInfo.getCurrentNodeStruct();
-        final JsonObject templates;
+
+        final JsonArray templates;
         if (targetStruct.isJsonObject()) {
-            templates = targetStruct.getAsJsonObject();
+            templates = new JsonArray(1);
+            templates.add(targetStruct.getAsJsonObject());
         } else if (targetStruct.isJsonArray()) {
-            final JsonArray targetStructArr = targetStruct.getAsJsonArray();
-            if (targetStructArr.size() == 0) {
-                log.warn("用于描述新结构的数组为空，无法计算新的结构，返回空数组。targetStruct:{}。", targetStruct);
-                return new JsonArray();
-            }
-            templates = targetStructArr.get(0).getAsJsonObject();
+            templates = targetStruct.getAsJsonArray();
         } else {
             throw new IllegalArgumentException();
         }
         JsonArray result = new JsonArray();
-        final String sourceArrXpath = templates.getAsJsonPrimitive(JsonMapper.SOURCE_ARR).getAsString();
-        final Optional<JsonElement> sourceArrOpt = GsonUtil.findOutNode(currentNodeInfo.getSource(), sourceArrXpath);
-        if (!sourceArrOpt.isPresent() || !sourceArrOpt.get().isJsonArray()) {
-            log.warn("未找到对应的数据源节点或目标节点非jsonArray.xpath:{};sourceArrOpt:{}", sourceArrXpath, sourceArrOpt);
-            return result;
-        }
-        final JsonArray sourceArr = sourceArrOpt.get().getAsJsonArray();
-        JsonPrimitive valXpath = templates.getAsJsonPrimitive(JsonMapper.VALUE_XPATH);
-        if (valXpath != null) {
-            for (JsonElement item : sourceArr) {
-                CurrentNodeInfo itemNodeInfo = new CurrentNodeInfo();
-                itemNodeInfo.setCurrentNodeStruct(valXpath);
-                itemNodeInfo.setSource(item);
-                itemNodeInfo.setParentNode(result);
-                currentNodeStack.push(itemNodeInfo);
+        for (JsonElement templatesItem : templates) {
+            if (!templatesItem.isJsonObject()) {
+                continue;
             }
-        } else {
-            for (JsonElement item : sourceArr) {
-                JsonObject jsonObject = new JsonObject();
-                for (Map.Entry<String, JsonElement> templateField : templates.entrySet()) {
-                    String key = templateField.getKey();
-                    if (JsonMapper.RESERVED_WORD.contains(key)) {
-                        continue;
-                    }
+            JsonObject template = templatesItem.getAsJsonObject();
+
+            final String sourceArrXpath = template.getAsJsonPrimitive(JsonMapper.SOURCE_ARR).getAsString();
+            final Optional<JsonElement> sourceArrOpt = GsonUtil.findOutNode(currentNodeInfo.getSource(), sourceArrXpath);
+            if (!sourceArrOpt.isPresent() || !sourceArrOpt.get().isJsonArray()) {
+                log.warn("未找到对应的数据源节点或目标节点非jsonArray.xpath:{};sourceArrOpt:{}", sourceArrXpath, sourceArrOpt);
+                return result;
+            }
+            final JsonArray sourceArr = sourceArrOpt.get().getAsJsonArray();
+            JsonPrimitive valXpath = template.getAsJsonPrimitive(JsonMapper.VALUE_XPATH);
+            if (valXpath != null) {
+                for (JsonElement item : sourceArr) {
                     CurrentNodeInfo itemNodeInfo = new CurrentNodeInfo();
-                    itemNodeInfo.setNodeName(key);
-                    itemNodeInfo.setCurrentNodeStruct(templateField.getValue());
+                    itemNodeInfo.setCurrentNodeStruct(valXpath);
                     itemNodeInfo.setSource(item);
-                    itemNodeInfo.setParentNode(jsonObject);
+                    itemNodeInfo.setParentNode(result);
                     currentNodeStack.push(itemNodeInfo);
                 }
-                result.add(jsonObject);
+            } else {
+
+                for (JsonElement item : sourceArr) {
+                    JsonObject jsonObject = new JsonObject();
+                    for (Map.Entry<String, JsonElement> templateField : template.entrySet()) {
+                        String key = templateField.getKey();
+                        if (JsonMapper.RESERVED_WORD.contains(key)) {
+                            continue;
+                        }
+
+                        CurrentNodeInfo itemNodeInfo = new CurrentNodeInfo();
+                        itemNodeInfo.setNodeName(key);
+
+                        itemNodeInfo.setCurrentNodeStruct(templateField.getValue());
+                        itemNodeInfo.setSource(item);
+                        itemNodeInfo.setParentNode(jsonObject);
+                        currentNodeStack.push(itemNodeInfo);
+                    }
+                    result.add(jsonObject);
+                }
             }
         }
         appendParent(currentNodeInfo, result);

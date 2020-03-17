@@ -78,7 +78,7 @@ public class GsonMapperTest {
     @Test
     public void name() {
         String jsonStr = "{\"name\":\"Jack\",\"friends\":[{\"name\":\"Tom\",\"age\":12,\"gender\":\"male\"},{\"name\":\"Alice\",\"age\":13,\"gender\":\"female\"}],\"courses\":[\"math\",\"physics\",\"PE\",\"biolgy\"],\"pet\":{\"name\":\"Rose\",\"age\":2,\"species\":\"dog\"}}";
-        String targetStructJsonStr = "{\"name\":\"friends[0].name\",\"friends\":{\"$arrSource\":\"friends\",\"$valueXpath\":\"name\"},\"classes\":\"courses\",\"pet\":\"pet.name\"}";
+        String targetStructJsonStr = "{\"name\": \"friends[0].name\",\"friends\": [{\"$sourceNode\": \"friends\",\"name\": \"name\"},{\"$sourceNode\": \"courses\",\"courses\": \"$sourceNode\"}],\"classes\": \"courses\",\"pet\": \"pet.name\"}";
 
         JsonElement source = GsonUtil.toObject(jsonStr);
         JsonElement targetStructJson = GsonUtil.toObject(targetStructJsonStr);
