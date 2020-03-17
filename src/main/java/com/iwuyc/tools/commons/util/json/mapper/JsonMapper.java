@@ -9,7 +9,7 @@ public interface JsonMapper<SrcJsonType, TargetStruct> {
     /**
      * 生成目标数组的数据源，必须是一个数组
      */
-    String SOURCE_ARR = "$arrSource";
+    String SOURCE_ARR = "$sourceNode";
     /**
      * 数组如果是单值类型，使用该保留关键字来指定 {@link JsonMapper#SOURCE_ARR} 中对应的节点<br />
      * 对应的是源数组中的每一个元素的节点路径，而非从根路径开始计算。
