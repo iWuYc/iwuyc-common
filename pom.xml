@@ -34,6 +34,7 @@
             <artifactId>maven-javadoc-plugin</artifactId>
             <version>${maven-javadoc-plugin.version}</version>
             <type>maven-plugin</type>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>junit</groupId>
