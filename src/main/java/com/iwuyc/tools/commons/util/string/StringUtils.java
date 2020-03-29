@@ -125,4 +125,18 @@ public abstract class StringUtils {
     public static boolean isNonEmpty(CharSequence... strs) {
         return !isAnyEmpty(strs);
     }
+
+    /**
+     * 去除字符串头尾的空白字符
+     *
+     * @param str 待去除的字符串
+     * @return 已去除空白字符的字符串
+     */
+    public static String trim(String str) {
+        if (str == null) {
+            return null;
+        } else {
+            return str.trim();
+        }
+    }
 }
