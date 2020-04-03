@@ -12,6 +12,7 @@ import java.util.Optional;
  *
  * @author Neil
  */
+@SuppressWarnings("unchecked")
 @Slf4j
 public class GsonUtil {
     private static final Gson GSON = new Gson();

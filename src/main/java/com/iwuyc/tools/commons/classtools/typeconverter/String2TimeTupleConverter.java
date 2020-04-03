@@ -45,15 +45,13 @@ public class String2TimeTupleConverter extends AbstractStringConverter<TimeTuple
      * @return 转换后的实例
      */
     public static TimeTuple converter(String from, Class<? extends TimeTuple> targetType) {
+        log.debug("待转换的数据为：[{}];目标类型为：[{}]", from, targetType.getName());
         from = from.trim();
-
-        String numStr = from.replaceAll("[A-Za-z]*", "").trim();
-        long num = Long.parseLong(numStr);
         Matcher unitMatcher = UNIT_PATTERN.matcher(from);
         TimeUnit timeUnit;
         if (unitMatcher.find()) {
             String unitStr = unitMatcher.group();
-            log.debug("转换的字符中存在单位，单位为：[{}]", unitStr);
+            log.debug("转换的字符[{}]中存在单位，单位为：[{}]", from, unitStr);
             timeUnit = MAPPING.get(unitStr);
             if (null == timeUnit) {
                 log.warn("转换的字符中存在不认识的单位：[{}]。单位列表为：[{}]", unitStr, MAPPING.keySet());
@@ -63,6 +61,9 @@ public class String2TimeTupleConverter extends AbstractStringConverter<TimeTuple
             log.debug("转换的字符中不存在单位，使用默认的单位：s");
             timeUnit = TimeUnit.SECONDS;
         }
+
+        String numStr = from.replaceAll("[A-Za-z]*", "").trim();
+        long num = Long.parseLong(numStr);
         return TimeTuple.create(num, timeUnit);
     }
 
