@@ -4,7 +4,7 @@
 
     <groupId>com.iwuyc.tools</groupId>
     <artifactId>iwuyc-common</artifactId>
-    <version>0.1.0</version>
+    <version>0.1.1</version>
     <packaging>jar</packaging>
     <!-- info -->
     <name>iwuyc-common</name>
@@ -34,6 +34,7 @@
             <artifactId>maven-javadoc-plugin</artifactId>
             <version>${maven-javadoc-plugin.version}</version>
             <type>maven-plugin</type>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>junit</groupId>
@@ -193,6 +194,13 @@
                                 <!-- -Xdoclint:none 是为了避免生成apidoc的时候检查过于严格而报错-->
                                 <configuration>
                                     <additionalOptions>-Xdoclint:none</additionalOptions>
+                                    <additionalJOptions>
+                                        <option>-Xdoclint:none</option>
+                                    </additionalJOptions>
+                                    <additionalJOption>-Xdoclint:none</additionalJOption>
+                                    <charset>UTF-8</charset>
+                                    <encoding>UTF-8</encoding>
+                                    <docencoding>UTF-8</docencoding>
                                 </configuration>
                             </execution>
                         </executions>

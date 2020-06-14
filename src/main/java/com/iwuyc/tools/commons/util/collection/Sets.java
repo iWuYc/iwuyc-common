@@ -5,7 +5,12 @@ import java.util.HashSet;
 import java.util.Set;
 
 public class Sets {
+    @SafeVarargs
+    @SuppressWarnings("varargs")
     public static <T> Set<T> asSet(T... elements) {
+        if (ArrayUtil.isEmpty(elements)) {
+            return Collections.emptySet();
+        }
         HashSet<T> result = new HashSet<>(elements.length);
         Collections.addAll(result, elements);
         return result;

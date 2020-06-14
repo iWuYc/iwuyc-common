@@ -5,6 +5,7 @@ import org.junit.Test;
 
 import java.util.Collection;
 
+@SuppressWarnings("deprecation")
 public class AnnotationScannerTest {
 
     @Test

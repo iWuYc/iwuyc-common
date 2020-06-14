@@ -97,7 +97,7 @@ public abstract class NumberUtils {
      */
     @SuppressWarnings("unchecked")
     public static <T extends Number> T parse(String numberFormat, Class<T> target) {
-        Number result = null;
+        Number result;
         if (isByteClass(target)) {
             result = Byte.parseByte(numberFormat);
         } else if (isIntegerClass(target)) {
