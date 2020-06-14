@@ -194,6 +194,13 @@
                                 <!-- -Xdoclint:none 是为了避免生成apidoc的时候检查过于严格而报错-->
                                 <configuration>
                                     <additionalOptions>-Xdoclint:none</additionalOptions>
+                                    <additionalJOptions>
+                                        <option>-Xdoclint:none</option>
+                                    </additionalJOptions>
+                                    <additionalJOption>-Xdoclint:none</additionalJOption>
+                                    <charset>UTF-8</charset>
+                                    <encoding>UTF-8</encoding>
+                                    <docencoding>UTF-8</docencoding>
                                 </configuration>
                             </execution>
                         </executions>

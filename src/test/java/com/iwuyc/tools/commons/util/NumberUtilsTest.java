@@ -49,25 +49,32 @@ public class NumberUtilsTest {
 
     }
 
-    static class NumberTest extends Number {
+    public static class NumberTest extends Number {
+
+        private final BigDecimal bigDecimal;
+
+        public NumberTest(String numStr) {
+            bigDecimal = new BigDecimal(numStr);
+        }
+
         @Override
         public int intValue() {
-            return 0;
+            return bigDecimal.intValue();
         }
 
         @Override
         public long longValue() {
-            return 0;
+            return bigDecimal.longValue();
         }
 
         @Override
         public float floatValue() {
-            return 0;
+            return bigDecimal.floatValue();
         }
 
         @Override
         public double doubleValue() {
-            return 0;
+            return bigDecimal.doubleValue();
         }
     }
 }
