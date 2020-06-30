@@ -2,7 +2,6 @@ package com.iwuyc.tools.commons.basic.type;
 
 import lombok.Data;
 
-import java.time.temporal.TemporalUnit;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -13,20 +12,18 @@ import java.util.concurrent.TimeUnit;
 public class TimeTuple {
     private final long time;
     private final TimeUnit timeUnit;
-    private final TemporalUnit temporalUnit;
 
-    private TimeTuple(long time, TimeUnit timeUnit, TemporalUnit temporalUnit) {
+    private TimeTuple(long time, TimeUnit timeUnit) {
         this.time = time;
         this.timeUnit = timeUnit;
-        this.temporalUnit = temporalUnit;
     }
 
     public static TimeTuple create(long num, TimeUnit timeUnit) {
-        return new TimeTuple(num, timeUnit, null);
+        return new TimeTuple(num, timeUnit);
     }
 
-    public static TimeTuple create(long num, TemporalUnit temporalUnit) {
-        return new TimeTuple(num, null, temporalUnit);
+    public long toTime(TimeUnit timeUnit) {
+        return timeUnit.convert(time, this.timeUnit);
     }
 
 }
