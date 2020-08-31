@@ -1,4 +1,4 @@
-package com.iwuyc.tools.commons.util;
+package com.iwuyc.tools.commons.util.thread;
 
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
