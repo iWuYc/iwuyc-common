@@ -8,6 +8,7 @@ import com.iwuyc.tools.commons.util.collection.ArrayUtil;
 import com.iwuyc.tools.commons.util.collection.CollectionUtil;
 import com.iwuyc.tools.commons.util.collection.MultiMap;
 import lombok.extern.slf4j.Slf4j;
+import net.sf.cglib.beans.BeanMap;
 
 import java.lang.invoke.SerializedLambda;
 import java.lang.reflect.*;
@@ -27,20 +28,13 @@ public abstract class ClassUtils {
 
     /**
      * 基础类型 跟 包装类型 的映射关系。
-     *
-     * @author Neil
      */
     public final static Map<Class<?>, Class<?>> PRIMITIVE_TYPES_MAPPING_WRAPPED_TYPES;
 
-    private final static Field MODIFIERS_FIELD;
     private static final Cache<TypeFunction<?, ?>, String> CACHE_LAMBDA_INFO = CacheBuilder.newBuilder().build();
 
     static {
 
-        MODIFIERS_FIELD = findField(Field.class, "modifiers");
-        if (!MODIFIERS_FIELD.isAccessible()) {
-            MODIFIERS_FIELD.setAccessible(true);
-        }
         Map<Class<?>, Class<?>> temp = new HashMap<>();
         temp.put(void.class, Void.class);
 
@@ -96,7 +90,7 @@ public abstract class ClassUtils {
         if (null == instance || null == fieldAndVal) {
             return Collections.emptyMap();
         }
-
+        BeanMap instanceMap = BeanMap.create(instance);
         HashMap<Object, Object> innerMap = new HashMap<>(fieldAndVal);
 
         Class<?> clazz = instance.getClass();
@@ -112,22 +106,23 @@ public abstract class ClassUtils {
             }
 
             fieldVal = innerMap.get(fieldName);
-            if (injectField(instance, field, fieldVal, typeConverters)) {
+            if (injectField(instanceMap, field, fieldVal, typeConverters)) {
                 innerMap.remove(fieldName);
             }
         }
 
         return innerMap;
+
     }
 
-    private static boolean injectField(Object instance, Field field, Object val,
+    private static boolean injectField(BeanMap instanceMap, Field field, Object val,
                                        MultiMap<Class<?>, TypeConverter<?, ?>> typeConverters) {
         try {
             // 字段属性修改，以便可以进行属性设置
-            fieldModifier(field);
+//            fieldModifier(field);
 
             if (null == val) {
-                injectField(instance, field, null);
+                injectField(instanceMap, field, null);
                 return true;
             }
             Object rejectVal = convert(val.getClass(), field.getType(), val, typeConverters);
@@ -136,7 +131,7 @@ public abstract class ClassUtils {
                 return false;
             }
 
-            return injectField(instance, field, rejectVal);
+            return injectField(instanceMap, field, rejectVal);
         } catch (IllegalArgumentException e) {
             log.error("Can't inject the field[{}] val[{}].cause:{}", field, val, e.getMessage());
             log.debug("Error Info Detail:", e);
@@ -144,35 +139,15 @@ public abstract class ClassUtils {
         }
     }
 
-    private static boolean injectField(Object instance, Field field, Object rejectVal) {
+    private static boolean injectField(BeanMap instanceMap, Field field, Object rejectVal) {
         try {
-            field.set(instance, rejectVal);
+            instanceMap.put(field.getName(), rejectVal);
             return true;
-        } catch (IllegalArgumentException | IllegalAccessException e) {
+        } catch (IllegalArgumentException e) {
             log.error("Can't inject the field[{}] val[{}].cause:{}", field, rejectVal, e.getMessage());
             log.debug("Error Info Detail:", e);
             return false;
         }
-    }
-
-    /**
-     * 对一些有访问限制的字段进行修改，以便可以正常访问进行数据修改。
-     *
-     * @param field 待修改字段。
-     */
-    public static void fieldModifier(Field field, int modifies) {
-        if (!field.isAccessible()) {
-            field.setAccessible(true);
-        }
-        injectField(field, MODIFIERS_FIELD, modifies);
-    }
-
-    public static void fieldModifier(Field field) {
-        int newModifies = field.getModifiers();
-        if (Modifier.isFinal(newModifies)) {
-            newModifies = newModifies & ~Modifier.FINAL;
-        }
-        fieldModifier(field, newModifies);
     }
 
     /**
@@ -252,26 +227,15 @@ public abstract class ClassUtils {
     }
 
     /**
-     * 获取属性对象
-     *
-     * @param clazz     目标类
-     * @param fieldName 目标字段名
-     * @return 查找到的字段实例
-     */
-    public static Field findField(Class<?> clazz, String fieldName) {
-        return AccessController.doPrivileged(new FieldPrivilegedAction(clazz, fieldName));
-    }
-
-    /**
      * 比较两个类型是否相同，主要是解决基础类型跟包装类型不一致的情况，如果不存在基础类型跟包装类型同时存在的比较，不建议使用该方法。
      *
-     * @param firstType   第一个类型
-     * @param another     第二个类型
-     * @param isAssignale 是否依据继承关系进行判断。
+     * @param firstType    第一个类型
+     * @param another      第二个类型
+     * @param isAssignable 是否依据继承关系进行判断。
      * @return 如果是同一种类型，则返回true，否则返回false;
      * @author Neil
      */
-    public static boolean compareType(Class<?> firstType, Class<?> another, boolean isAssignale) {
+    public static boolean compareType(Class<?> firstType, Class<?> another, boolean isAssignable) {
         if (null == firstType || null == another) {
             return firstType == another;
         }
@@ -283,7 +247,7 @@ public abstract class ClassUtils {
             another = PRIMITIVE_TYPES_MAPPING_WRAPPED_TYPES.get(another);
             return another != null && another.equals(firstType);
         }
-        if (isAssignale) {
+        if (isAssignable) {
             return firstType.isAssignableFrom(another) || another.isAssignableFrom(firstType);
         }
         return firstType.equals(another);
@@ -320,8 +284,7 @@ public abstract class ClassUtils {
      * @author Neil
      */
     public static Object callMethod(Object instance, String methodName, Object... parameters) {
-        boolean declared = false;
-        return callMethod0(instance, methodName, declared, parameters);
+        return callMethod0(instance, methodName, false, parameters);
     }
 
     /**
@@ -334,8 +297,7 @@ public abstract class ClassUtils {
      * @author Neil
      */
     public static Object mandatoryCallMethod(Object instance, String methodName, Object... parameters) {
-        boolean declared = true;
-        return callMethod0(instance, methodName, declared, parameters);
+        return callMethod0(instance, methodName, true, parameters);
     }
 
     private static Object callMethod0(Object instance, String methodName, boolean declared, Object... parameters) {
@@ -362,13 +324,12 @@ public abstract class ClassUtils {
             method.setAccessible(true);
         }
 
-        Object result = null;
         try {
-            result = method.invoke(instance, parameters);
+            return method.invoke(instance, parameters);
         } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
             log.error("Call [{}] raise an error.Cause:[{}]", methodName, e.getMessage());
         }
-        return result;
+        return null;
 
     }
 
@@ -435,13 +396,13 @@ public abstract class ClassUtils {
             return CACHE_LAMBDA_INFO.get(function, () -> {
                 System.out.println(function.toString());
                 Method writeReplaceMethod = null;
-                findout:
+                findOut:
                 for (Class<?> clazz = function.getClass(); clazz != null; clazz = clazz.getSuperclass()) {
                     Method[] methods = clazz.getDeclaredMethods();
                     for (Method method : methods) {
                         if ("writeReplace".equals(method.getName())) {
                             writeReplaceMethod = method;
-                            break findout;
+                            break findOut;
                         }
                     }
                 }
@@ -466,32 +427,11 @@ public abstract class ClassUtils {
         }
     }
 
-    private static class FieldPrivilegedAction implements PrivilegedAction<Field> {
-        private Class<?> clazz;
-        private String fieldName;
-
-        public FieldPrivilegedAction(Class<?> clazz, String fieldName) {
-            this.clazz = clazz;
-            this.fieldName = fieldName;
-        }
-
-        @Override
-        public Field run() {
-            Field[] fields = clazz.getDeclaredFields();
-            for (Field field : fields) {
-                if (field.getName().equals(fieldName)) {
-                    return field;
-                }
-            }
-            return null;
-        }
-    }
-
     private static class InstancePrivilegedAction<I> implements PrivilegedAction<I> {
 
-        private Class<I> targetClass;
-        private Class<?> clazz;
-        private Object[] args;
+        private final Class<I> targetClass;
+        private final Class<?> clazz;
+        private final Object[] args;
 
         public InstancePrivilegedAction(Class<I> targetClass, Class<?> clazz, Object[] args) {
             this.targetClass = targetClass;
@@ -537,9 +477,9 @@ public abstract class ClassUtils {
 
     private static class ClassLoadPrivilegedAction implements PrivilegedAction<Optional<Class<?>>> {
 
-        private ClassLoader loader;
-        private String classPath;
-        private boolean isInitialize;
+        private final ClassLoader loader;
+        private final String classPath;
+        private final boolean isInitialize;
 
         public ClassLoadPrivilegedAction(String classPath, boolean isInitialize, ClassLoader loader) {
             this.classPath = classPath;
@@ -562,10 +502,10 @@ public abstract class ClassUtils {
 
     private static class MethodPrivilegedAction implements PrivilegedAction<Optional<Method>> {
 
-        private Class<?> targetClazz;
-        private String methodName;
-        private Class<?>[] parameterTypeList;
-        private boolean declared;
+        private final Class<?> targetClazz;
+        private final String methodName;
+        private final Class<?>[] parameterTypeList;
+        private final boolean declared;
 
         public MethodPrivilegedAction(Class<?> targetClazz, String methodName, Class<?>[] parameterTypeList,
                                       boolean declared) {
