@@ -29,9 +29,15 @@
         <cglib.version>2.2.2</cglib.version>
         <commons-csv.version>1.8</commons-csv.version>
         <commons-io.version>2.4</commons-io.version>
+        <iwuyc-common-beans.version>0.0.1-SNAPSHOT</iwuyc-common-beans.version>
     </properties>
 
     <dependencies>
+        <dependency>
+            <groupId>com.iwuyc.tools</groupId>
+            <artifactId>iwuyc-common-beans</artifactId>
+            <version>${iwuyc-common-beans.version}</version>
+        </dependency>
         <dependency>
             <groupId>cglib</groupId>
             <artifactId>cglib</artifactId>
