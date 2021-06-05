@@ -1,7 +1,7 @@
 package com.iwuyc.tools.commons.util.file;
 
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.io.IOUtils;
+import org.apache.commons.compress.utils.IOUtils;
 
 import java.io.BufferedInputStream;
 import java.io.FileInputStream;
