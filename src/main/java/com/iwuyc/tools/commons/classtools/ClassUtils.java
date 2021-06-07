@@ -394,16 +394,17 @@ public abstract class ClassUtils {
     public static <T, R> String getLambdaMethodName(TypeFunction<T, R> function) {
         try {
             return CACHE_LAMBDA_INFO.get(function, () -> {
-                System.out.println(function.toString());
                 Method writeReplaceMethod = null;
-                findOut:
                 for (Class<?> clazz = function.getClass(); clazz != null; clazz = clazz.getSuperclass()) {
                     Method[] methods = clazz.getDeclaredMethods();
                     for (Method method : methods) {
                         if ("writeReplace".equals(method.getName())) {
                             writeReplaceMethod = method;
-                            break findOut;
+                            break;
                         }
+                    }
+                    if (writeReplaceMethod != null) {
+                        break;
                     }
                 }
 
