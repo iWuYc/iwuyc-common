@@ -30,7 +30,8 @@ public class NumberUtilsTest {
 
     @Test(expected = UnsupportedOperationException.class)
     public void testException() {
-        NumberUtils.parse("1", NumberTest.class);
+        final NumberTest parse = NumberUtils.parse("1", NumberExceptionTest.class);
+        System.out.println(parse);
     }
 
     @Test
@@ -75,6 +76,13 @@ public class NumberUtilsTest {
         @Override
         public double doubleValue() {
             return bigDecimal.doubleValue();
+        }
+    }
+
+    public static class NumberExceptionTest extends NumberTest {
+
+        public NumberExceptionTest() {
+            super("0");
         }
     }
 }
