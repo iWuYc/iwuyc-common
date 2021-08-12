@@ -3,6 +3,7 @@ package com.iwuyc.tools.commons.basic.thread;
 import com.iwuyc.tools.commons.util.string.StringUtils;
 import lombok.AccessLevel;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 

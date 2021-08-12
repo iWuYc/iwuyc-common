@@ -1,4 +1,4 @@
-package com.iwuyc.tools.commons.util;
+package com.iwuyc.tools.commons.util.thread;
 
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
@@ -25,14 +25,13 @@ public class ThreadUtils {
      */
     public static Optional<StackTraceElement> callLocationInfo() {
         RuntimePermission permission = new RuntimePermission("getStackTrace");
-        Optional<StackTraceElement> result = AccessController.doPrivileged((PrivilegedAction<Optional<StackTraceElement>>) () -> {
+        return AccessController.doPrivileged((PrivilegedAction<Optional<StackTraceElement>>) () -> {
             StackTraceElement[] stackTraces = Thread.currentThread().getStackTrace();
             if (stackTraces.length < 7) {
                 return Optional.empty();
             }
             return Optional.ofNullable(stackTraces[6]);
         }, null, permission);
-        return result;
     }
 
     /**

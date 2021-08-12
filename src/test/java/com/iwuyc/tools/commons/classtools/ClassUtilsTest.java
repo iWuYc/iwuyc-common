@@ -6,7 +6,6 @@ import lombok.Data;
 import org.junit.Assert;
 import org.junit.Test;
 
-import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ScheduledExecutorService;
@@ -29,13 +28,11 @@ public class ClassUtilsTest {
 
     @Test
     public void testModifiers() {
-        Field nameField = ClassUtils.findField(TestClassCase.class, "name");
-        System.out.println(nameField);
         TestClassCase testClazz = new TestClassCase("Tom");
         Map<String, Object> fieldAndVal = new HashMap<>();
         fieldAndVal.put("name", "Jack");
 
-        MultiMap<Class<? extends Object>, TypeConverter<? extends Object, ? extends Object>> typeConverters = new MultiMap<>();
+        MultiMap<Class<?>, TypeConverter<?, ?>> typeConverters = new MultiMap<>();
 
         ClassUtils.injectFields(testClazz, fieldAndVal, typeConverters);
         System.out.println(testClazz);
@@ -43,18 +40,20 @@ public class ClassUtilsTest {
 
     @Test
     public void testInjectNull() {
-        Field nameField = ClassUtils.findField(TestClassCase.class, "name");
-        System.out.println(nameField);
         TestClassCase testClazz = new TestClassCase("Tom");
-        System.out.println(testClazz);
+        Assert.assertNotNull(testClazz.getName());
 
         Map<String, Object> fieldAndVal = new HashMap<>();
         fieldAndVal.put("name", null);
 
-        MultiMap<Class<? extends Object>, TypeConverter<? extends Object, ? extends Object>> typeConverters = new MultiMap<>();
+        MultiMap<Class<?>, TypeConverter<?, ?>> typeConverters = new MultiMap<>();
 
         ClassUtils.injectFields(testClazz, fieldAndVal, typeConverters);
-        System.out.println(testClazz);
+        Assert.assertNull(testClazz.getName());
+        final String newName = "Jack";
+        fieldAndVal.put("name", newName);
+        ClassUtils.injectFields(testClazz, fieldAndVal);
+        Assert.assertEquals(newName, testClazz.getName());
     }
 
     @Test
@@ -80,12 +79,6 @@ public class ClassUtilsTest {
     }
 
     @Test
-    public void test() {
-        Field field = ClassUtils.findField(String.class, "valueOf");
-        System.out.println(field);
-    }
-
-    @Test
     public void compareType() {
         Assert.assertTrue(ClassUtils.compareType(B.class, I.class, true));
         Assert.assertFalse(ClassUtils.compareType(null, I.class, true));
@@ -108,16 +101,16 @@ public class ClassUtilsTest {
     }
 
     public static class TestClass {
-        private Parameter1 p1;
-        private Parameter2 P2;
+        private final Parameter1 p1;
+        private final Parameter2 p2;
 
         public TestClass(Parameter1 p1, Parameter2 p2) {
             this.p1 = p1;
-            P2 = p2;
+            this.p2 = p2;
         }
 
         public String print() {
-            return this.p1.get() + " : " + this.P2.get();
+            return this.p1.get() + " : " + this.p2.get();
         }
 
     }
@@ -135,16 +128,13 @@ public class ClassUtilsTest {
 
     }
 
+    @Data
     public static class TestClassCase {
-        public final String name;
+        public String name;
 
         public TestClassCase(String name) {
             super();
             this.name = name;
-        }
-
-        public String getName() {
-            return name;
         }
 
         @Override
@@ -155,7 +145,7 @@ public class ClassUtilsTest {
     }
 
     static class TestInstanceCase {
-        private int num;
+        private final int num;
 
         private TestInstanceCase(int num) {
             this.num = num;

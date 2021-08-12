@@ -8,7 +8,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class ConcurrentHashSet<T> extends EmbellishSet<T> {
     public ConcurrentHashSet() {
-        super(new ConcurrentHashMap<T, Boolean>());
+        super(new ConcurrentHashMap<>());
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
