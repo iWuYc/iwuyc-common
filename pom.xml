@@ -4,7 +4,7 @@
 
     <groupId>com.iwuyc.tools</groupId>
     <artifactId>iwuyc-common</artifactId>
-    <version>0.1.3-SNAPSHOTS</version>
+    <version>2021.4</version>
     <packaging>jar</packaging>
     <!-- info -->
     <name>iwuyc-common</name>
