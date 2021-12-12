@@ -7,7 +7,7 @@ package com.iwuyc.tools.commons.util.collection;
 public abstract class ArrayUtil {
 
     public static <T> boolean isEmpty(T[] arrays) {
-        return arrayLength(arrays) == 0;
+        return null == arrays || arrays.length == 0;
     }
 
     public static <T> boolean isNotEmpty(T[] arrays) {
@@ -81,6 +81,7 @@ public abstract class ArrayUtil {
     public static <T> int arrayLength(T[] arrays) {
         return isEmpty(arrays) ? 0 : arrays.length;
     }
+
     public static <T> int arrayLength(long[] arrays) {
         return isEmpty(arrays) ? 0 : arrays.length;
     }
