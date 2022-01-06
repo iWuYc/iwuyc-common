@@ -1,6 +1,7 @@
 package com.iwuyc.tools.commons.util;
 
 import com.iwuyc.tools.commons.util.file.FileUtil;
+import org.junit.Assert;
 import org.junit.Test;
 
 import java.io.File;
@@ -34,8 +35,8 @@ public class FileUtilTest {
     @Test
     public void absoluteLocation() {
         String result = FileUtil.absoluteLocation("classpath:/test.properties");
+        Assert.assertTrue(new File(result).exists());
         System.out.println(result);
-        System.out.println(new File("C:/Users/Neil/Documents/Workspace/open-source/iwuyc-common/target/test-classes/test.properties").exists());
         result = FileUtil.absoluteLocation("classpath:/tesasdasdat.properties");
         System.out.println(result);
     }

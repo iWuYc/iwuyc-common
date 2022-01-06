@@ -65,7 +65,7 @@ public class MathUtilsTest {
     }
 
     @Test
-    @Ignore("performance test skip it.")
+    @Ignore("Performance test skip it.")
     public void performance() {
         int times = 1000_0000;
         Stopwatch stopwatch = Stopwatch.createStarted();
