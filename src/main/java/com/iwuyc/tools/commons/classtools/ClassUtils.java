@@ -8,7 +8,6 @@ import com.iwuyc.tools.commons.util.collection.ArrayUtil;
 import com.iwuyc.tools.commons.util.collection.CollectionUtil;
 import com.iwuyc.tools.commons.util.collection.MultiMap;
 import lombok.extern.slf4j.Slf4j;
-import net.sf.cglib.beans.BeanMap;
 
 import java.lang.invoke.SerializedLambda;
 import java.lang.reflect.*;
@@ -71,83 +70,6 @@ public abstract class ClassUtils {
             loader = ClassUtils.class.getClassLoader();
         }
         return AccessController.doPrivileged(new ClassLoadPrivilegedAction(classPath, isInitialize, loader));
-    }
-
-    public static Map<Object, Object> injectFields(Object instance, Map<String, Object> fieldAndVal) {
-        return injectFields(instance, fieldAndVal, null);
-    }
-
-    /**
-     * 将map中的值，按field的名字注入到instance中。
-     *
-     * @param instance       实例
-     * @param fieldAndVal    字段跟值（这个map的键值应该是Map<String,Object>）
-     * @param typeConverters 类型转换器，用于注入前的类型转换。key是源类型，val是转换器列表。
-     * @return 未注入成功的字段跟值，一般是，不存在这个字段，或者，在注入的时候出问题了
-     */
-    public static Map<Object, Object> injectFields(Object instance, Map<String, Object> fieldAndVal,
-                                                   MultiMap<Class<?>, TypeConverter<?, ?>> typeConverters) {
-        if (null == instance || null == fieldAndVal) {
-            return Collections.emptyMap();
-        }
-        BeanMap instanceMap = BeanMap.create(instance);
-        HashMap<Object, Object> innerMap = new HashMap<>(fieldAndVal);
-
-        Class<?> clazz = instance.getClass();
-        Field[] fields = clazz.getDeclaredFields();
-        String fieldName;
-        Object fieldVal;
-        for (Field field : fields) {
-            fieldName = field.getName();
-
-            // continue if the field value doesn't exists.
-            if (!innerMap.containsKey(fieldName)) {
-                continue;
-            }
-
-            fieldVal = innerMap.get(fieldName);
-            if (injectField(instanceMap, field, fieldVal, typeConverters)) {
-                innerMap.remove(fieldName);
-            }
-        }
-
-        return innerMap;
-
-    }
-
-    private static boolean injectField(BeanMap instanceMap, Field field, Object val,
-                                       MultiMap<Class<?>, TypeConverter<?, ?>> typeConverters) {
-        try {
-            // 字段属性修改，以便可以进行属性设置
-//            fieldModifier(field);
-
-            if (null == val) {
-                injectField(instanceMap, field, null);
-                return true;
-            }
-            Object rejectVal = convert(val.getClass(), field.getType(), val, typeConverters);
-            if (null == rejectVal) {
-                log.warn("Can't convert val;The val is:[{}]", val);
-                return false;
-            }
-
-            return injectField(instanceMap, field, rejectVal);
-        } catch (IllegalArgumentException e) {
-            log.error("Can't inject the field[{}] val[{}].cause:{}", field, val, e.getMessage());
-            log.debug("Error Info Detail:", e);
-            return false;
-        }
-    }
-
-    private static boolean injectField(BeanMap instanceMap, Field field, Object rejectVal) {
-        try {
-            instanceMap.put(field.getName(), rejectVal);
-            return true;
-        } catch (IllegalArgumentException e) {
-            log.error("Can't inject the field[{}] val[{}].cause:{}", field, rejectVal, e.getMessage());
-            log.debug("Error Info Detail:", e);
-            return false;
-        }
     }
 
     /**

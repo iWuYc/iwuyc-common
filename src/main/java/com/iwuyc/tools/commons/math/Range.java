@@ -2,43 +2,71 @@ package com.iwuyc.tools.commons.math;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
+import com.iwuyc.tools.commons.exception.ExpressionException;
 import com.iwuyc.tools.commons.util.string.StringUtils;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
 /**
  * 数值范围
+ *
+ * <pre>
+ * Example:
+ *    · [0,10)|[10,100):
+ *            0:include
+ *           -1:exclude
+ *           10:include
+ *          100:exclude
+ *      相当于[0,100)
+ *
+ *    · [0,10)|(10,100):
+ *            0:include
+ *           -1:exclude
+ *           10:exclude
+ *          100:exclude
+ *
+ *    · [0,10)|(9,100):
+ *      相当于[0,100)
+ * </pre>
  *
  * @author @Neil
  * @since @2017年10月15日
  */
 public class Range {
 
-    private static final Cache<String, Range> PATTERN_CACHE = CacheBuilder.newBuilder()
-            .expireAfterAccess(10, TimeUnit.MINUTES).maximumSize(1_000).build();
+    private static final Cache<String, Range> PATTERN_CACHE = CacheBuilder.newBuilder().expireAfterAccess(10, TimeUnit.MINUTES).maximumSize(1_000).build();
     /**
-     * 01
+     * 01 右闭，表示含右侧的数字
      */
     private static final byte CONTAIN_RIGHT = 1;
     /**
-     * 10
+     * 10 左闭，表示含左侧的数字
      */
     private static final byte CONTAIN_LEAF = 2;
     private static final BigDecimal MAX = new BoundaryNumber("max", true);
     private static final BigDecimal MIN = new BoundaryNumber("min", false);
-    private final static String MAX_TAG = "max";
-    private final static String MIN_TAG = "min";
-    private Collection<RangeItem> ranges = new ArrayList<>();
+    private static final String MAX_TAG = "max";
+    private static final String MIN_TAG = "min";
+    private final Collection<RangeItem> ranges = new ArrayList<>();
 
     private Range() {
     }
 
     /**
-     * 编译表达式。表达式以区间表示，多个区间以"|"隔开，最大值以max表示，最小值以min表示
+     * 编译表达式。表达式以区间表示，多个区间以"|"隔开，无限大以max表示，无限小以min表示。
+     * <pre>
+     * example:
+     * [0,10]:表示0到10的数字，包含0跟10；
+     * (0,10]:表示0到10的数字，不包含0，但包含10；
+     * [0,10)|(10,20):表示0到20，但不包含10；
+     * [min,10]:表示小于等于10的数值；
+     * [0,max):表示大于等于0的数值；
+     * </pre>
+     * 对于min和max，是开还是闭已无所谓了，也就是说(min,max)等效于[min,max]
      *
      * @param rangeStr 表达式字符串。
      * @return range 实例
@@ -53,34 +81,45 @@ public class Range {
      *
      * @param rangeStr 表达式字符串。
      * @return range 实例
-     * @throws IllegalArgumentException 如果表达式有问题，则会抛出这个错误。
+     * @throws ExpressionException 如果表达式有问题，则会抛出这个错误。
      */
-    public static Range compiler(String rangeStr, boolean cached) throws IllegalArgumentException {
+    public static Range compiler(String rangeStr, boolean cached) throws ExpressionException {
 
         try {
-            return PATTERN_CACHE.get(rangeStr, () -> {
-                Range rootRange = new Range();
-                String[] rangeStrArr = rangeStr.split("[|]+");
-                RangeItem rangeItem;
-                for (String rangeStrItem : rangeStrArr) {
-                    rangeStrItem = rangeStrItem.trim();
-                    if (StringUtils.isEmpty(rangeStrItem)) {
-                        continue;
-                    }
-                    rangeItem = itemCompiler(rangeStrItem);
-                    if (!rangeItem.verify()) {
-                        throw new IllegalArgumentException("The expression was wrong.Expression:" + rangeStrItem);
-                    }
-
-                    rootRange.ranges.add(rangeItem);
-
-                }
-                return rootRange;
-            });
-        } catch (ExecutionException e) {
-            throw new IllegalArgumentException(e.getMessage(), e.getCause());
+            final Callable<Range> rangeLoader = () -> getRange(rangeStr);
+            if (cached) {
+                return PATTERN_CACHE.get(rangeStr, rangeLoader);
+            } else {
+                return getRange(rangeStr);
+            }
+        } catch (Exception e) {
+            final Throwable cause = e.getCause();
+            if (cause instanceof ExpressionException) {
+                throw (ExpressionException) cause;
+            }
+            throw new ExpressionException(e.getMessage(), e);
         }
 
+    }
+
+    private static Range getRange(String rangeStr) {
+        Range rootRange = new Range();
+        String[] rangeStrArr = rangeStr.split("[|]+");
+        RangeItem rangeItem;
+        for (String rangeStrItem : rangeStrArr) {
+            rangeStrItem = rangeStrItem.trim();
+            if (StringUtils.isEmpty(rangeStrItem)) {
+                continue;
+            }
+            rangeItem = itemCompiler(rangeStrItem);
+            if (!rangeItem.verify()) {
+                throw new ExpressionException("The expression was wrong.Expression:" + rangeStrItem);
+            }
+
+            rootRange.ranges.add(rangeItem);
+
+        }
+        return rootRange;
     }
 
     private static RangeItem itemCompiler(String rangeStr) {
@@ -128,7 +167,17 @@ public class Range {
      * @return 如果在范围内，则返回true，否则返回false。
      */
     public boolean inRange(Number num) {
-        BigDecimal number = new BigDecimal(String.valueOf(num));
+        return inRange(String.valueOf(num));
+    }
+
+    /**
+     * 判断一个数字是否在范围内。
+     *
+     * @param numStr 待判断的数字
+     * @return 如果在范围内，则返回true，否则返回false。
+     */
+    public boolean inRange(String numStr) {
+        BigDecimal number = new BigDecimal(numStr);
         return this.inRange(number);
     }
 
@@ -140,7 +189,7 @@ public class Range {
      */
     public boolean inRange(BigDecimal number) {
         for (RangeItem range : ranges) {
-            if (range.judg(number)) {
+            if (range.judge(number)) {
                 return true;
             }
         }
@@ -155,8 +204,8 @@ public class Range {
     private static class BoundaryNumber extends BigDecimal {
 
         private static final long serialVersionUID = 2910914454149571890L;
-        private boolean isMax;
-        private String name;
+        private final boolean isMax;
+        private final String name;
 
         public BoundaryNumber(String val, boolean isMax) {
             super("0");
@@ -174,17 +223,26 @@ public class Range {
 
         @Override
         public String toString() {
-            return "BoundaryNumber [name=" + name + "]";
+            return "BoundaryNumber(" + name + ")";
         }
 
         @Override
-        public boolean equals(Object x) {
-            return super.equals(x);
+        public boolean equals(Object o) {
+            if (this == o) {
+                return true;
+            }
+            if (o == null || getClass() != o.getClass()) {
+                return false;
+            }
+            BoundaryNumber that = (BoundaryNumber) o;
+            return isMax == that.isMax;
         }
 
         @Override
         public int hashCode() {
-            return super.hashCode();
+            int result = super.hashCode();
+            result = 31 * result + (isMax ? 1 : 0);
+            return result;
         }
     }
 
@@ -200,7 +258,7 @@ public class Range {
             return "Range [min=" + min + ", max=" + max + ", flag=" + flag + "]";
         }
 
-        private boolean judg(BigDecimal number) {
+        private boolean judge(BigDecimal number) {
             int compareMin = this.min.compareTo(number);
             if (compareMin > 0) {
                 return false;

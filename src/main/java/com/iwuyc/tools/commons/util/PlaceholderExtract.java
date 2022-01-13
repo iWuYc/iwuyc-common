@@ -1,18 +1,20 @@
 package com.iwuyc.tools.commons.util;
 
+import com.iwuyc.tools.commons.basic.type.PairTuple;
+import lombok.extern.slf4j.Slf4j;
+
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Stack;
 
 /**
  * @author Neil
  */
+@Slf4j
 public class PlaceholderExtract {
     private final String source;
     private final Stack<Integer> stack = new Stack<>();
     private int position;
-    private int matchCount = 0;
 
     public PlaceholderExtract(String sourceStr) {
         this.source = sourceStr;
@@ -20,73 +22,60 @@ public class PlaceholderExtract {
 
     public List<String> compile(String startStr, String endStr) {
         int indexStart;
-        int indexEnd;
+        int indexEnd = this.source.indexOf(endStr);
+        final List<PairTuple<Integer, Integer>> startAndEndPairList = new ArrayList<>();
         do {
+
             indexStart = this.source.indexOf(startStr, position);
-            if (indexStart < 0) {
+            position = indexStart + startStr.length();
+            if (indexStart >= 0) {
+                this.stack.push(indexStart);
+            }
+
+            if (indexStart > indexEnd) {
+                final Integer startIndexOverEndIndex = this.stack.pop();
+                startAndEndPairList.addAll(buildIndexPair(endStr, indexEnd));
+                this.stack.push(startIndexOverEndIndex);
+                indexEnd = this.source.indexOf(endStr, position);
+                position = indexStart + endStr.length();
+            } else if (indexStart < 0) {
+                startAndEndPairList.addAll(buildIndexPair(endStr, indexEnd));
+            }
+
+            if (indexEnd < 0 || indexStart < 0 || position >= this.source.length()) {
+                this.stack.clear();
                 break;
             }
-            push(indexStart);
-            position = indexStart + 2;
-            indexEnd = this.source.indexOf(endStr, position);
-            if (indexEnd >= 0) {
-                push(indexEnd);
-            }
-
         } while (true);
-        return buil();
+        return buildIndexPair(startAndEndPairList, endStr.length());
     }
 
-    private List<String> buil() {
-        if (this.stack.isEmpty()) {
-            return Collections.emptyList();
-        }
-        int indexStart = -1;
-        int indexEnd = -1;
-        List<String> placeholders = new ArrayList<>();
-        while (!this.stack.isEmpty()) {
-            int temp = this.stack.pop();
-            char ch = this.source.charAt(temp);
-            switch (ch) {
-                case '}':
-                    matchCount++;
-                    if (indexEnd < 0) {
-                        indexEnd = temp;
-                    }
-                    break;
-                case '#':
-                    matchCount--;
-                    indexStart = temp;
-                    break;
-                default:
-                    break;
+    private List<PairTuple<Integer, Integer>> buildIndexPair(String endStr, int indexEnd) {
+        List<PairTuple<Integer, Integer>> result = new ArrayList<>();
+        int endPosition = indexEnd;
+        while (!stack.isEmpty()) {
+            final Integer lastStartIndex = stack.pop();
+            final int endIndex = this.source.indexOf(endStr, endPosition);
+            if (endIndex < 0) {
+                log.info("已无为之相匹配的结束符。endStr:{};Position:{}", endStr, endPosition);
+                continue;
             }
-            if (matchCount == 0) {
-                String placeholder = this.source.substring(indexStart, indexEnd + 2);
-                placeholders.add(placeholder);
-                indexStart = -1;
-                indexEnd = -1;
-            }
+            PairTuple<Integer, Integer> startAndEnd = new PairTuple<>(lastStartIndex, endIndex);
+            result.add(startAndEnd);
+            endPosition += endStr.length();
         }
-
-        if (indexStart >= 0 || indexEnd >= 0) {
-            throw new IllegalArgumentException("startStr跟endStr不匹配。");
-        }
-        return placeholders;
+        return result;
     }
 
-    private void push(int index) {
-        if (this.stack.isEmpty()) {
-            this.stack.push(index);
-            return;
+    private List<String> buildIndexPair(final List<PairTuple<Integer, Integer>> startAndEndPairList, int endStrLength) {
+        List<String> result = new ArrayList<>(startAndEndPairList.size());
+        for (PairTuple<Integer, Integer> item : startAndEndPairList) {
+            final Integer startIndex = item.getKey();
+            final Integer endIndex = item.getVal();
+            final String placeHolder = this.source.substring(startIndex, endIndex + endStrLength);
+            result.add(placeHolder);
         }
-        if (this.stack.peek() > index) {
-            Integer tmpIndex = this.stack.pop();
-            this.stack.push(index);
-            this.stack.push(tmpIndex);
-            return;
-        }
-
-        this.stack.push(index);
+        return result;
     }
+
 }
