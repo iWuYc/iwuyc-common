@@ -18,7 +18,6 @@ import java.util.concurrent.TimeUnit;
  * @author Neil
  */
 public class DateTimeUtils {
-
     private static final LoadingCache<DateTimeFormatterTuple, DateTimeFormatter> DATE_TIME_FORMATTER_CACHE;
 
     static {
@@ -32,6 +31,9 @@ public class DateTimeUtils {
         CacheBuilder<Object, Object> cacheBuilder = CacheBuilder.newBuilder();
         cacheBuilder.expireAfterAccess(10, TimeUnit.MINUTES);
         DATE_TIME_FORMATTER_CACHE = cacheBuilder.build(cacheLoader);
+    }
+
+    private DateTimeUtils() {
     }
 
     private static DateTimeFormatter getDateTimeFormatter(DateTimeFormatterTuple tuple) {

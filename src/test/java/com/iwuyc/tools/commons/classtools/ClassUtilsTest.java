@@ -27,36 +27,6 @@ public class ClassUtilsTest {
     }
 
     @Test
-    public void testModifiers() {
-        TestClassCase testClazz = new TestClassCase("Tom");
-        Map<String, Object> fieldAndVal = new HashMap<>();
-        fieldAndVal.put("name", "Jack");
-
-        MultiMap<Class<?>, TypeConverter<?, ?>> typeConverters = new MultiMap<>();
-
-        ClassUtils.injectFields(testClazz, fieldAndVal, typeConverters);
-        System.out.println(testClazz);
-    }
-
-    @Test
-    public void testInjectNull() {
-        TestClassCase testClazz = new TestClassCase("Tom");
-        Assert.assertNotNull(testClazz.getName());
-
-        Map<String, Object> fieldAndVal = new HashMap<>();
-        fieldAndVal.put("name", null);
-
-        MultiMap<Class<?>, TypeConverter<?, ?>> typeConverters = new MultiMap<>();
-
-        ClassUtils.injectFields(testClazz, fieldAndVal, typeConverters);
-        Assert.assertNull(testClazz.getName());
-        final String newName = "Jack";
-        fieldAndVal.put("name", newName);
-        ClassUtils.injectFields(testClazz, fieldAndVal);
-        Assert.assertEquals(newName, testClazz.getName());
-    }
-
-    @Test
     public void testInstance() {
         Object num = 10;
         Object obj = ClassUtils.instance(TestInstanceCase.class, num);

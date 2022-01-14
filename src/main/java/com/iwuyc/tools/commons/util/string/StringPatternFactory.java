@@ -10,7 +10,7 @@ import lombok.EqualsAndHashCode;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
-public class StringPatterFactory {
+public class StringPatternFactory {
     private static final LoadingCache<PatternInfo, Pattern> PATTERN_CACHE = CacheBuilder.newBuilder().expireAfterAccess(1, TimeUnit.DAYS).build(new PatternCacheLoader());
 
     /**
