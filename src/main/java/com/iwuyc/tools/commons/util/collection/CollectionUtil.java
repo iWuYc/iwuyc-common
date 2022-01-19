@@ -22,7 +22,7 @@ public interface CollectionUtil {
     }
 
     static String join(Collection<?> data) {
-        return join(data, ',');
+        return join(data, ",");
     }
 
     /**
@@ -40,15 +40,15 @@ public interface CollectionUtil {
      * @param splitChar 分隔符
      * @return 拼接后的字符串
      */
-    static String join(Collection<?> data, Character splitChar) {
+    static String join(Collection<?> data, CharSequence splitChar) {
         if (CollectionUtil.isEmpty(data)) {
             return StringUtils.NIL_STRING;
         }
-        final String splitStr;
+        final CharSequence splitStr;
         if (null == splitChar) {
             splitStr = ",";
         } else {
-            splitStr = String.valueOf(splitChar);
+            splitStr = splitChar;
         }
         StringJoiner joiner = new StringJoiner(splitStr);
         for (Object item : data) {

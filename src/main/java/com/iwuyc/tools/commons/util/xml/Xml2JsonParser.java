@@ -21,7 +21,6 @@ import java.util.regex.Pattern;
  *
  * @author Neil
  */
-@SuppressWarnings("unchecked")
 @Slf4j
 public class Xml2JsonParser implements Parser<Node, String> {
     private static final Set<Short> SIMPLE_NODE_TYPE = new HashSet<>();

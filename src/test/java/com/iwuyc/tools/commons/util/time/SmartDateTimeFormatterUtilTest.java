@@ -1,5 +1,6 @@
 package com.iwuyc.tools.commons.util.time;
 
+import org.junit.Assert;
 import org.junit.Test;
 
 import java.text.SimpleDateFormat;
@@ -13,35 +14,32 @@ public class SmartDateTimeFormatterUtilTest {
     @Test
     public void test() throws Exception {
         Pattern pattern = Pattern.compile(".*([yMd]+.*)+");
-        System.out.println(pattern.matcher("y").matches());
-        System.out.println(pattern.matcher("M").matches());
-        System.out.println(pattern.matcher("d").matches());
-        System.out.println(pattern.matcher("yyyyMMdd").matches());
-        System.out.println(pattern.matcher("yyyy-MM-ddMM").matches());
-        System.out.println(pattern.matcher("hh:mm:ss.SSS").matches());
-        System.out.println(pattern.matcher("yyyy-MM-dd hh:mm:ss.SSS").matches());
-
-        System.out.println("*************************************************");
+        Assert.assertTrue(pattern.matcher("y").matches());
+        Assert.assertTrue(pattern.matcher("M").matches());
+        Assert.assertTrue(pattern.matcher("d").matches());
+        Assert.assertTrue(pattern.matcher("yyyyMMdd").matches());
+        Assert.assertTrue(pattern.matcher("yyyy-MM-ddMM").matches());
+        Assert.assertFalse(pattern.matcher("hh:mm:ss.SSS").matches());
+        Assert.assertTrue(pattern.matcher("yyyy-MM-dd hh:mm:ss.SSS").matches());
 
         pattern = Pattern.compile(".*([HhmsS]+.*)+");
-        System.out.println(pattern.matcher("h").matches());
-        System.out.println(pattern.matcher("H").matches());
-        System.out.println(pattern.matcher("m").matches());
-        System.out.println(pattern.matcher("s").matches());
-        System.out.println(pattern.matcher("S").matches());
-        System.out.println(pattern.matcher("Hh").matches());
-        System.out.println(pattern.matcher("yyyyMMdd").matches());
-        System.out.println(pattern.matcher("yyyy-MM-ddMM").matches());
-        System.out.println(pattern.matcher("hh:mm:ss.SSS").matches());
-        System.out.println(pattern.matcher("yyyy-MM-dd hh:mm:ss.SSS").matches());
-        //        System.out.println(pattern.matcher("HHHhhh").matches());
+        Assert.assertTrue(pattern.matcher("h").matches());
+        Assert.assertTrue(pattern.matcher("H").matches());
+        Assert.assertTrue(pattern.matcher("m").matches());
+        Assert.assertTrue(pattern.matcher("s").matches());
+        Assert.assertTrue(pattern.matcher("S").matches());
+        Assert.assertTrue(pattern.matcher("Hh").matches());
+        Assert.assertFalse(pattern.matcher("yyyyMMdd").matches());
+        Assert.assertFalse(pattern.matcher("yyyy-MM-ddMM").matches());
+        Assert.assertTrue(pattern.matcher("hh:mm:ss.SSS").matches());
+        Assert.assertTrue(pattern.matcher("yyyy-MM-dd hh:mm:ss.SSS").matches());
 
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy HH");
         SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         Date date = format.parse("2018-09-02 13:28:27");
         LocalDateTime localDateTime =
                 LocalDateTime.ofInstant(date.toInstant(), DateFormatterConstants.DEFAULT_ZONE_OFFSET);
-        System.out.println(localDateTime.format(formatter));
+        Assert.assertEquals("2018 13", localDateTime.format(formatter));
     }
 
     @Test

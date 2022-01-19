@@ -18,26 +18,10 @@ import java.util.concurrent.TimeUnit;
  * @author Neil
  */
 public class DateTimeUtils {
-    private static final LoadingCache<DateTimeFormatterTuple, DateTimeFormatter> DATE_TIME_FORMATTER_CACHE;
 
-    static {
-        CacheLoader<DateTimeFormatterTuple, DateTimeFormatter> cacheLoader = new CacheLoader<DateTimeFormatterTuple, DateTimeFormatter>() {
 
-            @Override
-            public DateTimeFormatter load(DateTimeFormatterTuple tuple) {
-                return DateTimeFormatter.ofPattern(tuple.getPattern(), tuple.getLocale());
-            }
-        };
-        CacheBuilder<Object, Object> cacheBuilder = CacheBuilder.newBuilder();
-        cacheBuilder.expireAfterAccess(10, TimeUnit.MINUTES);
-        DATE_TIME_FORMATTER_CACHE = cacheBuilder.build(cacheLoader);
-    }
-
-    private DateTimeUtils() {
-    }
-
-    private static DateTimeFormatter getDateTimeFormatter(DateTimeFormatterTuple tuple) {
-        return DATE_TIME_FORMATTER_CACHE.getUnchecked(tuple);
+    static DateTimeFormatter getDateTimeFormatter(DateTimeFormatterTuple tuple) {
+        return InnerInitialize.DATE_TIME_FORMATTER_CACHE.getUnchecked(tuple);
     }
 
     public static DateTimeFormatter getDateTimeFormatter(String pattern, Locale locale) {
@@ -96,5 +80,22 @@ public class DateTimeUtils {
 
     public static String now() {
         return DateTimeBuilder.withTime(new Date()).format();
+    }
+
+    private static class InnerInitialize {
+        private static final LoadingCache<DateTimeFormatterTuple, DateTimeFormatter> DATE_TIME_FORMATTER_CACHE;
+
+        static {
+            CacheLoader<DateTimeFormatterTuple, DateTimeFormatter> cacheLoader = new CacheLoader<DateTimeFormatterTuple, DateTimeFormatter>() {
+
+                @Override
+                public DateTimeFormatter load(DateTimeFormatterTuple tuple) {
+                    return DateTimeFormatter.ofPattern(tuple.getPattern(), tuple.getLocale());
+                }
+            };
+            CacheBuilder<Object, Object> cacheBuilder = CacheBuilder.newBuilder();
+            cacheBuilder.expireAfterAccess(10, TimeUnit.MINUTES);
+            DATE_TIME_FORMATTER_CACHE = cacheBuilder.build(cacheLoader);
+        }
     }
 }

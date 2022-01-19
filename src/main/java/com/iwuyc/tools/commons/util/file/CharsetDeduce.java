@@ -9,6 +9,13 @@ import java.io.IOException;
 import java.io.InputStream;
 
 
+/**
+ * 文件的字符编码推断
+ *
+ * @author Neil
+ * @date 2022-01-18
+ * @since 2022.1
+ */
 @Slf4j
 public class CharsetDeduce {
     /**
@@ -20,12 +27,12 @@ public class CharsetDeduce {
     public static String charset(String path) {
         try (BufferedInputStream bis = new BufferedInputStream(new FileInputStream(path))) {
             final String charset = charset(bis);
-            System.out.println("--文件-> [" + path + "] 采用的字符集为: [" + charset + "]");
+            log.debug("文件-> [{}] 采用的字符集为: [{}]", path, charset);
             return charset;
         } catch (IOException e) {
             log.warn("读取文件异常。", e);
         }
-        return null;
+        return "";
     }
 
     /**

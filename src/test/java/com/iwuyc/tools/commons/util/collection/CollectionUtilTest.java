@@ -35,7 +35,7 @@ public class CollectionUtilTest {
         String joinStr = CollectionUtil.join(integers);
         assertEquals("1,2,3,4,5,6,7", joinStr);
 
-        joinStr = CollectionUtil.join(integers, ';');
+        joinStr = CollectionUtil.join(integers, ";");
         assertEquals("1;2;3;4;5;6;7", joinStr);
 
         joinStr = CollectionUtil.join(Collections.emptyList());
