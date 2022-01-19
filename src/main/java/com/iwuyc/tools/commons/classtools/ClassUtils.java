@@ -2,25 +2,27 @@ package com.iwuyc.tools.commons.classtools;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
-import com.iwuyc.tools.commons.classtools.typeconverter.TypeConverter;
-import com.iwuyc.tools.commons.classtools.typeconverter.TypeConverterConstant;
 import com.iwuyc.tools.commons.util.collection.ArrayUtil;
-import com.iwuyc.tools.commons.util.collection.CollectionUtil;
-import com.iwuyc.tools.commons.util.collection.MultiMap;
 import lombok.extern.slf4j.Slf4j;
 
 import java.lang.invoke.SerializedLambda;
-import java.lang.reflect.*;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Executable;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
 
 /**
  * 类对象的工具类。
  *
  * @author Neil
- * @date 2017-08-07 16:25
- * @since JDK8
+ * @since 2021.4
  */
 @Slf4j
 public abstract class ClassUtils {
@@ -70,44 +72,6 @@ public abstract class ClassUtils {
             loader = ClassUtils.class.getClassLoader();
         }
         return AccessController.doPrivileged(new ClassLoadPrivilegedAction(classPath, isInitialize, loader));
-    }
-
-    /**
-     * 将数据转换成对应的类型。
-     *
-     * @param sourceType     数据源类型
-     * @param targetType     目标数据类型
-     * @param val            数据
-     * @param typeConverters 类型转换器集合
-     * @return 转换结果
-     */
-    @SuppressWarnings({"unchecked", "rawtypes"})
-    private static Object convert(Class<?> sourceType, Class targetType, Object val,
-                                  MultiMap<Class<?>, TypeConverter<?, ?>> typeConverters) {
-        if (sourceType == targetType || compareType(sourceType, targetType, false)) {
-            return val;
-        }
-
-        if (null == typeConverters) {
-            typeConverters = TypeConverterConstant.DEFAULT_CONVERTERS;
-        }
-
-        Object rejectVal;
-        Collection<TypeConverter<?, ?>> converters = typeConverters.get(sourceType);
-        if (CollectionUtil.isEmpty(converters)) {
-            log.warn("未找到对应的转换器，直接返回原值：sourceType->targetType:[{} -> {}];val:[{}];typeConverters:[{}]", sourceType, targetType, val, typeConverters);
-            return val;
-        }
-        // 筛选支持转换的转换器，并且返回第一个。
-        Optional<TypeConverter<?, ?>> supportConverterOpt = converters.stream()
-                .filter((item) -> item.support(targetType)).findFirst();
-        // 如果没有找到转换器，则直接将源数据返回。
-        if (!supportConverterOpt.isPresent()) {
-            log.warn("Can't find any convert for this type[{}]", targetType);
-            return val;
-        }
-        rejectVal = ((TypeConverter<Object, Object>) supportConverterOpt.get()).convert(val, targetType);
-        return rejectVal;
     }
 
     /**

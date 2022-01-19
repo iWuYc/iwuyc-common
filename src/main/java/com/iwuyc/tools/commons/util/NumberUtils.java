@@ -11,8 +11,6 @@ import java.util.regex.Pattern;
  */
 public abstract class NumberUtils {
 
-    private static final Pattern INTEGER_PATTERN = RegexUtils.getPattern("^[0-9]+$");
-
     public static boolean isByteClass(Class<?> target) {
         return Byte.class.equals(target) || byte.class.equals(target);
     }

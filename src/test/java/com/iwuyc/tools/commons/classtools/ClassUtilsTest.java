@@ -1,13 +1,10 @@
 package com.iwuyc.tools.commons.classtools;
 
-import com.iwuyc.tools.commons.classtools.typeconverter.TypeConverter;
-import com.iwuyc.tools.commons.util.collection.MultiMap;
 import lombok.Data;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 
@@ -61,6 +58,7 @@ public class ClassUtilsTest {
     }
 
     @Test
+    @Ignore("Performance Test skip it.")
     public void getLambdaMethodName() {
         for (int i = 0; i < 10; i++) {
             System.out.println(ClassUtils.getLambdaMethodName(A::getName));

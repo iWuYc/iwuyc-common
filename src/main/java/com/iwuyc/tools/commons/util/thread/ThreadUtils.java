@@ -16,10 +16,10 @@ import java.util.concurrent.TimeUnit;
  */
 @Slf4j
 public class ThreadUtils {
+    private static final String CURRENT_CLASS_NAME = ThreadUtils.class.getName();
+
     private ThreadUtils() {
     }
-
-    private static final String CURRENT_CLASS_NAME = ThreadUtils.class.getName();
 
     /**
      * 获取调用方法的父代码位置。类A的方法a的第n行调用类B的b方法，方法b调用com.iot.util.concurrent.ThreadUtils#callLocationInfo() 方法，
@@ -48,6 +48,7 @@ public class ThreadUtils {
             }
             logger.warn("线程休眠过程中引发错误。休眠信息为：sleepTime:{};timeUnit:{}.Cause:{}", sleepTime, unit, e.getMessage());
             logger.debug("Error:", e);
+            Thread.currentThread().interrupt();
         }
     }
 

@@ -1,11 +1,14 @@
 package com.iwuyc.tools.commons.util.collection;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author Neil
- * @date 2017-08-04 14:31
- * @since JDK 8
+ * @since 2021.4
  */
 public abstract class MapUtil {
 
