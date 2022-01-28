@@ -6,8 +6,20 @@ import com.iwuyc.tools.commons.util.collection.MapUtil;
 import com.iwuyc.tools.commons.util.string.StringUtils;
 import lombok.extern.slf4j.Slf4j;
 
-import java.io.*;
-import java.util.*;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
 import java.util.concurrent.locks.ReadWriteLock;
 
 @Slf4j
@@ -100,8 +112,7 @@ public class PropertiesFileUtils {
      * @param appendNewLine   是否将文件中没有的
      * @return 是否替换成功
      */
-    public static boolean replacePropertiesFile(File file, Map<?, ?> properties, Set<Object> deleteKeys, String charsetEncoding,
-                                                boolean appendNewLine) {
+    public static boolean replacePropertiesFile(File file, Map<?, ?> properties, Set<Object> deleteKeys, String charsetEncoding, boolean appendNewLine) {
         if (StringUtils.isEmpty(charsetEncoding)) {
             charsetEncoding = Constants.UTF8_STR;
         }
@@ -111,7 +122,7 @@ public class PropertiesFileUtils {
         Character splitChar = null;
         try (FileInputStream fileReader = new FileInputStream(file);
              BufferedReader reader = new BufferedReader(new InputStreamReader(fileReader, charsetEncoding))) {
-            String line = null;
+            String line;
             boolean isDeleteKey = CollectionUtil.isNotEmpty(deleteKeysInner);
             while ((line = reader.readLine()) != null) {
                 if (StringUtils.isBlank(line) || line.charAt(0) == '#') {
@@ -265,6 +276,7 @@ public class PropertiesFileUtils {
 
         return propertiesReader(propertiesFile, charsetEncoding, Collections.emptyList(), Collections.emptyList(), null);
     }
+
     /**
      * 加载对应前缀的配置项，产生一个新的实例。如：properties为：{producer.host=123,producer.timeout=10,username=iot} prefix为：[producer.]，trimPrefix为true，则返回的properties为{host=123,timeout=10}
      *
