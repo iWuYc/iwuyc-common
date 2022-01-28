@@ -1,5 +1,6 @@
 package com.iwuyc.tools.commons.util.file;
 
+import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.LinkedHashMap;
@@ -24,6 +25,6 @@ public class PropertiesFileUtilsTest {
                 properties.put(iccid, 0);
             }
         }
-        PropertiesFileUtils.replacePropertiesFile(fileLocation, properties);
+        Assert.assertTrue(PropertiesFileUtils.replacePropertiesFile(fileLocation, properties));
     }
 }

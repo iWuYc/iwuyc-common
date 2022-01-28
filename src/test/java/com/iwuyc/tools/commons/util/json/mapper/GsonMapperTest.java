@@ -6,6 +6,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import com.iwuyc.tools.commons.util.json.GsonUtil;
+import org.junit.Assert;
 import org.junit.Test;
 
 public class GsonMapperTest {
@@ -16,7 +17,7 @@ public class GsonMapperTest {
         JsonElement targetStruct = new JsonPrimitive("[0].age");
         JsonElement childrenArr = GsonUtil.toObject("[{'name':'jack','age':10},{'name':'tom','age':11}]");
         JsonElement result = gsonMapper.mapper(childrenArr, targetStruct);
-        System.out.println(result);
+        Assert.assertEquals(new JsonPrimitive(10), result);
 
         targetStruct = new JsonPrimitive("age");
         result = gsonMapper.mapper(childrenArr, targetStruct);
