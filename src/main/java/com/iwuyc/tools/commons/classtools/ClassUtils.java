@@ -108,8 +108,8 @@ public abstract class ClassUtils {
      * @return 实例化后的对象
      * @author Neil
      */
-    public static Object instance(Class<?> clazz, Object... args) {
-        return instance(Object.class, clazz, args);
+    public static <T> T instance(Class<T> clazz, Object... args) {
+        return instance(clazz, clazz, args);
     }
 
     /**
@@ -195,12 +195,10 @@ public abstract class ClassUtils {
             instanceType = instance.getClass();
         }
         Class<?>[] parameterTypeList = typeList(parameters);
-        MethodPrivilegedAction action = new MethodPrivilegedAction(instanceType, methodName, parameterTypeList,
-                declared);
+        MethodPrivilegedAction action = new MethodPrivilegedAction(instanceType, methodName, parameterTypeList, declared);
         Optional<Method> methodOpt = AccessController.doPrivileged(action);
         if (!methodOpt.isPresent()) {
-            log.warn("Can't found any method for name:[{}];Parameter Type List:{}", methodName,
-                    Arrays.toString(parameterTypeList));
+            log.warn("Can't found any method for name:[{}];Parameter Type List:{}", methodName, Arrays.toString(parameterTypeList));
             return null;
         }
 
@@ -356,8 +354,7 @@ public abstract class ClassUtils {
                 parameterTypes[i] = args[i].getClass();
             }
 
-            return (Constructor<?>) chooseBestMatchExecutable(clazz.getDeclaredConstructors(),
-                    parameterTypes);
+            return (Constructor<?>) chooseBestMatchExecutable(clazz.getDeclaredConstructors(), parameterTypes);
         }
 
     }
@@ -394,8 +391,7 @@ public abstract class ClassUtils {
         private final Class<?>[] parameterTypeList;
         private final boolean declared;
 
-        public MethodPrivilegedAction(Class<?> targetClazz, String methodName, Class<?>[] parameterTypeList,
-                                      boolean declared) {
+        public MethodPrivilegedAction(Class<?> targetClazz, String methodName, Class<?>[] parameterTypeList, boolean declared) {
             this.targetClazz = targetClazz;
             this.methodName = methodName;
             this.parameterTypeList = parameterTypeList;
