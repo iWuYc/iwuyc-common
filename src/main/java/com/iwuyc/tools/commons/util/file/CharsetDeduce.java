@@ -1,7 +1,7 @@
 package com.iwuyc.tools.commons.util.file;
 
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.compress.utils.IOUtils;
+import org.apache.commons.io.IOUtil;
 
 import java.io.BufferedInputStream;
 import java.io.FileInputStream;
@@ -108,7 +108,7 @@ public class CharsetDeduce {
         } catch (IOException e) {
             log.warn("读取文件异常。", e);
         } finally {
-            IOUtils.closeQuietly(bis);
+            IOUtil.shutdownStream(bis);
         }
         return charset;
     }

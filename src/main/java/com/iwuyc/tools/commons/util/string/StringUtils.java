@@ -1,5 +1,7 @@
 package com.iwuyc.tools.commons.util.string;
 
+import com.iwuyc.tools.commons.util.collection.ArrayUtil;
+
 /**
  * @author @Neil
  * @since @2017年10月15日
@@ -39,11 +41,11 @@ public abstract class StringUtils {
         return !isEmpty(str);
     }
 
-    public static boolean equals(CharSequence primaryStr, CharSequence slaveStr) {
-        if (primaryStr == null || slaveStr == null) {
-            return primaryStr == slaveStr;
+    public static boolean equals(CharSequence one, CharSequence otherOne) {
+        if (one == null || otherOne == null) {
+            return one == otherOne;
         }
-        return primaryStr.equals(slaveStr);
+        return one.equals(otherOne);
     }
 
     public static boolean notEquals(CharSequence primaryStr, CharSequence slaveStr) {
@@ -64,12 +66,13 @@ public abstract class StringUtils {
 
     /**
      * 判断字符串是否为空字符串
+     * <pre>
      * ex:
      * str = ""; => true
      * str = " "; => true
      * str = null; => true
      * str = " a "; => false
-     * <p>
+     * </pre>
      *
      * @param str 待检测的字符串
      * @return 如果为空字符串，则返回true，否则返回false
@@ -108,6 +111,9 @@ public abstract class StringUtils {
      * @return 如果字符串数值中存在空字符串，则返回true，否则返回false
      */
     public static boolean isAnyEmpty(CharSequence... strs) {
+        if (ArrayUtil.isEmpty(strs)) {
+            return true;
+        }
         for (CharSequence str : strs) {
             if (isEmpty(str)) {
                 return true;

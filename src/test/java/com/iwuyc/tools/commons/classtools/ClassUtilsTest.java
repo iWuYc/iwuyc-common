@@ -1,18 +1,22 @@
 package com.iwuyc.tools.commons.classtools;
 
 import lombok.Data;
+import lombok.extern.slf4j.Slf4j;
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 
+@Slf4j
 public class ClassUtilsTest {
 
     @Test
     public void name() {
-        System.out.println(ScheduledExecutorService.class.isAssignableFrom(ScheduledThreadPoolExecutor.class));
+        Assert.assertTrue(ScheduledExecutorService.class.isAssignableFrom(ScheduledThreadPoolExecutor.class));
     }
 
     @Test
@@ -20,23 +24,31 @@ public class ClassUtilsTest {
         Parameter1 p1 = new Parameter1();
         Parameter2 p2 = new Parameter2();
         TestClass tc = ClassUtils.instance(TestClass.class, TestClass.class.getName(), p1, p2);
-        System.out.println(tc.print());
+        Assert.assertEquals(p1, tc.p1);
+        Assert.assertEquals(p2, tc.p2);
     }
 
     @Test
     public void testInstance() {
         Object num = 10;
-        Object obj = ClassUtils.instance(TestInstanceCase.class, num);
-        System.out.println(obj);
+        TestInstanceCase obj = ClassUtils.instance(TestInstanceCase.class, num);
+        Assert.assertEquals(num, obj.num);
         obj = ClassUtils.instance(TestInstanceCase.class, new Object[]{"String"});
-        System.out.println(obj);
+        Assert.assertEquals(0, obj.num);
     }
 
     @Test
     public void testCallMethod() {
-        ClassUtils.callMethod(TestInstanceCase.class, "staticMethod");
-        ClassUtils.callMethod(TestInstanceCase.class, "staticMethod", "parameter");
+        final Object result = ClassUtils.callMethod(TestInstanceCase.class, "staticMethod");
+        Assert.assertNull(result);
+        Assert.assertTrue(TestInstanceCase.callStaticMethodWithoutParam.get());
+        final String parameter = "parameter";
+        ClassUtils.callMethod(TestInstanceCase.class, "staticMethod", parameter);
+        Assert.assertEquals(parameter, TestInstanceCase.callStaticMethodWithString.get());
 
+        final Object obj = new Object();
+        ClassUtils.callMethod(TestInstanceCase.class, "staticMethod", obj);
+        Assert.assertEquals(obj, TestInstanceCase.callStaticMethodWithObject.get());
     }
 
     @Test
@@ -59,10 +71,15 @@ public class ClassUtilsTest {
 
     @Test
     @Ignore("Performance Test skip it.")
-    public void getLambdaMethodName() {
+    public void getLambdaMethodNamePerformance() {
         for (int i = 0; i < 10; i++) {
             System.out.println(ClassUtils.getLambdaMethodName(A::getName));
         }
+    }
+
+    @Test
+    public void getLambdaMethodName() {
+        Assert.assertEquals("getName", ClassUtils.getLambdaMethodName(A::getName));
     }
 
     interface I {
@@ -113,28 +130,29 @@ public class ClassUtilsTest {
     }
 
     static class TestInstanceCase {
+        public static AtomicBoolean callStaticMethodWithoutParam = new AtomicBoolean(false);
+        public static AtomicReference<String> callStaticMethodWithString = new AtomicReference<>();
+        public static AtomicReference<Object> callStaticMethodWithObject = new AtomicReference<>();
         private final int num;
 
         private TestInstanceCase(int num) {
             this.num = num;
-            System.out.println("Integer constructor.");
         }
 
         private TestInstanceCase(Object num) {
             this.num = 0;
-            System.out.println("Object constructor.");
         }
 
         public static void staticMethod() {
-            System.out.println("Static method without parameters.");
+            callStaticMethodWithoutParam.set(true);
         }
 
         public static void staticMethod(String parameter) {
-            System.out.println("Parameter:" + parameter);
+            callStaticMethodWithString.set(parameter);
         }
 
         public static void staticMethod(Object parameter) {
-            System.out.println("Parameter object:" + parameter);
+            callStaticMethodWithObject.set(parameter);
         }
 
         @Override
