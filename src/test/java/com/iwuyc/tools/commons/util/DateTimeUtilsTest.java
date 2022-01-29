@@ -22,8 +22,7 @@ public class DateTimeUtilsTest {
 
     @Before
     public void setUp() {
-        String testTimeZone = "Asia/Shanghai";
-        TimeZone.setDefault(TimeZone.getTimeZone(testTimeZone));
+        TimeZone.setDefault(TimeZone.getTimeZone("Asia/Shanghai"));
     }
 
     /**

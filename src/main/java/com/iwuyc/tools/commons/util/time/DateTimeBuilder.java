@@ -1,7 +1,6 @@
 package com.iwuyc.tools.commons.util.time;
 
 import com.iwuyc.tools.commons.basic.type.DateTimeTuple;
-import lombok.Data;
 
 import java.time.Instant;
 import java.time.LocalDate;
@@ -17,7 +16,6 @@ import java.util.Locale;
  *
  * @author Neil
  */
-@Data
 public class DateTimeBuilder {
     private ZonedDateTime zonedDateTime;
     private SmartDateTimeFormatter formatter;
@@ -60,21 +58,45 @@ public class DateTimeBuilder {
         return this;
     }
 
+    /**
+     * 设置月份，如果大于12，则自动会在年份上进位。如，时间基点为1970-01-01 08:00:00,使用该函数 传入13，最后时间会变成1971-01-01 08:00:00
+     *
+     * @param months 将设置的月份
+     * @return 当前的构建对象
+     */
     public DateTimeBuilder withMonthOfYear(long months) {
-        this.zonedDateTime = this.zonedDateTime.withMonth(1).plusMonths(months);
+        this.zonedDateTime = this.zonedDateTime.withMonth(1).plusMonths(months - 1);
         return this;
     }
 
+    /**
+     * 设置日期，如果大于当前月的最后一天，会自动往月份进位。如，时间基点为1970-01-01 08:00:00,使用该函数传入32，最后时间会变成1971-02-01 08:00:00
+     *
+     * @param day 将设置的日期
+     * @return 当前的构建对象
+     */
     public DateTimeBuilder withDayOfMonth(long day) {
-        this.zonedDateTime = this.zonedDateTime.withDayOfMonth(1).plusDays(day);
+        this.zonedDateTime = this.zonedDateTime.withDayOfMonth(1).plusDays(day - 1);
         return this;
     }
 
+    /**
+     * 设置小时，如果时间大于23，则会自动往日期上进位。如，时间基点为1970-01-01 08:00:00,使用该函数传入25，最后时间会变成1971-01-02 01:00:00
+     *
+     * @param hour 将设置的小时
+     * @return 当前的构建对象
+     */
     public DateTimeBuilder withHourOfDay(long hour) {
         this.zonedDateTime = this.zonedDateTime.withHour(0).plusHours(hour);
         return this;
     }
 
+    /**
+     * 设置分钟，如果时间大于59，则会自动往日期上进位。如，时间基点为1970-01-01 08:00:00,使用该函数传入60，最后时间会变成1971-01-01 09:00:00
+     *
+     * @param minute 将设置的分钟
+     * @return 当前的构建对象
+     */
     public DateTimeBuilder withMinuteOfHour(long minute) {
         this.zonedDateTime = this.zonedDateTime.withMinute(0).plusMinutes(minute);
         return this;
