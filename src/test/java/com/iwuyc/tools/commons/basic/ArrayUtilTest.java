@@ -24,7 +24,7 @@ public class ArrayUtilTest {
         Assert.assertFalse(ArrayUtil.isEmpty(integers));
         Assert.assertTrue(ArrayUtil.isNotEmpty(integers));
 
-        Assert.assertEquals(0, ArrayUtil.arrayLength(null));
+        Assert.assertEquals(0, ArrayUtil.arrayLength((Object[]) null));
         Assert.assertEquals(0, ArrayUtil.arrayLength(new Integer[0]));
         Assert.assertEquals(1, ArrayUtil.arrayLength(new Integer[1]));
     }
