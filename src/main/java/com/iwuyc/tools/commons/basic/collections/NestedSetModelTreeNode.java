@@ -4,11 +4,14 @@
 package com.iwuyc.tools.commons.basic.collections;
 
 import lombok.Data;
-import lombok.ToString;
 
 import javax.annotation.Nonnull;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * 功能说明
@@ -35,6 +38,21 @@ public class NestedSetModelTreeNode<T> implements Comparable<NestedSetModelTreeN
      */
     private int leftScore;
     private T data;
+
+    public void scoreCalc(AtomicInteger counter, int stepLength) {
+        final int leftScore = counter.getAndAdd(stepLength);
+        final int rightScore;
+        if (this.children.size() != 0) {
+            final List<NestedSetModelTreeNode<T>> treeNodes = new ArrayList<>(children.values());
+            Collections.sort(treeNodes);
+            for (NestedSetModelTreeNode<T> item : treeNodes) {
+                item.scoreCalc(counter, stepLength);
+            }
+        }
+        rightScore = counter.getAndAdd(stepLength);
+        this.leftScore = leftScore;
+        this.rightScore = rightScore;
+    }
 
     public NestedSetModelTreeNode(String nodeName, NestedSetModelTreeNode<T> parentNode) {
         this.nodeName = nodeName;

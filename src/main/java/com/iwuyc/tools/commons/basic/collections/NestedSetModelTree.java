@@ -11,6 +11,7 @@ import lombok.Setter;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * 功能说明
@@ -20,6 +21,14 @@ import java.util.Optional;
  * @date 2022/6/13
  */
 public class NestedSetModelTree<T> {
+    NestedSetModelTree() {
+        
+    }
+
+    public static <T> Builder<T> newBuilder() {
+        return new Builder<>();
+    }
+
     private NestedSetModelTreeNode<T> rootNode;
     @Setter
     @Getter
@@ -29,7 +38,7 @@ public class NestedSetModelTree<T> {
         this.addNode(data, 0, nodePaths);
     }
 
-    public void addNode(final T data,final int sort, String... nodePaths) {
+    public void addNode(final T data, final int sort, String... nodePaths) {
         final Optional<NestedSetModelTreeNode<T>> childNodeOpt = getNode(nodePaths);
         childNodeOpt.ifPresent(childNode -> {
             childNode.setData(data);
@@ -68,4 +77,46 @@ public class NestedSetModelTree<T> {
         return Optional.ofNullable(currentNode);
     }
 
+    public void scoreCalc() {
+        this.scoreCalc(0);
+    }
+
+    public void scoreCalc(int startScore) {
+        this.scoreCalc(startScore, 1);
+    }
+
+    public void scoreCalc(int startScore, int stepLength) {
+        AtomicInteger counter = new AtomicInteger(startScore);
+        this.rootNode.scoreCalc(counter, stepLength);
+    }
+
+    public static class Builder<T> {
+        private final NestedSetModelTree<T> tree;
+
+        private Builder() {
+            tree = new NestedSetModelTree<>();
+        }
+
+
+        public void addNode(final T data, String... nodePaths) {
+            this.addNode(data, 0, nodePaths);
+        }
+
+        public void addNode(final T data, final int sort, String... nodePaths) {
+            tree.addNode(data, sort, nodePaths);
+        }
+
+        public NestedSetModelTree<T> build() {
+            return this.build(0);
+        }
+
+        public NestedSetModelTree<T> build(int startScore) {
+            return this.build(startScore, 1);
+        }
+
+        public NestedSetModelTree<T> build(int startScore, int stepLength) {
+            this.tree.scoreCalc(startScore, stepLength);
+            return this.tree;
+        }
+    }
 }

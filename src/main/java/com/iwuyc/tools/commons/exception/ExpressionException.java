@@ -1,6 +1,6 @@
 package com.iwuyc.tools.commons.exception;
 
-public class ExpressionException extends RuntimeException {
+public class ExpressionException extends NeilException {
     public ExpressionException(String message) {
         super(message);
     }
