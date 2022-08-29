@@ -3,9 +3,16 @@ package com.iwuyc.tools.commons.util.file;
 import com.iwuyc.tools.commons.util.string.StringUtils;
 import lombok.extern.slf4j.Slf4j;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.file.Files;
 import java.nio.file.Paths;
 
 /**
@@ -16,9 +23,11 @@ import java.nio.file.Paths;
  */
 @Slf4j
 public class FileUtil {
-
     public static final String DEFAULT_CHARSET_ENCODING = "UTF-8";
     private static final String CLASSPATH_PREFIX = "classpath:";
+
+    private FileUtil() {
+    }
 
     /**
      * 将指定的byte数组以指定长度，填充到指定的流中。
@@ -48,10 +57,8 @@ public class FileUtil {
      * @author Neil
      */
     public static boolean safeDelete(File file) {
-        boolean result = false;
-        // Return false if file not exists or not a file;
         if (!file.isFile()) {
-            return result;
+            return false;
         }
         try (FileInputStream in = new FileInputStream(file); FileOutputStream out = new FileOutputStream(file)) {
             final byte[] emptyBytes = new byte[1024];
@@ -65,15 +72,19 @@ public class FileUtil {
             }
 
         } catch (Exception e) {
-            e.printStackTrace();
+            log.warn("覆写原文件出错，原因是：", e);
             return false;
         }
 
         // Delete file.
         if (file.exists()) {
-            result = file.delete();
+            try {
+                Files.delete(file.toPath());
+            } catch (IOException e) {
+                log.warn("Delete file raise an error:", e);
+            }
         }
-        return result;
+        return true;
     }
 
     /**
@@ -108,12 +119,11 @@ public class FileUtil {
 
         String fileAbsolutePath = absoluteLocation(filePath);
         File file = new File(fileAbsolutePath);
-        try (FileInputStream fr = new FileInputStream(file);
-             BufferedReader reader = new BufferedReader(new InputStreamReader(fr, charsetName))) {
+        try (FileInputStream fr = new FileInputStream(file); BufferedReader reader = new BufferedReader(new InputStreamReader(fr, charsetName))) {
             StringBuilder sb = new StringBuilder();
             String tmp;
             while ((tmp = reader.readLine()) != null) {
-                sb.append(tmp).append("\n");
+                sb.append(tmp).append('\n');
             }
             return sb.toString();
         } catch (Exception e) {
